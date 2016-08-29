@@ -5,7 +5,7 @@ pub struct Direction(pub f64);
 
 impl Direction {
     pub fn as_radians(self) -> f64 {
-        self.0 * (PI/ 180.0)
+        self.0 * (PI / 180.0)
     }
 
     pub fn wrap(mut self) -> Direction {

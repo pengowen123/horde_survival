@@ -8,7 +8,7 @@ use std::ffi::OsStr;
 use std::iter::once;
 use std::os::windows::ffi::OsStrExt;
 
-pub const TPS: usize = 150;
+pub const TPS: u64 = 30;
 
 pub const fn time(seconds: f64) -> usize {
     (seconds * TPS as f64) as usize

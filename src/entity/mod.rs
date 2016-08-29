@@ -1,23 +1,31 @@
 pub mod modifiers;
 pub mod entity_type;
+pub mod attack;
 
 pub use self::entity_type::EntityType;
 pub use self::modifiers::Modifier;
+pub use self::attack::try_attack;
 
+use items::*;
 use world::*;
 use consts::balance::*;
 
+#[derive(Clone)]
 pub struct Entity {
     pub id: usize,
     pub entity_type: EntityType,
     pub coords: Coords,
     pub direction: (f64, f64),
     pub health: f64,
+    pub attack_animation: usize,
     pub damage_mods: Vec<Modifier>,
     pub as_mods: Vec<Modifier>,
     pub damage_taken_mods: Vec<Modifier>,
     pub movespeed_mods: Vec<Modifier>,
     pub is_enemy: bool,
+    pub dummy: bool,
+    pub current_weapon: Weapon,
+    pub lifetime: usize,
 }
 
 impl Entity {
@@ -25,55 +33,42 @@ impl Entity {
                health: f64,
                coords: Coords,
                entity_type: EntityType,
-               is_enemy: bool) -> Entity {
+               is_enemy: bool,
+               dummy: bool,
+               direction: (f64, f64),
+               lifetime: usize) -> Entity {
 
         Entity {
             id: id,
             entity_type: entity_type,
             coords: coords,
-            direction: (90.0, 0.0),
+            direction: direction,
             health: health,
+            attack_animation: 0,
             damage_mods: Vec::new(),
             as_mods: Vec::new(),
             damage_taken_mods: Vec::new(),
             movespeed_mods: Vec::new(),
             is_enemy: is_enemy,
+            dummy: dummy,
+            current_weapon: WEAPON_UNARMED,
+            lifetime: lifetime,
         }
     }
 }
 
 impl Entity {
-    pub fn damage(&mut self, damage: f64) {
+    pub fn damage(&mut self, damage: f64) -> bool {
         self.health -= self.damage_taken_mods.iter().fold(damage, |acc, x| acc * x.value);
+        self.is_dead()
     }
 
-    pub fn attack_entity(&self, other: &mut Entity) {
-        let mut damage = 1.0 * BASE_DAMAGE;
+    pub fn attack_entity(&self, other: &mut Entity) -> bool {
+        let mut damage = self.current_weapon.damage;
 
         damage = self.damage_mods.iter().fold(damage, |acc, x| acc * x.value);
 
-        other.damage(damage);
-    }
-
-    pub fn try_attack(&self, entities: &mut [Entity], enemy: bool) -> bool {
-        let mut success = false;
-
-        for point in self.coords.ray(ATTACK_RADIUS / 2.0) {
-            // NOTE: check that entity type is not for dummies
-            match entities.iter_mut().filter(|e| {
-                e.coords.in_radius(&self.coords, ATTACK_RADIUS) && e.is_enemy == enemy
-            }).nth(0) {
-                Some(e) => {
-                    self.attack_entity(e);
-                    success = true;
-                },
-                None => success = false,
-            }
-
-            break;
-        }
-
-        success
+        other.damage(damage)
     }
 
     pub fn move_forward(&mut self, movement_offset: f64) {
@@ -92,3 +87,4 @@ impl Entity {
         self.health <= 0.0
     }
 }
+

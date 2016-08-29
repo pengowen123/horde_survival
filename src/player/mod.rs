@@ -5,7 +5,8 @@ pub use self::class::Class;
 
 use self::abilities::*;
 use entity::*;
-use consts::balance::*;
+use consts::balance::abilities::*;
+use consts::balance::gold::*;
 
 pub struct Player {
     pub entity_id: usize,

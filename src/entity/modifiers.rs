@@ -1,3 +1,5 @@
+// NOTE: modifiers expire when their timer reaches 1
+//       modifier are permanent if their timer is set to 0
 #[derive(Clone, Debug)]
 pub struct Modifier {
     pub value: f64,
@@ -13,12 +15,12 @@ impl Modifier {
     }
 
     pub fn update(&mut self) {
-        if self.timer > 0 {
+        if self.timer > 1 {
             self.timer -= 1;
         }
     }
 
     pub fn is_expired(&self) -> bool {
-        self.timer == 0
+        self.timer == 1
     }
 }

@@ -34,20 +34,35 @@ impl Coords {
         self.z += other.z;
     }
 
-    pub fn move_forward(&mut self, heading: f64, speed: f64) {
+    pub fn move_forward(&mut self, heading: f64, distance: f64) {
         let radians = Direction(heading).wrap().as_radians();
         let mut slope_x = radians.cos();
         let mut slope_z = radians.sin();
 
         normalize(&mut slope_x, &mut slope_z);
 
-        slope_x *= speed;
-        slope_z *= speed;
+        slope_x *= distance;
+        slope_z *= distance;
 
         self.translate(&Coords::new(slope_x, 0.0, slope_z))
     }
 
-    pub fn move_3d(&mut self, direction: (f64, f64), speed: f64) {
-        // use move_forward a second time to get the change in y-axis
+    pub fn move_3d(&mut self, direction: (f64, f64), distance: f64) {
+        let angle_x = Direction(direction.0).wrap().as_radians();
+        let angle_y = Direction(direction.1).wrap().as_radians();
+
+        let x = distance * angle_y.cos() * angle_x.sin();
+        let y = distance * angle_x.cos();
+        let z = distance * angle_y.sin() * angle_x.sin();
+
+        self.translate(&Coords::new(x, y, z));
+    }
+
+    pub fn ray(&self, interval: f64, direction: (f64, f64)) -> Ray {
+        Ray {
+            coords: self.clone(),
+            interval: interval,
+            direction: direction,
+        }
     }
 }
