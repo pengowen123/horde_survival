@@ -6,17 +6,18 @@ mod items;
 mod world;
 mod player;
 mod consts;
+mod flags;
+mod hscontrols;
 
 extern crate piston_window;
 extern crate user32;
 extern crate winapi;
-extern crate time;
 
-use user32::{GetCursorPos, SetCursorPos, FindWindowW};
+use user32::FindWindowW;
 use winapi::POINT;
 use piston_window::*;
-use time::precise_time_ns;
 
+use flags::*;
 use utils::*;
 use entity::*;
 use world::*;
@@ -29,12 +30,12 @@ use std::time::{Duration, Instant};
 fn main() {
     // Initialize entity list
     let mut entities = vec![
-        Entity::new(0, 100.0, Coords::origin(), EntityType::Player, false, false, (90.0, 0.0), 0),
-        Entity::new(1, 50.0, Coords::origin(), EntityType::Zombie, true, false, (90.0, 0.0), 0),
-        Entity::new(2, 50.0, Coords::origin(), EntityType::Zombie, true, false, (90.0, 0.0), 0),
+        Entity::new(0, 100.0, Coords::new(0.0, 100.0, 0.0), EntityType::Player, false, false, (90.0, 0.0), 0, HasGravity::True),
+        //Entity::new(1, 50.0, Coords::origin(), EntityType::Zombie, true, false, (90.0, 0.0), 0, HasGravity::False),
+        //Entity::new(2, 50.0, Coords::origin(), EntityType::Zombie, true, false, (90.0, 0.0), 0, HasGravity::False),
     ];
 
-    entities[0].current_weapon = WEAPON_TEST_WAND;
+    entities[0].current_weapon = WEAPON_TEST_BOW;
 
     let mut next_id = entities.len();
 
@@ -60,6 +61,10 @@ fn main() {
     events.set_ups(30);
     events.set_max_fps(30);
 
+    // Map
+    // TODO: Add multiple maps
+    let map = Map::new(0.0);
+
     // Movement state variables
     let mut move_forward = false;
     let mut move_left = false;
@@ -73,15 +78,15 @@ fn main() {
 
     // Window state variables
     let mut window_position = (0, 0);
-    let mut center;
+    let mut center = (0, 0);
 
     // Timer (keeps tps equal to or less than some constant)
     let mut sleeping_until = Instant::now();
-    let expected_elapsed = 1_000_000_000 / TPS;
+    let expected_elapsed = Duration::from_millis(1_000_000_000 / TPS / 1_000_000);
 
     // Event loop
     while let Some(event) = events.next(&mut window) {
-        let time = precise_time_ns();
+        let time = Instant::now();
 
         // User input
         match event {
@@ -200,12 +205,13 @@ fn main() {
                 dead = player.is_dead();
 
                 if move_forward || move_left || move_right || move_backward {
-                    player.move_forward(get_movement_offset(move_forward,
+                    player.move_forward(hscontrols::get_movement_offset(move_forward,
                                                             move_left,
                                                             move_right,
                                                             move_backward));
                 }
                 
+                println!("player coords: {:?}", player.coords);
                 let x = &mut player.direction.0;
                 let y = &mut player.direction.1;
 
@@ -222,109 +228,23 @@ fn main() {
         }
 
         for i in 0..entities.len() {
-            let entity_type;
-            let is_enemy;
-            let coords;
-
-            // Scoped for other entity updates
-            {
-                let entity = &mut entities[i];
-                entity_type = entity.entity_type.clone();
-                is_enemy = entity.is_enemy;
-                coords = entity.coords.clone();
-
-                update_modifiers(&mut entity.damage_mods);
-                update_modifiers(&mut entity.as_mods);
-                update_modifiers(&mut entity.damage_taken_mods);
-                update_modifiers(&mut entity.movespeed_mods);
-                
-                if entity.attack_animation > 0 {
-                    entity.attack_animation -= 1;
-                }
-
-                if entity.lifetime > 1 {
-                    entity.lifetime -= 1;
-                }
-            }
-
-            match entity_type {
-                EntityType::FlyingBallLinear => {
-                    let hit;
-
-                    match entities.iter()
-                                  .enumerate()
-                                  .filter_map(|(i, e)| {
-                                      if e.is_enemy != is_enemy && e.coords.in_radius(&coords, RANGED_LINEAR_RADIUS) {
-                                          Some(i)
-                                      } else {
-                                          None
-                                      }
-                                  })
-                                  .nth(0) {
-                        Some(e) => {
-                            let damage;
-                            let id;
-                            hit = true;
-                            // Scoped for attack_entity call
-                            {
-                                let entity = &entities[i];
-                                let weapon_damage = entity.current_weapon.damage;
-                                damage = entity.damage_mods.iter().fold(weapon_damage, |acc, x| acc * x.value);
-                                id = entity.id;
-                            }
-
-                            if entities[e].damage(damage) && id == player.entity_id {
-                                player.gold += player.bounty;
-                            }
-                        },
-                        None => {
-                            hit = false;
-                        },
-                    }
-                    
-                    let entity = &mut entities[i];
-
-                    if hit {
-                        entity.lifetime = 1;
-                    }
-
-                    entity.coords.move_3d(entity.direction, entity.as_mods[0].value);
-                },
-                EntityType::FlyingBallArc => {
-                },
-                _ => {},
-            }
+            update_entity(&mut entities, i, &map, &mut player);
         }
 
-        entities = entities.iter().cloned().filter(|e| {
-            (if e.is_enemy { !e.is_dead() } else { true }) && !(e.lifetime == 1)
-        }).collect();
+        filter_entities(&mut entities);
 
         // Bind direction to mouse
         if capture_cursor {
-            unsafe {
-                GetCursorPos(&mut mouse);
-            }
-
-            window_position = get_window_position(hwnd, window_position);
-
-            center = (window_position.0 + WINDOW_WIDTH as i32 / 2,
-                      window_position.1 + WINDOW_HEIGHT as i32 / 2);
-
-            mouse.x -= center.0;
-            mouse.y -= center.1;
-
-            unsafe {
-                SetCursorPos(center.0, center.1);
-            }
+            hscontrols::center_mouse(&mut mouse, hwnd, &mut window_position, &mut center);
         }
 
         // Ensure TPS is less than or equal to some constant
-        let elapsed = precise_time_ns() - time;
+        // NOTE: If expected_elapsed exceeds 1 second, bad things can happen
+        let elapsed = time.elapsed();
 
         if elapsed < expected_elapsed {
             let difference = expected_elapsed - elapsed;
-            sleeping_until = Instant::now() + Duration::from_millis(difference / 1_000_000);
+            sleeping_until = Instant::now() + difference;
         }
     }
 }

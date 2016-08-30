@@ -1,3 +1,5 @@
+use flags::*;
+use world::*;
 use entity::*;
 use items::*;
 use consts::balance::*;
@@ -20,6 +22,7 @@ pub fn attack_melee_area(entity: &mut Entity, entities: &mut Vec<Entity>) -> usi
 
 pub fn attack_melee_line(entity: &mut Entity, entities: &mut Vec<Entity>) -> usize {
     let mut killed = 0;
+    // If this is 0, the weapon cannot hit anything
     let mut points = entity.current_weapon.range as usize;
 
     for point in entity.coords.ray(ATTACK_MELEE_LINE_INTERVAL, entity.direction.clone()).skip(1) {
@@ -34,7 +37,9 @@ pub fn attack_melee_line(entity: &mut Entity, entities: &mut Vec<Entity>) -> usi
             None => {},
         }
 
-        points -= 1;
+        if points > 0 {
+            points -= 1;
+        }
 
         if points == 0 {
             break;
@@ -46,16 +51,19 @@ pub fn attack_melee_line(entity: &mut Entity, entities: &mut Vec<Entity>) -> usi
 
 pub fn attack_ranged_linear(entity: &mut Entity, entities: &mut Vec<Entity>, next_id: &mut usize) -> usize {
     let mut dummy = Entity::new(*next_id,
-                            (entity.id + 1) as f64,
-                            entity.coords.clone(),
-                            EntityType::FlyingBallLinear,
-                            false,
-                            true,
-                            entity.direction.clone(),
-                            RANGED_LINEAR_LIFETIME * LIFETIME_MULTIPLIER);
+                               (entity.id + 1) as f64,
+                               entity.coords.clone(),
+                               EntityType::FlyingBallLinear,
+                               false,
+                               true,
+                               entity.direction.clone(),
+                               RANGED_LINEAR_LIFETIME,
+                               HasGravity::False);
 
     *next_id += 1;
+
     dummy.as_mods.push(Modifier::new(entity.current_weapon.range, 0));
+
     entities.push(dummy);
 
     0
@@ -63,16 +71,21 @@ pub fn attack_ranged_linear(entity: &mut Entity, entities: &mut Vec<Entity>, nex
 
 pub fn attack_ranged_projectile(entity: &mut Entity, entities: &mut Vec<Entity>, next_id: &mut usize) -> usize {
     let mut dummy = Entity::new(*next_id,
-                            (entity.id + 1) as f64,
-                            entity.coords.clone(),
-                            EntityType::FlyingBallArc,
-                            false,
-                            true,
-                            entity.direction.clone(),
-                            0);
+                               (entity.id + 1) as f64,
+                               entity.coords.clone(),
+                               EntityType::FlyingBallArc,
+                               false,
+                               true,
+                               entity.direction.clone(),
+                               RANGED_ARC_LIFETIME,
+                               HasGravity::False);
 
     *next_id += 1;
-    dummy.as_mods.push(Modifier::new(entity.current_weapon.range, 0));
+
+    let speed = entity.current_weapon.range;
+    let angle = Direction((entity.direction.0 - 90.0).abs()).as_radians();
+    dummy.velocity.accelerate(angle.cos() * speed, angle.sin() * speed);
+
     entities.push(dummy);
 
     0
@@ -81,7 +94,6 @@ pub fn attack_ranged_projectile(entity: &mut Entity, entities: &mut Vec<Entity>,
 pub fn try_attack(id: usize, entities: &mut Vec<Entity>, next_id: &mut usize) -> usize {
     // NOTE: Dummy entities created by ranged attacks use their health to store the id of the
     //       entity they were created by
-    //       Projectile speed is stored in entity.as_mods[0].value
     //
     // NOTE: health = id + 1
 
@@ -91,9 +103,6 @@ pub fn try_attack(id: usize, entities: &mut Vec<Entity>, next_id: &mut usize) ->
         &mut *(entities.iter_mut().find(|e| e.id == id).expect(&format!("Entity not found: {}", id)) as *mut Entity)
     };
     
-    // FIXME: attack animation is really broken
-    // NOTE: or is it?
-    // NOTE: yes it is
     if entity.attack_animation > 0 {
         return 0;
     }

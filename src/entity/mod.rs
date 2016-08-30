@@ -1,31 +1,52 @@
 pub mod modifiers;
 pub mod entity_type;
 pub mod attack;
+pub mod update;
+pub mod filter;
 
 pub use self::entity_type::EntityType;
 pub use self::modifiers::Modifier;
 pub use self::attack::try_attack;
+pub use self::update::*;
+pub use self::filter::*;
 
+use flags::*;
 use items::*;
 use world::*;
 use consts::balance::*;
 
 #[derive(Clone)]
 pub struct Entity {
+    // Unique ID number
     pub id: usize,
+
+    // Type of entity
     pub entity_type: EntityType,
+    
+    // World info
     pub coords: Coords,
     pub direction: (f64, f64),
-    pub health: f64,
-    pub attack_animation: usize,
+    pub velocity: Velocity,
+
+    // Modifiers
     pub damage_mods: Vec<Modifier>,
     pub as_mods: Vec<Modifier>,
     pub damage_taken_mods: Vec<Modifier>,
     pub movespeed_mods: Vec<Modifier>,
-    pub is_enemy: bool,
+
+    // Physics info
+    pub has_gravity: HasGravity,
+    pub on_ground: bool,
+    
+    // Flags
+    pub is_enemy: bool, // TODO: Change this to a Team enum, for future uses (and it's nicer)
     pub dummy: bool,
+
+    // Miscellaneous
     pub current_weapon: Weapon,
     pub lifetime: usize,
+    pub health: f64,
+    pub attack_animation: usize,
 }
 
 impl Entity {
@@ -36,7 +57,8 @@ impl Entity {
                is_enemy: bool,
                dummy: bool,
                direction: (f64, f64),
-               lifetime: usize) -> Entity {
+               lifetime: usize,
+               has_gravity: HasGravity) -> Entity {
 
         Entity {
             id: id,
@@ -53,6 +75,9 @@ impl Entity {
             dummy: dummy,
             current_weapon: WEAPON_UNARMED,
             lifetime: lifetime,
+            velocity: Velocity::zero(),
+            has_gravity: has_gravity,
+            on_ground: false,
         }
     }
 }
@@ -77,8 +102,8 @@ impl Entity {
         self.coords.move_forward(self.direction.1 + movement_offset, speed);
     }
 
-    pub fn set_direction(&mut self, direction: (f64, f64)) {
-        self.direction = direction;
+    pub fn has_gravity(&self) -> bool {
+        self.has_gravity == HasGravity::True
     }
 }
 
@@ -87,4 +112,3 @@ impl Entity {
         self.health <= 0.0
     }
 }
-

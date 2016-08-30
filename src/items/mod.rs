@@ -1,7 +1,7 @@
-// NOTE: display attack radius of MeleeLine weapons as range * interval * radius
-//       display attack radius of MeleeArea weapons as range * 2
-//       display attack radius of RangedLinear weapons as range * projectile_lifetime
-//       don't display attack radius of RangedProjectile weapons
+// NOTE: display attack range of MeleeLine weapons as range * interval * radius
+//       display attack range of MeleeArea weapons as range * 2
+//       display attack range of RangedLinear weapons as range * projectile_lifetime
+//       don't display attack range of RangedProjectile weapons (use range as projectile speed)
 
 pub mod utils;
 

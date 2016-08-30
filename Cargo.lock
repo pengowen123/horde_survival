@@ -3,7 +3,6 @@ name = "horde_survival"
 version = "0.1.0"
 dependencies = [
  "piston_window 0.44.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "user32-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

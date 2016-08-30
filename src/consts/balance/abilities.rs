@@ -1,5 +1,5 @@
 use entity::modifiers::*;
-use utils::time;
+use consts::time;
 
 // Warrior
 pub const WARRIOR_COOLDOWN_0: usize = time(7.0);
