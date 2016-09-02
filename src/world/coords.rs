@@ -19,9 +19,11 @@ impl Coords {
     pub fn origin() -> Coords {
         Coords::new(0.0, 0.0, 0.0)
     }
+}
 
+impl Coords {
     pub fn distance(&self, other: &Coords) -> f64 {
-        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2) + (self.z - other.z).powi(2)).powf(1.0 / 3.0)
+        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2) + (self.z - other.z).powi(2)).sqrt()
     }
     
     pub fn in_radius(&self, other: &Coords, radius: f64) -> bool {
@@ -64,5 +66,17 @@ impl Coords {
             interval: interval,
             direction: direction,
         }
+    }
+
+    pub fn direction_to(&self, other: &Coords) -> (f64, f64) {
+        let rise = self.y - other.y;
+        let run = (self.x - other.x).abs();
+        let rot_x = get_angle(rise, run);
+
+        let rise = self.x - other.x;
+        let run = self.z - other.z;
+        let rot_y = get_angle2(run, rise);
+
+        (rot_x, rot_y)
     }
 }

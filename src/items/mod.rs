@@ -1,48 +1,16 @@
-// NOTE: display attack range of MeleeLine weapons as range * interval * radius
-//       display attack range of MeleeArea weapons as range * 2
-//       display attack range of RangedLinear weapons as range * projectile_lifetime
-//       don't display attack range of RangedProjectile weapons (use range as projectile speed)
+pub mod weapon;
+pub mod armor;
+pub mod effects;
+pub mod shop;
 
-pub mod utils;
-
-pub use self::utils::get_attack_time;
+pub use self::weapon::*;
+pub use self::armor::*;
+pub use self::effects::weapon::*;
+pub use self::effects::armor::*;
+pub use self::shop::*;
 
 #[derive(Clone)]
 pub enum Item {
     Weapon(Weapon),
     Armor(Armor),
-    Other(Other),
-}
-
-#[derive(Clone)]
-pub struct Weapon {
-    pub damage: f64,
-    pub range: f64,
-    pub attack_speed: f64,
-    pub weapon_type: WeaponType,
-}
-
-#[derive(Clone)]
-pub enum WeaponType {
-    MeleeLine,
-    MeleeArea,
-    RangedLinear,
-    RangedProjectile,
-}
-
-#[derive(Clone)]
-pub struct Armor;
-
-#[derive(Clone)]
-pub struct Other;
-
-impl Weapon {
-    pub const fn new(damage: f64, range: f64, attack_speed: f64, weapon_type: WeaponType) -> Weapon {
-        Weapon {
-            damage: damage,
-            range: range,
-            attack_speed: attack_speed,
-            weapon_type: weapon_type,
-        }
-    }
 }

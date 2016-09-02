@@ -3,22 +3,28 @@ pub mod entity_type;
 pub mod attack;
 pub mod update;
 pub mod filter;
+pub mod flags;
 
 pub use self::entity_type::EntityType;
 pub use self::modifiers::Modifier;
 pub use self::attack::try_attack;
 pub use self::update::*;
 pub use self::filter::*;
+pub use self::flags::*;
 
-use flags::*;
 use items::*;
 use world::*;
+use player::Player;
 use consts::balance::*;
 
 #[derive(Clone)]
 pub struct Entity {
     // Unique ID number
     pub id: usize,
+
+    // Health
+    pub health: f64,
+    pub max_hp: f64,
 
     // Type of entity
     pub entity_type: EntityType,
@@ -39,26 +45,31 @@ pub struct Entity {
     pub on_ground: bool,
     
     // Flags
-    pub is_enemy: bool, // TODO: Change this to a Team enum, for future uses (and it's nicer)
-    pub dummy: bool,
+    pub has_ai: HasAI,
+    pub team: Team,
+    pub is_dummy: IsDummy,
+
+    // Inventory
+    pub armor: [Armor; 4],
+    pub current_weapon: Weapon,
 
     // Miscellaneous
-    pub current_weapon: Weapon,
     pub lifetime: usize,
-    pub health: f64,
     pub attack_animation: usize,
 }
 
 impl Entity {
     pub fn new(id: usize,
                health: f64,
+               max_hp: f64,
                coords: Coords,
                entity_type: EntityType,
-               is_enemy: bool,
-               dummy: bool,
+               team: Team,
+               is_dummy: IsDummy,
                direction: (f64, f64),
                lifetime: usize,
-               has_gravity: HasGravity) -> Entity {
+               has_gravity: HasGravity,
+               has_ai: HasAI) -> Entity {
 
         Entity {
             id: id,
@@ -66,34 +77,49 @@ impl Entity {
             coords: coords,
             direction: direction,
             health: health,
+            max_hp: max_hp,
             attack_animation: 0,
             damage_mods: Vec::new(),
             as_mods: Vec::new(),
             damage_taken_mods: Vec::new(),
             movespeed_mods: Vec::new(),
-            is_enemy: is_enemy,
-            dummy: dummy,
-            current_weapon: WEAPON_UNARMED,
+            team: team,
+            is_dummy: is_dummy,
             lifetime: lifetime,
             velocity: Velocity::zero(),
             has_gravity: has_gravity,
             on_ground: false,
+            has_ai: has_ai,
+            current_weapon: WEAPON_UNARMED,
+            armor: [ARMOR_HEAD_NONE, ARMOR_BODY_NONE, ARMOR_LEGS_NONE, ARMOR_FEET_NONE],
         }
     }
 }
 
 impl Entity {
-    pub fn damage(&mut self, damage: f64) -> bool {
+    #[allow(dead_code)]
+    pub fn heal(&mut self, amount: f64) {
+        self.health += amount;
+
+        if self.health > self.max_hp {
+            self.health = self.max_hp;
+        }
+    }
+
+    pub fn damage(&mut self, mut damage: f64, self_index: usize, hit_by: usize, entities: &mut Vec<Entity>, player: &mut Player) -> bool {
+        for armor in &mut self.armor {
+            if let Some(f) = armor.when_hit {
+                f(self_index, hit_by, entities, player);
+                damage *= armor.multiplier;
+            }
+        }
+
         self.health -= self.damage_taken_mods.iter().fold(damage, |acc, x| acc * x.value);
         self.is_dead()
     }
 
-    pub fn attack_entity(&self, other: &mut Entity) -> bool {
-        let mut damage = self.current_weapon.damage;
-
-        damage = self.damage_mods.iter().fold(damage, |acc, x| acc * x.value);
-
-        other.damage(damage)
+    pub fn get_damage_multiplier(&self) -> f64 {
+        self.damage_mods.iter().fold(self.current_weapon.damage, |acc, x| acc * x.value)
     }
 
     pub fn move_forward(&mut self, movement_offset: f64) {
@@ -110,5 +136,17 @@ impl Entity {
 impl Entity {
     pub fn is_dead(&self) -> bool {
         self.health <= 0.0
+    }
+
+    pub fn is_enemy_of(&self, other: &Entity) -> bool {
+        self.team != other.team
+    }
+
+    pub fn is_dummy(&self) -> bool {
+        self.is_dummy == IsDummy::True
+    }
+
+    pub fn has_ai(&self) -> bool {
+        self.has_ai == HasAI::True
     }
 }

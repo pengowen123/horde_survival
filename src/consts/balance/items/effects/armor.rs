@@ -1,0 +1,2 @@
+pub const ARMOR_EFFECT_HEAL_AMOUNT: f64 = 10.0;
+pub const ARMOR_EFFECT_HEAL_RANGE: i32 = 5;

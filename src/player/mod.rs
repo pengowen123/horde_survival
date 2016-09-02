@@ -1,12 +1,16 @@
 pub mod class;
 mod abilities;
+mod inventory;
 
 pub use self::class::Class;
 
 use self::abilities::*;
+
+use items::*;
 use entity::*;
-use consts::balance::abilities::*;
-use consts::balance::gold::*;
+use consts::*;
+
+use std::collections::HashMap;
 
 pub struct Player {
     pub entity_id: usize,
@@ -17,6 +21,7 @@ pub struct Player {
     pub current_cooldowns: [usize; 4],
     pub cooldown_mods: Vec<Modifier>,
     pub wave: usize,
+    pub inventory: HashMap<usize, Item>,
 }
 
 impl Player {
@@ -30,6 +35,7 @@ impl Player {
             current_cooldowns: [0; 4],
             cooldown_mods: Vec::new(),
             wave: 0,
+            inventory: base_inventory(),
         }
     }
 

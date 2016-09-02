@@ -1,4 +1,5 @@
 use world::*;
+use map::Map;
 
 impl Map {
     pub fn test_collision(&self, coords: &Coords) -> bool {

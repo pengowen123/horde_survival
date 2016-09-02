@@ -4,12 +4,10 @@ pub fn filter_entities(entities: &mut Vec<Entity>) {
     *entities = entities.iter().cloned().filter(|e| {
         let result;
 
-        if e.is_enemy {
-            result = !e.is_dead();
-        } else if e.entity_type == EntityType::Player {
+        if e.entity_type == EntityType::Player || e.is_dummy() {
             result = true;
         } else {
-            result = true;
+            result = !e.is_dead();
         }
 
         result && !(e.lifetime == 1)

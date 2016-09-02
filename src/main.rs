@@ -1,41 +1,66 @@
 #![feature(const_fn)]
 
+#[macro_use]
+extern crate log;
+extern crate piston_window;
+extern crate user32;
+extern crate winapi;
+extern crate rand;
+extern crate simplelog;
+extern crate glium;
+extern crate glutin_window;
+extern crate piston;
+
+#[macro_use]
+mod log_utils;
 mod utils;
 mod entity;
 mod items;
 mod world;
 mod player;
 mod consts;
-mod flags;
 mod hscontrols;
+mod map;
+mod hsgraphics;
 
-extern crate piston_window;
-extern crate user32;
-extern crate winapi;
-
+use piston::window::WindowSettings;
+use piston::event_loop::Events;
+use piston::input::Event;
+use glutin_window::GlutinWindow;
 use user32::FindWindowW;
 use winapi::POINT;
-use piston_window::*;
+use simplelog::{FileLogger, LogLevelFilter};
+use glium::*;
 
-use flags::*;
 use utils::*;
 use entity::*;
 use world::*;
 use player::*;
 use consts::*;
+use log_utils::*;
+use hsgraphics::*;
+use map::*;
 
 use std::ptr;
 use std::time::{Duration, Instant};
+use std::fs::File;
 
 fn main() {
+    // Initialize logger
+    match FileLogger::init(LogLevelFilter::max(), File::create("log.txt").expect("Failed to initialize log file")) {
+        Ok(_) => {},
+        Err(e) => panic!("Failed to initialize logger: {}", e),
+    }
+
     // Initialize entity list
     let mut entities = vec![
-        Entity::new(0, 100.0, Coords::new(0.0, 100.0, 0.0), EntityType::Player, false, false, (90.0, 0.0), 0, HasGravity::True),
-        //Entity::new(1, 50.0, Coords::origin(), EntityType::Zombie, true, false, (90.0, 0.0), 0, HasGravity::False),
-        //Entity::new(2, 50.0, Coords::origin(), EntityType::Zombie, true, false, (90.0, 0.0), 0, HasGravity::False),
+        Entity::new(0, 100.0, 100.0, Coords::new(10.0, 0.0, 0.0), EntityType::Player, Team::Players, IsDummy::False, (90.0, 0.0), 0, HasGravity::True, HasAI::False),
+        // Use this entity for testing
+        Entity::new(1, 100.0, 100.0, Coords::origin(), EntityType::Zombie, Team::Monsters, IsDummy::False, (90.0, 0.0), 0, HasGravity::True, HasAI::True),
     ];
 
-    entities[0].current_weapon = WEAPON_TEST_BOW;
+    entities[0].current_weapon = WEAPON_LIGHTNING_SWORD_2;
+    entities[1].current_weapon = WEAPON_TEST_WAND;
 
     let mut next_id = entities.len();
 
@@ -46,9 +71,8 @@ fn main() {
 
     // Window setup
     // TODO: Add graphics options
-    let mut window: PistonWindow = WindowSettings::new(WINDOW_NAME, (WINDOW_WIDTH, WINDOW_HEIGHT))
-        .build()
-        .expect("Failed to build window");
+    let window_settings = WindowSettings::new(WINDOW_NAME, (WINDOW_WIDTH, WINDOW_HEIGHT));
+    let mut window = unwrap_or_log!(GlutinWindow::new(&window_settings), "Failed to build window");
 
     let hwnd = unsafe {
         let name = convert_str(WINDOW_NAME);
@@ -57,9 +81,6 @@ fn main() {
     };
 
     let mut events = window.events();
-    
-    events.set_ups(30);
-    events.set_max_fps(30);
 
     // Map
     // TODO: Add multiple maps
@@ -91,97 +112,18 @@ fn main() {
         // User input
         match event {
             Event::Input(input) => {
-                match input {
-                    Input::Press(button) => {
-                        match button {
-                            Button::Mouse(button) => {
-                                match button {
-                                    MouseButton::Left => {
-                                        left_click = true;
-                                    },
-                                    _ => {},
-                                }
-                            },
-                            Button::Keyboard(key) => {
-                                match key {
-                                    // GUI
-                                    Key::Escape => {
-                                        capture_cursor = !capture_cursor;
-                                        window.set_capture_cursor(capture_cursor);
-                                    },
-                                    // Movement
-                                    Key::W => move_forward = true,
-                                    Key::A => move_left = true,
-                                    Key::S => move_backward = true,
-                                    Key::D => move_right = true,
-                                    // Abilities
-                                    Key::D1 => {
-                                        if player.current_cooldowns[0] > 0 {
-                                            println!("Ability 0: on cooldown");
-                                        } else if dead {
-                                            println!("Ability 0: dead");
-                                        } else {
-                                            player.ability_0(&mut entities);
-                                        }
-                                    },
-                                    Key::D2 => {
-                                        if player.current_cooldowns[1] > 0 {
-                                            println!("Ability 1: on cooldown");
-                                        } else if dead {
-                                            println!("Ability 1: dead");
-                                        } else {
-                                            player.ability_1(&mut entities);
-                                        }
-                                    },
-                                    Key::D3 => {
-                                        if player.current_cooldowns[2] > 0 {
-                                            println!("Ability 2: on cooldown");
-                                        } else if dead {
-                                            println!("Ability 2: dead");
-                                        } else {
-                                            player.ability_2(&mut entities);
-                                        }
-                                    },
-                                    Key::D4 => {
-                                        if player.current_cooldowns[3] > 0 {
-                                            println!("Ability 3: on cooldown");
-                                        } else if dead {
-                                            println!("Ability 3: dead");
-                                        } else {
-                                            player.ability_3(&mut entities);
-                                        }
-                                    },
-                                    _ => {
-                                    },
-                                }
-                            },
-                            _ => {},
-                        }
-                    },
-                    Input::Release(button) => {
-                        match button {
-                            Button::Mouse(button) => {
-                                match button {
-                                    MouseButton::Left => {
-                                        left_click = false;
-                                    },
-                                    _ => {},
-                                }
-                            },
-                            Button::Keyboard(key) => {
-                                match key {
-                                    Key::W => move_forward = false,
-                                    Key::A => move_left = false,
-                                    Key::S => move_backward = false,
-                                    Key::D => move_right = false,
-                                    _ => {},
-                                }
-                            }
-                            _ => {},
-                        }
-                    },
-                    _ => {},
-                }
+                // TODO: move this code to hscontrols::input::handle_input_event
+                hscontrols::handle_input(input,
+                                         &mut entities,
+                                         &mut player,
+                                         &mut capture_cursor,
+                                         &mut window,
+                                         &mut move_forward,
+                                         &mut move_left,
+                                         &mut move_backward,
+                                         &mut move_right,
+                                         &mut left_click,
+                                         dead);
             },
             _ => {},
 
@@ -196,45 +138,34 @@ fn main() {
 
         player.update_cooldowns();
 
-        // Scoped for entity update loop
+        // Scoped for other entity updates
         {
-            // Scoped for try_attack call
-            {
-                let player = entities.iter_mut().find(|e| e.id == player.entity_id).expect("Player entity disappeared");
-
-                dead = player.is_dead();
-
-                if move_forward || move_left || move_right || move_backward {
-                    player.move_forward(hscontrols::get_movement_offset(move_forward,
-                                                            move_left,
-                                                            move_right,
-                                                            move_backward));
-                }
-                
-                println!("player coords: {:?}", player.coords);
-                let x = &mut player.direction.0;
-                let y = &mut player.direction.1;
-
-                *x += DEFAULT_MOUSE_SENSITIVITY * mouse.y as f64;
-                *y += DEFAULT_MOUSE_SENSITIVITY * mouse.x as f64;
-
-                *x = Direction(*x).wrap().0;
-                *y = Direction(*y).wrap().0;
-            }
-
             if left_click && capture_cursor {
-                player.gold += player.bounty * try_attack(player.entity_id, &mut entities, &mut next_id);
+                player.gold += player.bounty * try_attack(player.entity_id, &mut entities, &mut next_id, &mut player);
             }
+
+            let player = unwrap_or_log!(entities.iter_mut().find(|e| e.id == player.entity_id),
+                                        "Player entity disappeared");
+
+            update_player(player,
+                          &mut dead,
+                          move_forward,
+                          move_left,
+                          move_right,
+                          move_backward,
+                          &mouse);
         }
 
         for i in 0..entities.len() {
-            update_entity(&mut entities, i, &map, &mut player);
+            update_entity(&mut entities, i, &map, &mut player, &mut next_id);
         }
 
         filter_entities(&mut entities);
 
         // Bind direction to mouse
         if capture_cursor {
+            // NOTE: If this way of centering the mouse causes problems, try using methods from
+            //       AdvancedWindow, as they might be working now
             hscontrols::center_mouse(&mut mouse, hwnd, &mut window_position, &mut center);
         }
 

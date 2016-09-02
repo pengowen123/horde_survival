@@ -2,8 +2,10 @@ use consts::*;
 use entity::*;
 use player::*;
 use world::*;
+use log_utils::*;
+use map::*;
 
-pub fn update_flying_ball_linear(target_index: usize, entities: &mut [Entity], player: &mut Player) {
+pub fn update_flying_ball_linear(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) {
     let points;
 
     // Scoped for update_flying_ball call
@@ -22,19 +24,23 @@ pub fn update_flying_ball_linear(target_index: usize, entities: &mut [Entity], p
     }
 }
 
-pub fn update_flying_ball_arc(target_index: usize, entities: &mut [Entity], player: &mut Player) {
+pub fn update_flying_ball_arc(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player, map: &Map) {
     let points_float;
     let points;
 
     // Scoped for update_flying_ball call
     {
         let entity = &entities[target_index];
+
+        if map.test_collision(&entity.coords) {
+            return;
+        }
+
         points_float = entity.velocity.component_x * 10.0;
         points = (points_float as usize + 1) / 10;
     }
 
     for _ in 0..points {
-        // TODO: Set direction of the entity based on rise and run
         if update_flying_ball(target_index, entities, player) {
             break;
         }
@@ -48,34 +54,40 @@ pub fn update_flying_ball_arc(target_index: usize, entities: &mut [Entity], play
 
     let entity = &mut entities[target_index];
 
-    if !entity.on_ground {
-        entity.coords.translate(&Coords::new(0.0, entity.velocity.component_y, 0.0));
+    // Loop for local flow control
+    for _ in 0..1 {
+        if !entity.on_ground {
+            let mut coords = entity.coords.clone();
+            coords.translate(&Coords::new(0.0, entity.velocity.component_y, 0.0));
+
+            if map.test_collision(&coords) {
+                map.put_on_ground(&mut entity.coords);
+                entity.velocity = Velocity::zero();
+                break;
+            }
+
+            entity.coords = coords;
+        }
     }
 
     entity.velocity.accelerate(0.0, -GRAVITY);
 
-    let rise = entity.velocity.component_y.abs();
-    let negative_rise = rise < 0.0;
+    let rise = entity.velocity.component_y;
     let run = entity.velocity.component_x;
 
-    let angle = 0.0;
-
-    if negative_rise {
-        entity.direction.0 = 90.0 + angle;
-    } else {
-        entity.direction.0 = 90.0 - angle;
-    }
+    entity.direction.0 = get_angle(rise, run);
 }
 
-pub fn update_flying_ball(target_index: usize, entities: &mut [Entity], player: &mut Player) -> bool {
+pub fn update_flying_ball(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> bool {
+    let raw_entities = unsafe { &mut *(entities as *mut _) };
     let hit;
-    let is_enemy = entities[target_index].is_enemy;
+    let team = entities[target_index].team.clone();
     let coords = entities[target_index].coords.clone();
 
     match entities.iter()
                   .enumerate()
                   .filter_map(|(i, e)| {
-                      if e.is_enemy != is_enemy && e.coords.in_radius(&coords, RANGED_RADIUS) {
+                      if e.team != team && e.coords.in_radius(&coords, RANGED_RADIUS) {
                           Some(i)
                       } else {
                           None
@@ -85,17 +97,27 @@ pub fn update_flying_ball(target_index: usize, entities: &mut [Entity], player: 
         Some(e) => {
             let damage;
             let id;
+            let weapon;
+            let index;
+
             hit = true;
-            // Scoped for attack_entity call
+            // Scoped for damage call
             {
-                let entity = &entities[target_index];
-                let weapon_damage = entity.current_weapon.damage;
-                damage = entity.damage_mods.iter().fold(weapon_damage, |acc, x| acc * x.value);
-                id = entity.health as usize - 1;
+                id = entities[target_index].health as usize - 1;
+                let (i, entity) = unwrap_or_log!(entities.iter().enumerate().find(|e| e.1.id == id),
+                                                 "Source of flying ball not found");
+                damage = entity.get_damage_multiplier();
+                weapon = entity.current_weapon.clone();
+                index = i;
             }
 
-            if entities[e].damage(damage) && id == player.entity_id {
+            if entities[e].damage(damage, e, index, raw_entities, player) && id == player.entity_id {
                 player.gold += player.bounty;
+            }
+
+
+            if let Some(f) = weapon.on_hit {
+                f(e, e, raw_entities, player);
             }
         },
         None => {
