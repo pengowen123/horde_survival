@@ -1,15 +1,28 @@
 #![feature(const_fn)]
 
+// Graphics
 #[macro_use]
-extern crate log;
-extern crate piston_window;
+extern crate gfx;
+extern crate gfx_window_glutin;
+extern crate gfx_app;
+extern crate glutin;
+extern crate cgmath;
+
+// Windows API
+// NOTE: These may be removed soon
 extern crate user32;
 extern crate winapi;
-extern crate rand;
+
+// Logging
+#[macro_use]
+extern crate log;
 extern crate simplelog;
-extern crate glium;
-extern crate glutin_window;
+
+// Game engine
 extern crate piston;
+
+// Misc
+extern crate rand;
 
 #[macro_use]
 mod log_utils;
@@ -20,17 +33,16 @@ mod world;
 mod player;
 mod consts;
 mod hscontrols;
-mod map;
 mod hsgraphics;
+mod map;
 
-use piston::window::WindowSettings;
-use piston::event_loop::Events;
-use piston::input::Event;
-use glutin_window::GlutinWindow;
+use gfx::traits::FactoryExt;
+use gfx::Device;
+
+use glutin::Event;
 use user32::FindWindowW;
 use winapi::POINT;
 use simplelog::{FileLogger, LogLevelFilter};
-use glium::*;
 
 use utils::*;
 use entity::*;
@@ -42,7 +54,7 @@ use hsgraphics::*;
 use map::*;
 
 use std::ptr;
-use std::time::{Duration, Instant};
+use std::time::{Instant, Duration};
 use std::fs::File;
 
 fn main() {
@@ -54,13 +66,13 @@ fn main() {
 
     // Initialize entity list
     let mut entities = vec![
-        Entity::new(0, 100.0, 100.0, Coords::new(10.0, 0.0, 0.0), EntityType::Player, Team::Players, IsDummy::False, (90.0, 0.0), 0, HasGravity::True, HasAI::False),
+        Entity::new(0, 100.0, 100.0, Coords::new(0.0, 0.0, 0.0), EntityType::Player, Team::Players, IsDummy::False, (90.0, 0.0), 0, HasGravity::True, HasAI::False),
         // Use this entity for testing
-        Entity::new(1, 100.0, 100.0, Coords::origin(), EntityType::Zombie, Team::Monsters, IsDummy::False, (90.0, 0.0), 0, HasGravity::True, HasAI::True),
+        //Entity::new(1, 100.0, 100.0, Coords::origin(), EntityType::Zombie, Team::Monsters, IsDummy::False, (90.0, 0.0), 0, HasGravity::True, HasAI::True),
     ];
 
     entities[0].current_weapon = WEAPON_LIGHTNING_SWORD_2;
-    entities[1].current_weapon = WEAPON_TEST_WAND;
+    //entities[1].current_weapon = WEAPON_TEST_WAND;
 
     let mut next_id = entities.len();
 
@@ -71,16 +83,38 @@ fn main() {
 
     // Window setup
     // TODO: Add graphics options
-    let window_settings = WindowSettings::new(WINDOW_NAME, (WINDOW_WIDTH, WINDOW_HEIGHT));
-    let mut window = unwrap_or_log!(GlutinWindow::new(&window_settings), "Failed to build window");
+    let builder = glutin::WindowBuilder::new()
+        .with_title(WINDOW_NAME)
+        .with_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    let (window, mut device, mut factory, main_color, color_depth) =
+        gfx_window_glutin::init::<ColorFormat, ColorDepth>(builder);
+    let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
+
+    // Begin test code
+
+    let pso = match factory.create_pipeline_simple(
+        include_bytes!("hsgraphics/shader/triangle_150.glslv"),
+        include_bytes!("hsgraphics/shader/triangle_150.glslf"),
+        pipe::new(),
+    ) {
+        Ok(x) => x,
+        Err(e) => panic!("{}", e),
+    };
+
+    let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(&SQUARE, ());
+    let data = pipe::Data {
+        vbuf: vertex_buffer,
+        out: main_color,
+    };
+
+    // End test code
 
     let hwnd = unsafe {
         let name = convert_str(WINDOW_NAME);
 
         FindWindowW(ptr::null(), name.as_ptr())
     };
-
-    let mut events = window.events();
 
     // Map
     // TODO: Add multiple maps
@@ -101,36 +135,67 @@ fn main() {
     let mut window_position = (0, 0);
     let mut center = (0, 0);
 
-    // Timer (keeps tps equal to or less than some constant)
+    // Graphics state
+    let mut gfx_state = GraphicsState::new();
+
+    // Event loop
+    let mut events = window.poll_events();
+
+    // Used for keeping TPS below a certain value
+    let mut time;
     let mut sleeping_until = Instant::now();
     let expected_elapsed = Duration::from_millis(1_000_000_000 / TPS / 1_000_000);
 
     // Event loop
-    while let Some(event) = events.next(&mut window) {
-        let time = Instant::now();
+    'main: loop {
+        time = Instant::now();
+        let event = events.next();
 
-        // User input
-        match event {
-            Event::Input(input) => {
-                // TODO: move this code to hscontrols::input::handle_input_event
-                hscontrols::handle_input(input,
-                                         &mut entities,
-                                         &mut player,
-                                         &mut capture_cursor,
-                                         &mut window,
-                                         &mut move_forward,
-                                         &mut move_left,
-                                         &mut move_backward,
-                                         &mut move_right,
-                                         &mut left_click,
-                                         dead);
-            },
-            _ => {},
-
+        if let Some(event) = event {
+            // User input
+            match event {
+                Event::KeyboardInput(state, scan_code, key) => {
+                    hscontrols::handle_keyboard_input(key,
+                                                      state,
+                                                      scan_code,
+                                                      &mut entities,
+                                                      &mut player,
+                                                      &mut capture_cursor,
+                                                      &window,
+                                                      &mut move_forward,
+                                                      &mut move_left,
+                                                      &mut move_backward,
+                                                      &mut move_right,
+                                                      dead);
+                },
+                Event::MouseInput(state, button) => {
+                    match button {
+                        glutin::MouseButton::Left => {
+                            left_click = state == glutin::ElementState::Pressed;
+                        },
+                        _ => {},
+                    }
+                },
+                Event::Closed => {
+                    info!("Closed Horde Survival");
+                    break 'main;
+                }
+                _ => {},
+            }
         }
 
-        // Idle while waiting for tick to finish
-        if sleeping_until > Instant::now() {
+        encoder.clear(&data.out, CLEAR_COLOR);
+        encoder.draw(&slice, &pso, &data);
+        encoder.flush(&mut device);
+
+        if let Err(e) = window.swap_buffers() {
+            error!("Failed to swap buffers: {}", e);
+        }
+
+        device.cleanup();
+
+        // Skip game loop until the tick has finished
+        if Instant::now() < sleeping_until {
             continue;
         }
 
@@ -140,6 +205,7 @@ fn main() {
 
         // Scoped for other entity updates
         {
+            // Player updates
             if left_click && capture_cursor {
                 player.gold += player.bounty * try_attack(player.entity_id, &mut entities, &mut next_id, &mut player);
             }
@@ -164,18 +230,16 @@ fn main() {
 
         // Bind direction to mouse
         if capture_cursor {
-            // NOTE: If this way of centering the mouse causes problems, try using methods from
-            //       AdvancedWindow, as they might be working now
+            // TODO: Change center_mouse to use glutin::Window methods rather than winapi
             hscontrols::center_mouse(&mut mouse, hwnd, &mut window_position, &mut center);
         }
 
-        // Ensure TPS is less than or equal to some constant
-        // NOTE: If expected_elapsed exceeds 1 second, bad things can happen
-        let elapsed = time.elapsed();
+        // Set duration to skip game loop for
+        let current = Instant::now();
+        let elapsed = current - time;
 
         if elapsed < expected_elapsed {
-            let difference = expected_elapsed - elapsed;
-            sleeping_until = Instant::now() + difference;
+            sleeping_until = current + (expected_elapsed - elapsed);
         }
     }
 }

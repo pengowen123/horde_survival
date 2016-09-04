@@ -1,742 +1,260 @@
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.05, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.1, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.15000000000000002, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.2, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.25, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.3, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.35, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.39999999999999997, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.44999999999999996, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.49999999999999994, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.5499999999999999, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.6, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.65, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.7000000000000001, y: 0, z: 0 }
-12:56:17 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.7500000000000001, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.8000000000000002, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.8500000000000002, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.9000000000000002, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 0.9500000000000003, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.0000000000000002, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.0500000000000003, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.1000000000000003, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.1500000000000004, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.2000000000000004, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.2500000000000004, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.3000000000000005, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.3500000000000005, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.4000000000000006, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.4500000000000006, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.5000000000000007, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.5500000000000007, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.6000000000000008, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.6500000000000008, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.7000000000000008, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.7500000000000009, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.800000000000001, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.850000000000001, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.900000000000001, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 1.950000000000001, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.000000000000001, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.0500000000000007, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.1000000000000005, y: 0, z: 0 }
-12:56:18 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.1500000000000004, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.2, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.25, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.3, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.3499999999999996, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.3999999999999995, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.4499999999999993, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.499999999999999, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.549999999999999, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.5999999999999988, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.6499999999999986, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.6999999999999984, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.7499999999999982, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.799999999999998, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.849999999999998, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.8999999999999977, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.9499999999999975, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 2.9999999999999973, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.049999999999997, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.099999999999997, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.149999999999997, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.1999999999999966, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.2499999999999964, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.2999999999999963, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.349999999999996, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.399999999999996, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.4499999999999957, y: 0, z: 0 }
-12:56:19 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.4999999999999956, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.5499999999999954, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.599999999999995, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.649999999999995, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.699999999999995, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.7499999999999947, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.7999999999999945, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.8499999999999943, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.899999999999994, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.949999999999994, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 3.999999999999994, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.049999999999994, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.099999999999993, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.149999999999993, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.199999999999993, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.249999999999993, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.299999999999993, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.3499999999999925, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (90, 0)), monster: Coords { x: 4.399999999999992, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (94.5, 1.2)), monster: Coords { x: 4.449999999999992, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (99, 2.4)), monster: Coords { x: 4.499999999999992, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (103.5, 3.5999999999999996)), monster: Coords { x: 4.549999999999992, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (108, 4.8)), monster: Coords { x: 4.599999999999992, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (112.5, 6)), monster: Coords { x: 4.6499999999999915, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (117, 7.2)), monster: Coords { x: 4.699999999999991, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (121.5, 8.4)), monster: Coords { x: 4.749999999999991, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (126, 9.6)), monster: Coords { x: 4.799999999999991, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (130.5, 10.799999999999999)), monster: Coords { x: 4.849999999999991, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (135, 11.999999999999998)), monster: Coords { x: 4.899999999999991, y: 0, z: 0 }
-12:56:20 [DEBUG] horde_survival: player: (100, (139.5, 13.199999999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (144, 14.399999999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (148.5, 15.599999999999996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (153, 16.799999999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (157.5, 17.999999999999996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (162, 19.199999999999996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (166.5, 20.399999999999995)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (171, 21.599999999999994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (175.5, 22.799999999999994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (180, 23.999999999999993)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (180, 25.199999999999992)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (100, (180, 26.39999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 27.59999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 28.79999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 29.99999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 31.19999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 32.39999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 33.599999999999994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 34.8)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 36)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 37.2)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 38.400000000000006)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 39.60000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 40.80000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 42.000000000000014)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 43.20000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 44.40000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (55, (180, 45.60000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (10, (180, 46.800000000000026)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:21 [DEBUG] horde_survival: player: (10, (180, 48.00000000000003)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 49.20000000000003)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 50.400000000000034)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 51.60000000000004)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 52.80000000000004)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 54.00000000000004)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 55.200000000000045)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 56.40000000000005)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 57.60000000000005)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 58.800000000000054)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 60.00000000000006)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 61.20000000000006)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 62.40000000000006)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 63.600000000000065)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 64.80000000000007)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 66.00000000000007)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 67.20000000000007)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 68.40000000000008)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 69.60000000000008)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 70.80000000000008)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 72.00000000000009)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (10, (180, 73.20000000000009)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 74.40000000000009)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 75.6000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 76.8000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 78.0000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 79.2000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 80.4000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 81.60000000000011)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:22 [DEBUG] horde_survival: player: (-35, (180, 82.80000000000011)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 84.00000000000011)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 85.20000000000012)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 86.40000000000012)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 87.60000000000012)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 88.80000000000013)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 90.00000000000013)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 91.20000000000013)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 92.40000000000013)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 93.60000000000014)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 94.80000000000014)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 96.00000000000014)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 97.20000000000014)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 98.40000000000015)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 99.60000000000015)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 100.80000000000015)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 102.00000000000016)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-35, (180, 103.20000000000016)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 104.40000000000016)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 105.60000000000016)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 106.80000000000017)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 108.00000000000017)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 109.20000000000017)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 110.40000000000018)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 111.60000000000018)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 112.80000000000018)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 114.00000000000018)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 115.20000000000019)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 116.40000000000019)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 117.6000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:23 [DEBUG] horde_survival: player: (-80, (180, 118.8000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 120.0000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 121.2000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 122.4000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 123.60000000000021)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 124.80000000000021)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 126.00000000000021)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 127.20000000000022)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 128.4000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 129.6000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 130.80000000000018)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 132.00000000000017)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-80, (180, 133.20000000000016)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 134.40000000000015)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 135.60000000000014)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 136.80000000000013)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 138.0000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 139.2000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 140.4000000000001)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 141.60000000000008)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 142.80000000000007)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 144.00000000000006)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 145.20000000000005)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 146.40000000000003)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 147.60000000000002)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 148.8)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 150)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 151.2)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:24 [DEBUG] horde_survival: player: (-125, (180, 152.39999999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 153.59999999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 154.79999999999995)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 155.99999999999994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 157.19999999999993)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 158.39999999999992)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 159.5999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 160.7999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 161.9999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-125, (180, 163.19999999999987)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 164.39999999999986)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 165.59999999999985)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 166.79999999999984)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 167.99999999999983)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 169.19999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 170.3999999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 171.5999999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 172.79999999999978)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 173.99999999999977)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 175.19999999999976)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 176.39999999999975)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 177.59999999999974)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 178.79999999999973)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 179.99999999999972)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 181.1999999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 182.3999999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 183.59999999999968)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 184.79999999999967)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 185.99999999999966)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 187.19999999999965)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:25 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:25 [DEBUG] horde_survival: player: (-170, (180, 188.39999999999964)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-170, (180, 189.59999999999962)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-170, (180, 190.7999999999996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-170, (180, 191.9999999999996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-170, (180, 193.1999999999996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 194.39999999999958)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 195.59999999999957)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 196.79999999999956)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 197.99999999999955)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 199.19999999999953)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 200.39999999999952)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 201.5999999999995)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 202.7999999999995)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 203.9999999999995)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 205.19999999999948)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 206.39999999999947)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 207.59999999999945)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 208.79999999999944)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 209.99999999999943)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 211.19999999999942)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 212.3999999999994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 213.5999999999994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 214.7999999999994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 215.99999999999937)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 217.19999999999936)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 218.39999999999935)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 219.59999999999934)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 220.79999999999933)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 221.99999999999932)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:26 [DEBUG] horde_survival: player: (-215, (180, 223.1999999999993)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 224.3999999999993)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 225.59999999999928)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 226.79999999999927)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 227.99999999999926)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 229.19999999999925)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 230.39999999999924)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 231.59999999999923)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 232.79999999999922)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 233.9999999999992)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 235.1999999999992)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 236.39999999999918)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 237.59999999999917)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 238.79999999999916)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 239.99999999999915)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 241.19999999999914)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 242.39999999999912)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 243.5999999999991)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 244.7999999999991)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 245.9999999999991)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 247.19999999999908)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 248.39999999999907)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 249.59999999999906)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 250.79999999999905)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 251.99999999999903)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:27 [DEBUG] horde_survival: player: (-260, (180, 253.19999999999902)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-305, (180, 254.399999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-305, (180, 255.599999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-305, (180, 256.799999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [DEBUG] horde_survival: player: (-305, (180, 257.999999999999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:27 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 259.19999999999897)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 260.39999999999895)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 261.59999999999894)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 262.79999999999893)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 263.9999999999989)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 265.1999999999989)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 266.3999999999989)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 267.5999999999989)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 268.7999999999989)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 269.99999999999886)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 271.19999999999885)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 272.39999999999884)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 273.59999999999883)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 274.7999999999988)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 275.9999999999988)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 277.1999999999988)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 278.3999999999988)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 279.5999999999988)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 280.79999999999876)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 281.99999999999875)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-305, (180, 283.19999999999874)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 284.3999999999987)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 285.5999999999987)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 286.7999999999987)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 287.9999999999987)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 289.1999999999987)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 290.39999999999867)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 291.59999999999866)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 292.79999999999865)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:28 [DEBUG] horde_survival: player: (-350, (180, 293.99999999999864)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 295.1999999999986)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 296.3999999999986)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 297.5999999999986)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 298.7999999999986)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 299.9999999999986)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 301.19999999999857)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 302.39999999999856)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 303.59999999999854)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 304.79999999999853)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 305.9999999999985)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 307.1999999999985)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 308.3999999999985)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 309.5999999999985)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 310.7999999999985)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 311.99999999999847)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-350, (180, 313.19999999999845)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 314.39999999999844)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 315.59999999999843)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 316.7999999999984)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 317.9999999999984)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 319.1999999999984)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 320.3999999999984)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 321.5999999999984)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 322.79999999999836)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 323.99999999999835)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 325.19999999999834)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 326.39999999999833)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 327.5999999999983)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:29 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:29 [DEBUG] horde_survival: player: (-395, (180, 328.7999999999983)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 329.9999999999983)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 331.1999999999983)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 332.3999999999983)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 333.59999999999826)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 334.79999999999825)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 335.99999999999824)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 337.1999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 338.3999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 339.5999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 340.7999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 341.9999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-395, (180, 343.19999999999817)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 344.39999999999816)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 345.59999999999815)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 346.79999999999814)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 347.9999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 349.1999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 350.3999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 351.5999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 352.7999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 353.99999999999807)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 355.19999999999806)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 356.39999999999804)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 357.59999999999803)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 358.799999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 359.999999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 1.1999999999979991)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:30 [DEBUG] horde_survival: player: (-440, (180, 2.3999999999979993)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 3.5999999999979995)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 4.799999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 5.999999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 7.199999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 8.399999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 9.599999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 10.799999999997999)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 11.999999999997998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-440, (180, 13.199999999997997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 14.399999999997997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 15.599999999997996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 16.799999999997997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 17.999999999997996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 19.199999999997996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 20.399999999997995)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 21.599999999997994)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 22.799999999997993)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 23.999999999997993)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 25.199999999997992)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 26.39999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 27.59999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 28.79999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 29.99999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 31.19999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 32.39999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 33.59999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 34.79999999999799)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 35.999999999997996)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:31 [DEBUG] horde_survival: player: (-485, (180, 37.199999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-485, (180, 38.399999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-485, (180, 39.599999999998005)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:32 [DEBUG] horde_survival: player: (-485, (180, 40.79999999999801)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-485, (180, 41.99999999999801)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-485, (180, 43.19999999999801)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 44.399999999998016)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 45.59999999999802)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 46.79999999999802)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 47.999999999998025)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 49.19999999999803)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 50.39999999999803)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 51.59999999999803)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 52.799999999998036)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 53.99999999999804)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 55.19999999999804)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 56.399999999998045)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 57.59999999999805)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 58.79999999999805)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 59.99999999999805)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 61.199999999998056)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 62.39999999999806)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 63.59999999999806)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 64.79999999999806)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 65.99999999999807)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 67.19999999999807)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 68.39999999999807)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 69.59999999999808)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 70.79999999999808)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 71.99999999999808)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:32 [DEBUG] horde_survival: player: (-530, (180, 73.19999999999808)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 74.39999999999809)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 75.59999999999809)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 76.7999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 77.9999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 79.1999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 80.3999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 81.5999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 82.79999999999811)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 83.99999999999811)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 85.19999999999811)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 86.39999999999812)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 87.59999999999812)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 88.79999999999812)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 89.99999999999812)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 91.19999999999813)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 92.39999999999813)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 93.59999999999813)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 94.79999999999814)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 95.99999999999814)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 97.19999999999814)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 98.39999999999814)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 99.59999999999815)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 100.79999999999815)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 101.99999999999815)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-575, (180, 103.19999999999816)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-620, (180, 104.39999999999816)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:33 [DEBUG] horde_survival: player: (-620, (180, 105.59999999999816)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-620, (180, 106.79999999999816)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:33 [DEBUG] horde_survival: player: (-620, (180, 106.79999999999816)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 107.99999999999817)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 109.19999999999817)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 110.39999999999817)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 111.59999999999818)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 112.79999999999818)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 113.99999999999818)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 115.19999999999818)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 116.39999999999819)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 117.59999999999819)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 118.79999999999819)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 119.9999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 121.1999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 122.3999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 123.5999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 124.7999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 125.99999999999821)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 127.19999999999821)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 128.39999999999822)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 129.5999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 130.7999999999982)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-620, (180, 131.99999999999818)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 133.19999999999817)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 134.39999999999816)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 135.59999999999815)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 136.79999999999814)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 137.99999999999812)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 139.1999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 140.3999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:34 [DEBUG] horde_survival: player: (-665, (180, 141.5999999999981)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 142.79999999999808)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 143.99999999999807)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 145.19999999999806)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 146.39999999999804)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 147.59999999999803)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 148.79999999999802)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 149.999999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 151.199999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 152.399999999998)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 153.59999999999798)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 154.79999999999797)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 155.99999999999795)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 157.19999999999794)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 158.39999999999793)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 159.59999999999792)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 160.7999999999979)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-665, (180, 161.9999999999979)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 163.19999999999789)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 164.39999999999787)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 165.59999999999786)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 166.79999999999785)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 167.99999999999784)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 169.19999999999783)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 170.39999999999782)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 171.5999999999978)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 172.7999999999978)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 173.99999999999778)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 175.19999999999777)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:35 [DEBUG] horde_survival: player: (-710, (180, 176.39999999999776)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 177.59999999999775)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 178.79999999999774)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 179.99999999999773)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 181.19999999999771)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 182.3999999999977)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 183.5999999999977)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 184.79999999999768)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 185.99999999999767)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 187.19999999999766)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 188.39999999999765)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 189.59999999999764)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 190.79999999999762)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-710, (180, 191.9999999999976)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 193.1999999999976)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 194.3999999999976)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 195.59999999999758)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 196.79999999999757)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 197.99999999999756)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 199.19999999999754)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 200.39999999999753)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 201.59999999999752)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 202.7999999999975)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 203.9999999999975)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 205.1999999999975)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 206.39999999999748)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 207.59999999999746)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 208.79999999999745)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 209.99999999999744)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:36 [DEBUG] horde_survival: player: (-755, (180, 211.19999999999743)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 212.39999999999742)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 213.5999999999974)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 214.7999999999974)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 215.99999999999739)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 217.19999999999737)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 218.39999999999736)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 219.59999999999735)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 220.79999999999734)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-755, (180, 221.99999999999733)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 223.19999999999732)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 224.3999999999973)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 225.5999999999973)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 226.79999999999728)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 227.99999999999727)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 229.19999999999726)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 230.39999999999725)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 231.59999999999724)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 232.79999999999723)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 233.99999999999721)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [INFO] horde_survival::hscontrols::input: Ability 3: dead
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 235.1999999999972)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 236.3999999999972)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 237.59999999999718)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 238.79999999999717)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 239.99999999999716)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 241.19999999999715)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 242.39999999999714)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 243.59999999999712)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 244.7999999999971)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:37 [DEBUG] horde_survival: player: (-800, (180, 245.9999999999971)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 247.1999999999971)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 248.39999999999708)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 249.59999999999707)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 250.79999999999706)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 251.99999999999704)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 253.19999999999703)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 254.39999999999702)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 255.599999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 256.799999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 257.999999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 259.199999999997)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 260.39999999999696)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 261.59999999999695)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 262.79999999999694)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 263.99999999999693)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 265.1999999999969)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 266.3999999999969)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 267.5999999999969)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 268.7999999999969)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 269.9999999999969)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 271.19999999999686)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 272.39999999999685)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 273.59999999999684)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 274.7999999999968)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 276.2999999999968)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 277.7999999999968)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 278.9999999999968)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 280.1999999999968)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 281.5499999999968)), monster: Coords { x: 4.94999999999999, y: 0, z: 0 }
-12:56:38 [DEBUG] horde_survival: player: (-800, (180, 282.7499999999968)), monster: Coords { x: 4.997451142946718, y: 0, z: -0.015760362719468637 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 283.9499999999968)), monster: Coords { x: 4.997451142946718, y: 0, z: -0.015760362719468637 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 285.7499999999968)), monster: Coords { x: 5.044631657243464, y: 0, z: -0.03231328000599561 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 287.5499999999968)), monster: Coords { x: 5.044631657243464, y: 0, z: -0.03231328000599561 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 289.1999999999968)), monster: Coords { x: 5.091542958782392, y: 0, z: -0.04961442990777375 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 290.6999999999968)), monster: Coords { x: 5.138321123834774, y: 0, z: -0.06727238206344902 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 291.8999999999968)), monster: Coords { x: 5.138321123834774, y: 0, z: -0.06727238206344902 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 293.0999999999968)), monster: Coords { x: 5.184836265689677, y: 0, z: -0.08561199978624387 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 294.29999999999677)), monster: Coords { x: 5.231221576865068, y: 0, z: -0.10427755381397567 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 295.49999999999676)), monster: Coords { x: 5.231221576865068, y: 0, z: -0.10427755381397567 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 297.74999999999676)), monster: Coords { x: 5.277352054305366, y: 0, z: -0.1235643122541643 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 300.29999999999677)), monster: Coords { x: 5.323360824344672, y: 0, z: -0.14313963037342645 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 301.49999999999676)), monster: Coords { x: 5.369253656486389, y: 0, z: -0.162985233362807 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 302.69999999999675)), monster: Coords { x: 5.415033066836644, y: 0, z: -0.18309109290630737 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 304.79999999999677)), monster: Coords { x: 5.415033066836644, y: 0, z: -0.18309109290630737 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 306.29999999999677)), monster: Coords { x: 5.460597914985044, y: 0, z: -0.2036785797177973 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 307.49999999999676)), monster: Coords { x: 5.506063071627984, y: 0, z: -0.22448529813836932 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 308.69999999999675)), monster: Coords { x: 5.551432037380077, y: 0, z: -0.24550093390285235 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 309.89999999999674)), monster: Coords { x: 5.5967084960454505, y: 0, z: -0.2667151341169232 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 311.0999999999967)), monster: Coords { x: 5.641896302121475, y: 0, z: -0.2881175214145028 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 312.2999999999967)), monster: Coords { x: 5.686999468100522, y: 0, z: -0.30969770720301193 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 313.4999999999967)), monster: Coords { x: 5.7320221516488115, y: 0, z: -0.3314453039923256 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 314.6999999999967)), monster: Coords { x: 5.77696864273641, y: 0, z: -0.35334993681080573 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 315.8999999999967)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 317.09999999999667)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 318.29999999999666)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 319.49999999999665)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 320.69999999999663)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 321.8999999999966)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:39 [DEBUG] horde_survival: player: (-800, (180, 323.0999999999966)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 324.2999999999966)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 325.4999999999966)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 326.6999999999966)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 327.89999999999657)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 329.09999999999656)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 330.29999999999654)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 331.49999999999653)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 332.6999999999965)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 333.8999999999965)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 335.0999999999965)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 336.2999999999965)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 337.4999999999965)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 338.69999999999646)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 339.89999999999645)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 341.09999999999644)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 342.29999999999643)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 343.4999999999964)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 344.6999999999964)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 345.8999999999964)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 347.0999999999964)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 348.2999999999964)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 349.49999999999636)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-800, (180, 350.69999999999635)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-845, (180, 351.89999999999634)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
-12:56:40 [DEBUG] horde_survival: player: (-845, (180, 353.0999999999963)), monster: Coords { x: 5.821843350787087, y: 0, z: -0.37540125371856653 }
+21:59:15 [INFO] gfx_device_gl: Vendor: "NVIDIA Corporation"
+21:59:15 [INFO] gfx_device_gl: Renderer: "GeForce GT 320M/PCIe/SSE2"
+21:59:15 [INFO] gfx_device_gl: Version: 3.3.0
+21:59:15 [INFO] gfx_device_gl: Shading Language: 3.30, NVIDIA via Cg compiler
+21:59:15 [DEBUG] gfx_device_gl: Loaded Extensions:
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_100
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_fence
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture3D
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_framebuffer_multisample_coverage
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_explicit_uniform_location
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_geometry_shader4
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_compression_rgtc
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_gather
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_vertex_array
+21:59:15 [DEBUG] gfx_device_gl: - GL_SUN_slice_accum
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_get_program_binary
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_depth_bounds_test
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_bgra
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_fragment_program
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_array_range
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_map_buffer_range
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_draw_range_elements
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_array_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_attrib_binding
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_compiled_vertex_array
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_window_pos
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_fragment_layer_viewport
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_blend_func_separate
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_multitexture
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_timer_query
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_cube_map_array
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_draw_instanced
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_copy_image
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_env_combine4
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_viewport_array
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_env_dot3
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_occlusion_query
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_fragment_program_shadow
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_multi_bind
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shader_objects
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_stencil_two_side
+21:59:15 [DEBUG] gfx_device_gl: - GL_NVX_gpu_memory_info
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_color_buffer_float
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_copy_buffer
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_fog_distance
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_point_parameters
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_light_max_exponent
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_occlusion_query
+21:59:15 [DEBUG] gfx_device_gl: - GL_SGIS_texture_lod
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_point_sprite
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_program_interface_query
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_fragment_coord_conventions
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_combine
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_transform_feedback_instanced
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_sRGB_decode
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shader_bit_encoding
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_rg
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_storage_multisample
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_lod
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_packing
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_stencil_wrap
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_register_combiners
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_stencil_texturing
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_view
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_point_sprite
+21:59:15 [DEBUG] gfx_device_gl: - GL_SGIS_generate_mipmap
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_gpu_program4_1
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_cube_map
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_occlusion_query2
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_cube_map
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_point_parameters
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_program2
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_framebuffer_sRGB
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_blit
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_dxt1
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_internalformat_query2
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_barrier
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_pixel_data_range
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_provoking_vertex
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_robustness
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_parameter_buffer_object2
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_depth_clamp
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_depth_clamp
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_shader
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_mirrored_repeat
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_conservative_depth
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_mirror_clamp_to_edge
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_env_combine
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_add
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_dot3
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_timer_query
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_edge_clamp
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_pixel_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_filter_anisotropic
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_lod_bias
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_separate_shader_objects
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_rgb10_a2ui
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_storage
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_program1_1
+21:59:15 [DEBUG] gfx_device_gl: - GL_WIN_swap_hint
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_compressed_texture_pixel_storage
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_framebuffer_no_attachments
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_program
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_geometry_shader4
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_multisample
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shader_texture_lod
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_draw_buffers2
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_provoking_vertex
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_compression_vtc
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_crossbar
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_array_bgra
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_explicit_multisample
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_direct_state_access
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_pixel_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_float_buffer
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_multisample
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_internalformat_query
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_multisample_coverage
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_blend_color
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_primitive_restart
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_type_10f_11f_11f_rev
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_copy_image
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_program
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_multi_draw_arrays
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_420pack
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_depth_buffer_float
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_blend_func_extended
+21:59:15 [DEBUG] gfx_device_gl: - GL_ATI_texture_mirror_once
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_sample_shading
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_sRGB
+21:59:15 [DEBUG] gfx_device_gl: - GL_IBM_rasterpos_clip
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_arrays_of_arrays
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_fragment_program2
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_storage
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_s3tc
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_program2_option
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_separate_shader_objects
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_clear_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_ES2_compatibility
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_blend_equation_separate
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_enhanced_layouts
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_shader_buffer_load
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_draw_instanced
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_type_2_10_10_10_rev
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_blend_square
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_register_combiners2
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_packed_depth_stencil
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_shader
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_array
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_half_float_vertex
+21:59:15 [DEBUG] gfx_device_gl: - WGL_EXT_swap_control
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_packed_float
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_map_buffer_alignment
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_transform_feedback2
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_swizzle
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_imaging
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_separate_specular_color
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_explicit_attrib_location
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_conditional_render
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_shader3
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_depth_buffer_float
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_parameter_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_draw_buffers
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_debug_output
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_half_float_pixel
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_compression
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_program3
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_border_clamp
+21:59:15 [DEBUG] gfx_device_gl: - GL_KHR_debug
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_mirror_clamp
+21:59:15 [DEBUG] gfx_device_gl: - GL_SGIX_shadow
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_multisample
+21:59:15 [DEBUG] gfx_device_gl: - GL_KTX_buffer_region
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_rescale_normal
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_gpu_program_parameters
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_sampler_objects
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_base_instance
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_draw_elements_base_vertex
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_Cg_shader
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_multisample_blit_scaled
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_gpu_shader4
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_bindable_uniform
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_robust_buffer_access_behavior
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_non_power_of_two
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_sRGB
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_uniform_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_compatibility
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_fragment_program
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_buffer_range
+21:59:15 [DEBUG] gfx_device_gl: - GL_SGIX_depth_texture
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_blend_minmax
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_latc
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_OES_compressed_ETC1_RGB8_texture
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_geometry_shader4
+21:59:15 [DEBUG] gfx_device_gl: - GL_S3_s3tc
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_integer
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_shared_exponent
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_fragment_program_option
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_transform_feedback
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_ES3_compatibility
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_query_levels
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_transpose_matrix
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_env_add
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXTX_framebuffer_mixed_formats
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_expand_normal
+21:59:15 [DEBUG] gfx_device_gl: - GL_IBM_texture_mirrored_repeat
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_sync
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_shader2
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_draw_buffers_blend
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_vertex_buffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_swizzle
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_query_lod
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shadow
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_half_float
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_stencil8
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_fragment_shader
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_ES1_1_compatibility
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_rgtc
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_shadow_funcs
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_framebuffer_object
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_gpu_program4
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texture_rectangle
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_abgr
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_buffer_unified_memory
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_vertex_array_bgra
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_blend_subtract
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_multisample_filter_hint
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_packed_pixels
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_secondary_color
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_instanced_arrays
+21:59:15 [DEBUG] gfx_device_gl: - GL_ATI_texture_float
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_include
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_texgen_reflection
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_path_rendering
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_fog_coord
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_rectangle
+21:59:15 [DEBUG] gfx_device_gl: - GL_NVX_conditional_render
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_depth_texture
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_vertex_array_range2
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_float
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_transform_feedback2
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_invalidate_subdata
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_copy_depth_to_color
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_packed_depth_stencil
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_seamless_cube_map
+21:59:15 [DEBUG] gfx_device_gl: - GL_NV_transform_feedback2
+21:59:15 [DEBUG] gfx_device_gl: - GL_ATI_draw_buffers
+21:59:15 [DEBUG] gfx_device_gl: - GL_ARB_texture_multisample
+21:59:15 [DEBUG] gfx_device_gl: - GL_EXT_import_sync_object
+21:59:15 [INFO] gfx_device_gl::factory: 	Created frame buffer 1
+21:59:15 [INFO] gfx_device_gl::shade: 	Compiled shader 1
+21:59:15 [INFO] gfx_device_gl::shade: 	Compiled shader 2
+21:59:15 [INFO] gfx_device_gl::shade: 	Linked program 3
+21:59:15 [INFO] gfx_device_gl::shade: 		Attrib[1] = "a_Color"	F32	Vector(3)
+21:59:15 [INFO] gfx_device_gl::shade: 		Attrib[0] = "a_Pos"	F32	Vector(2)
+21:59:15 [DEBUG] gfx_device_gl::shade: Program 3 reflection: ProgramInfo { vertex_attributes: [AttributeVar { name: "a_Color", slot: 1, base_type: F32, container: Vector(3) }, AttributeVar { name: "a_Pos", slot: 0, base_type: F32, container: Vector(2) }], globals: [], constant_buffers: [], textures: [], unordereds: [], samplers: [], outputs: [OutputVar { name: "Target", slot: 0, base_type: F32, container: Vector(4) }], output_depth: false, knows_outputs: true }

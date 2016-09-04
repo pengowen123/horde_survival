@@ -4,6 +4,14 @@ version = "0.1.0"
 authors = ["pengowen123 <pengowen816@gmail.com>"]
 
 [dependencies]
-piston_window = "0.44.0"
-user32-sys = "0.1.2"
+piston = "*"
+glutin = "*"
+cgmath = "*"
+gfx = "*"
+gfx_app = "*"
+gfx_window_glutin = "*"
+user32-sys = "*"
 winapi = "*"
+rand = "*"
+log = "*"
+simplelog = "*"

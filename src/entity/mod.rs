@@ -53,7 +53,7 @@ pub struct Entity {
     pub armor: [Armor; 4],
     pub current_weapon: Weapon,
 
-    // Miscellaneous
+    // Misc
     pub lifetime: usize,
     pub attack_animation: usize,
 }
