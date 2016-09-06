@@ -9,11 +9,11 @@ pub const TPS: u64 = 30;
 pub const fn time(seconds: f64) -> usize { (seconds * TPS as f64) as usize }
 
 pub const BASE_INVENTORY: [Item; 5] = [
-    Item::Armor(ARMOR_HEAD_NONE),
-    Item::Armor(ARMOR_BODY_NONE),
-    Item::Armor(ARMOR_LEGS_NONE),
-    Item::Armor(ARMOR_FEET_NONE),
-    Item::Weapon(WEAPON_UNARMED)
+    Item::Armor(HEAD_NONE),
+    Item::Armor(BODY_NONE),
+    Item::Armor(LEGS_NONE),
+    Item::Armor(FEET_NONE),
+    Item::Weapon(UNARMED)
 ];
 
 pub fn base_inventory() -> HashMap<usize, Item> {

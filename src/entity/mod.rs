@@ -58,6 +58,7 @@ pub struct Entity {
     pub attack_animation: usize,
 }
 
+// Constructor
 impl Entity {
     pub fn new(id: usize,
                health: f64,
@@ -90,12 +91,44 @@ impl Entity {
             has_gravity: has_gravity,
             on_ground: false,
             has_ai: has_ai,
-            current_weapon: WEAPON_UNARMED,
-            armor: [ARMOR_HEAD_NONE, ARMOR_BODY_NONE, ARMOR_LEGS_NONE, ARMOR_FEET_NONE],
+            current_weapon: UNARMED,
+            armor: [HEAD_NONE, BODY_NONE, LEGS_NONE, FEET_NONE],
         }
     }
 }
 
+// Other constructors
+impl Entity {
+    pub fn player(coords: Coords, entity_id: usize, team: Team) -> Entity {
+        Entity::new(entity_id,
+                    PLAYER_HEALTH,
+                    PLAYER_HEALTH,
+                    coords,
+                    EntityType::Player,
+                    team,
+                    IsDummy::False,
+                    DEFAULT_DIRECTION,
+                    INFINITE_LIFETIME,
+                    HasGravity::True,
+                    HasAI::False)
+    }
+
+    pub fn zombie(coords: Coords, entity_id: usize, team: Team) -> Entity {
+        Entity::new(entity_id,
+                    ZOMBIE_HEALTH,
+                    ZOMBIE_HEALTH,
+                    coords,
+                    EntityType::Zombie,
+                    team,
+                    IsDummy::False,
+                    DEFAULT_DIRECTION,
+                    INFINITE_LIFETIME,
+                    HasGravity::True,
+                    HasAI::True)
+    }
+}
+
+// Misc
 impl Entity {
     #[allow(dead_code)]
     pub fn heal(&mut self, amount: f64) {
@@ -131,8 +164,13 @@ impl Entity {
     pub fn has_gravity(&self) -> bool {
         self.has_gravity == HasGravity::True
     }
+
+    pub fn kill(&mut self) {
+        self.health = DEAD_ENTITY_HEALTH;
+    }
 }
 
+// Flag test methods
 impl Entity {
     pub fn is_dead(&self) -> bool {
         self.health <= 0.0

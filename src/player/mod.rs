@@ -6,6 +6,8 @@ pub use self::class::Class;
 
 use self::abilities::*;
 
+use winapi::POINT;
+
 use items::*;
 use entity::*;
 use consts::*;
@@ -13,15 +15,32 @@ use consts::*;
 use std::collections::HashMap;
 
 pub struct Player {
+    // Player state
+    pub gold: usize,
+    pub class: Class,
+    pub inventory: HashMap<usize, Item>,
+
+    // Id numbers
     pub entity_id: usize,
     pub player_id: usize,
-    pub gold: usize,
-    pub bounty: usize,
-    pub class: Class,
+
+    // Cooldowns
     pub current_cooldowns: [usize; 4],
     pub cooldown_mods: Vec<Modifier>,
+
+    // Game variables
     pub wave: usize,
-    pub inventory: HashMap<usize, Item>,
+    pub bounty: usize,
+    pub dead: bool,
+    
+    // Controls
+    pub left_click: bool,
+    pub capture_cursor: bool,
+    pub mouse: POINT,
+    pub move_forward: bool,
+    pub move_left: bool,
+    pub move_backward: bool,
+    pub move_right: bool,
 }
 
 impl Player {
@@ -36,6 +55,14 @@ impl Player {
             cooldown_mods: Vec::new(),
             wave: 0,
             inventory: base_inventory(),
+            dead: false,
+            left_click: false,
+            capture_cursor: false,
+            mouse: POINT { x: 0, y: 0 },
+            move_forward: false,
+            move_left: false,
+            move_backward: false,
+            move_right: false,
         }
     }
 

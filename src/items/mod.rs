@@ -2,6 +2,8 @@ pub mod weapon;
 pub mod armor;
 pub mod effects;
 pub mod shop;
+#[macro_use]
+pub mod macros;
 
 pub use self::weapon::*;
 pub use self::armor::*;

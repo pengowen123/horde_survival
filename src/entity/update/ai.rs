@@ -44,7 +44,11 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut u
         }
 
         if distance >= range * AI_RANGE_THRESHOLD {
+            // If out of range, move forward
             entity.move_forward(0.0);
+        } else if distance <= range * AI_RANGE_TOO_CLOSE_THRESHOLD {
+            // If too close, move backwards
+            entity.move_forward(180.0);
         }
     }
 

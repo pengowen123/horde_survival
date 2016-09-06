@@ -15,13 +15,16 @@ impl<T, E> CanUnwrap for Result<T, E> {
 }
 
 macro_rules! unwrap_or_log {
-    ($val:expr, $msg:tt) => {{
+    ($val:expr, $msg:tt) => {
+        unwrap_or_log!($val, $msg,)
+    };
+    ($val:expr, $msg:expr, $($arg:expr),*) => {{
         if $val.can_unwrap() {
             $val.unwrap()
         } else {
-            crash!($msg);
+            crash!($msg, $($arg)*);
         }
-    }}
+    }};
 }
 
 macro_rules! crash {

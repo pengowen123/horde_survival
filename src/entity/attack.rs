@@ -33,7 +33,7 @@ pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player
         e.damage(multiplier, i, target_index, raw_entities, player);
 
         if let Some(f) = weapon.on_hit {
-            f(i, target_index, raw_entities, player);
+            f(target_index, i, raw_entities, player);
         }
 
         killed += e.is_dead() as i32 as usize;
@@ -73,7 +73,7 @@ pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player
                 e.damage(multiplier, i, target_index, raw_entities, player);
 
                 if let Some(f) = weapon.on_hit {
-                    f(i, target_index, raw_entities, player);
+                    f(target_index, i, raw_entities, player);
                 }
 
                 killed = e.is_dead() as i32 as usize;
@@ -159,7 +159,8 @@ pub fn try_attack(id: usize, entities: &mut Vec<Entity>, next_id: &mut usize, pl
     //
     // NOTE: health = id + 1
 
-    let index = entities.iter().find(|e| e.id == id).expect(&format!("Entity not found: {}", id)).id;
+    let index = unwrap_or_log!(entities.iter().enumerate().find(|&(_, e)| e.id == id),
+                               "Entity not found: {}", id).0;
     let weapon_type;
     
     // Scoped for attack function calls

@@ -1,4 +1,3 @@
-use consts::items::shop::SHOP;
 use entity::Entity;
 use player::Player;
 use items::*;
@@ -21,9 +20,7 @@ impl Player {
         self.inventory.insert(new_id, item);
     }
 
-    pub fn buy_item(&mut self, item_id: usize) -> bool {
-        let item = &SHOP[item_id];
-
+    pub fn buy_item(&mut self, item: &ShopItem) -> bool {
         if self.gold >= item.price {
             self.give_item(item.item.clone());
             true

@@ -1,8 +1,10 @@
 use items::*;
 
-pub const ARMOR_HEAD_NONE: Armor = Armor::new("None", 1.0, None, ArmorSlot::Head);
-pub const ARMOR_BODY_NONE: Armor = Armor::new("None", 1.0, None, ArmorSlot::Body);
-pub const ARMOR_LEGS_NONE: Armor = Armor::new("None", 1.0, None, ArmorSlot::Legs);
-pub const ARMOR_FEET_NONE: Armor = Armor::new("None", 1.0, None, ArmorSlot::Feet);
+armors!(
+    HEAD_NONE, SHOP_HEAD_NONE, 0, Armor::new("None", 1.0, None, ArmorSlot::Head);
+    BODY_NONE, SHOP_BODY_NONE, 0, Armor::new("None", 1.0, None, ArmorSlot::Body);
+    LEGS_NONE, SHOP_LEGS_NONE, 0, Armor::new("None", 1.0, None, ArmorSlot::Legs);
+    FEET_NONE, SHOP_FEET_NONE, 0, Armor::new("None", 1.0, None, ArmorSlot::Feet);
 
-pub const ARMOR_HEAL: Armor = Armor::new("Healing Armor", 0.8, Some(&armor_effect_heal), ArmorSlot::Body);
+    HEAL, SHOP_HEAL, 1500, Armor::new("Healing Armor", 0.8, Some(&armor_effect_heal), ArmorSlot::Body)
+);

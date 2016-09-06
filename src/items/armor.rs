@@ -1,5 +1,4 @@
 use items::effects::*;
-use consts::items::armor::*;
 
 #[derive(Clone, Copy)]
 pub struct Armor {
@@ -22,10 +21,7 @@ impl Armor {
 
 impl Armor {
     pub fn is_none(&self) -> bool {
-        self.name == ARMOR_HEAD_NONE.name ||
-        self.name == ARMOR_BODY_NONE.name ||
-        self.name == ARMOR_LEGS_NONE.name ||
-        self.name == ARMOR_FEET_NONE.name
+        self.name == "None"
     }
 }
 
