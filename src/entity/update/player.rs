@@ -25,8 +25,9 @@ pub fn update_player(player: &mut Entity,
     let x = &mut player.direction.0;
     let y = &mut player.direction.1;
 
-    *x += DEFAULT_MOUSE_SENSITIVITY * mouse.y as f64;
-    *y += DEFAULT_MOUSE_SENSITIVITY * mouse.x as f64;
+    // NOTE: Multiply by -1.0 to invert controls
+    *x += DEFAULT_MOUSE_SENSITIVITY * mouse.y as f64 * -1.0;
+    *y += DEFAULT_MOUSE_SENSITIVITY * mouse.x as f64 * -1.0;
 
     *y = Direction(*y).wrap().0;
 

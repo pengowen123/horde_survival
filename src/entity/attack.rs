@@ -3,7 +3,7 @@ use world::*;
 use entity::*;
 use items::*;
 use consts::balance::*;
-use log_utils::*;
+use hslog::*;
 
 pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> usize {
     let raw_entities = unsafe { &mut *(entities as *mut _) };
@@ -21,7 +21,7 @@ pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player
         team = entity.team.clone();
         point = unwrap_or_log!(entity.coords.ray(entity.current_weapon.range, entity.direction.clone()).nth(1),
                                "Ray was deleted");
-        multiplier = entity.get_damage_multiplier();
+        multiplier = entity.get_damage();
         weapon = entity.current_weapon.clone();
     }
 
@@ -58,7 +58,7 @@ pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player
 
         // If this is 0, the weapon cannot hit anything
         points = entity.current_weapon.range as usize;
-        multiplier = entity.get_damage_multiplier();
+        multiplier = entity.get_damage();
         coords = entity.coords.clone();
         direction = entity.direction.clone();
         team = entity.team.clone();
@@ -144,6 +144,7 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
 
         let speed = entity.current_weapon.range;
         let angle = Direction((entity.direction.0 - 90.0).abs()).as_radians();
+        debug!("FlyingBallArc angle: {:?} spawned by ID {}", angle, entity.id);
         dummy.velocity.accelerate(angle.cos() * speed, angle.sin() * speed);
         dummy.coords.y += PROJECTILE_SPAWN_OFFSET;
     }

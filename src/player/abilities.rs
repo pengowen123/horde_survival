@@ -1,7 +1,7 @@
 use entity::*;
 use player::Player;
 use consts::balance::*;
-use log_utils::*;
+use hslog::*;
 
 pub fn warrior_ability_0(player: &mut Player, entities: &mut Vec<Entity>) {
     let player_entity = entities.iter_mut().find(|e| e.id == player.entity_id).expect("Player entity not found");

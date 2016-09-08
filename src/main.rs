@@ -1,3 +1,4 @@
+// TODO: Fix attack_ranged_projectile (fix angle and make sure the physics is correct)
 #![feature(const_fn)]
 
 // Graphics
@@ -15,13 +16,14 @@ extern crate winapi;
 // Logging
 #[macro_use]
 extern crate log;
-extern crate simplelog;
+extern crate log_panics;
 
 // Misc
 extern crate rand;
+extern crate time;
 
 #[macro_use]
-mod log_utils;
+mod hslog;
 mod utils;
 mod entity;
 #[macro_use]
@@ -33,45 +35,31 @@ mod hscontrols;
 mod hsgraphics;
 mod gamestate;
 mod map;
+mod minimap;
 
 use gfx::Device;
-use gfx::traits::FactoryExt;
 use glutin::Event;
-
 use user32::FindWindowW;
-use simplelog::{FileLogger, LogLevelFilter};
 
 use utils::*;
 use entity::*;
 use world::*;
 use player::*;
 use consts::*;
-use log_utils::*;
+use hslog::*;
 use hsgraphics::*;
 use gamestate::GameState;
 use map::*;
 
 use std::ptr;
 use std::time::{Instant, Duration};
-use std::fs::File;
 
 fn main() {
     // Initialize logger
-    match FileLogger::init(LogLevelFilter::max(), File::create("log.txt").expect("Failed to initialize log file")) {
-        Ok(_) => {},
-        Err(e) => panic!("Failed to initialize logger: {}", e),
-    }
+    hslog::init();
+    log_panics::init();
 
-    let player_entity_id = 0;
-    let map = Map::new(0.0);
-    let player = Player::new(player_entity_id, 0, Class::Warrior);
-    let mut game = GameState::new(player, map, Coords::origin(), Team::Players);
-
-    // Use this entity for testing
-    game.spawn_entity(Entity::zombie(Coords::origin(), 0, Team::Monsters));
-
-    game.entities[0].current_weapon = LIGHTNING_SWORD_2;
-    game.entities[1].current_weapon = LIGHTNING_SWORD_2;
+    info!("Building window...");
 
     // Window setup
     // TODO: Add graphics options
@@ -79,28 +67,9 @@ fn main() {
         .with_title(WINDOW_NAME)
         .with_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    let (window, mut device, mut factory, main_color, color_depth) =
+    let (window, mut device, mut factory, main_color, _main_depth) =
         gfx_window_glutin::init::<ColorFormat, DepthFormat>(builder);
     let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
-
-
-    // NOTE: Begin test code
-    let pso = match factory.create_pipeline_simple(
-        include_bytes!("include/shader/triangle_150.glslv"),
-        include_bytes!("include/shader/triangle_150.glslf"),
-        pipe::new(),
-    ) {
-        Ok(x) => x,
-        Err(e) => panic!("{}", e),
-    };
-
-    let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(&SQUARE, ());
-    let data = pipe::Data {
-        vbuf: vertex_buffer,
-        out: main_color,
-    };
-    // NOTE: End test code
-
 
     let hwnd = unsafe {
         let name = convert_str(WINDOW_NAME);
@@ -108,11 +77,28 @@ fn main() {
         FindWindowW(ptr::null(), name.as_ptr())
     };
 
-    // Graphics state
-    let mut gfx_state = GraphicsState::new();
+    info!("Initializing game...");
 
-    // Event loop
-    let mut events = window.poll_events();
+    // Game state
+    let player_entity_id = 0;
+    let map = Map::new(0.0);
+    let player = Player::new(player_entity_id, 0, Class::Warrior);
+    let mut game = GameState::new(player, map, Coords::origin(), Team::Players);
+
+    // Use this for testing the game
+    game.spawn_entity(Entity::zombie(Coords::new(-10.0, 0.0, 5.0), 0, Team::Monsters));
+    game.spawn_entity(Entity::zombie(Coords::new(-10.0, 0.0, -5.0), 0, Team::Monsters));
+    game.spawn_entity(Entity::zombie(Coords::new(-10.0, 0.0, 0.0), 0, Team::Monsters));
+    game.entities[0].coords = Coords::new(10.0, 0.0, 0.0);
+    game.entities[1].coords = Coords::new(0.0, 0.0, 5.0);
+    game.entities[2].coords = Coords::new(10.0, 0.0, -5.0);
+    game.entities[3].coords = Coords::new(-10.0, 0.0, 0.0);
+    game.entities[0].armor[0] = consts::items::armor::HEAL;
+    game.entities[1].current_weapon = TEST_BOW;
+    game.entities[0].current_weapon = TEST_BOW;
+
+    // Graphics state
+    let mut graphics = GraphicsState::new(&mut factory);
 
     // Used for keeping TPS below a certain value
     let mut time;
@@ -120,6 +106,11 @@ fn main() {
     let expected_elapsed = Duration::from_millis(1_000_000_000 / TPS / 1_000_000);
 
     // Event loop
+
+    let mut events = window.poll_events();
+
+    info!("Done");
+
     'main: loop {
         time = Instant::now();
         let event = events.next();
@@ -153,8 +144,8 @@ fn main() {
             }
         }
 
-        encoder.clear(&data.out, CLEAR_COLOR);
-        encoder.draw(&slice, &pso, &data);
+        encoder.clear(&main_color, CLEAR_COLOR);
+        graphics.encode_objects(&mut encoder);
         encoder.flush(&mut device);
 
         if let Err(e) = window.swap_buffers() {
@@ -207,9 +198,13 @@ fn main() {
             // TODO: Change center_mouse to use glutin::Window methods rather than winapi
             hscontrols::center_mouse(&mut game.player.mouse,
                                      hwnd,
-                                     &mut gfx_state.window_position,
-                                     &mut gfx_state.window_center);
+                                     &mut graphics.window_position,
+                                     &mut graphics.window_center);
         }
+
+        // Update minimap
+        graphics.update_minimap(&game.entities);
+        graphics.update_minimap_objects(&mut factory, &main_color);
 
         // Set duration to skip game loop for
         let current = Instant::now();

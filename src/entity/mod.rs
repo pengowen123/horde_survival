@@ -151,7 +151,7 @@ impl Entity {
         self.is_dead()
     }
 
-    pub fn get_damage_multiplier(&self) -> f64 {
+    pub fn get_damage(&self) -> f64 {
         self.damage_mods.iter().fold(self.current_weapon.damage, |acc, x| acc * x.value)
     }
 

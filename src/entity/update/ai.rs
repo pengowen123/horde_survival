@@ -5,11 +5,13 @@ use consts::entity::*;
 pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut usize, player: &mut Player) {
     let mut closest_index = None;
     let mut closest_distance = None;
+    let id;
 
     // Scoped for mutable borrow
     {
         let entity = &entities[target_index];
         let coords = &entity.coords;
+        id = entity.id;
 
         for (i, e) in entities.iter().enumerate().filter(|&(_, e)| e.is_enemy_of(entity)) {
             let distance = e.coords.distance(coords);
@@ -53,6 +55,6 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut u
     }
 
     if attack {
-        try_attack(target_index, entities, next_id, player);
+        try_attack(id, entities, next_id, player);
     }
 }

@@ -10,12 +10,12 @@ pub fn filter_entities(entities: &mut Vec<Entity>) {
             result = !e.is_dead();
         }
 
-        let x = result && !(e.lifetime == 1);
+        let keep = result && !(e.lifetime == 1);
 
-        if !x {
-            debug!("entity removed: type: {:?}, health: {:?}, lifetime: {:?}", e.entity_type, e.health, e.lifetime);
+        if !keep {
+            debug!("Entity removed by filter: ID {}: {:?}", e.id, e.entity_type);
         }
 
-        x
+        keep
     }).collect();
 }

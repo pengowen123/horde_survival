@@ -3,6 +3,7 @@ pub mod controls;
 pub mod graphics;
 pub mod misc;
 pub mod physics;
+pub mod log_str;
 
 pub use self::balance::*;
 pub use self::controls::*;

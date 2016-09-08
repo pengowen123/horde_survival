@@ -30,6 +30,12 @@ impl Coords {
         self.distance(other) <= radius
     }
 
+    pub fn scale(&mut self, factor: f64) {
+        self.x *= factor;
+        self.y *= factor;
+        self.z *= factor;
+    }
+
     pub fn translate(&mut self, other: &Coords) {
         self.x += other.x;
         self.y += other.y;
@@ -78,5 +84,11 @@ impl Coords {
         let rot_y = get_angle2(run, rise);
 
         (rot_x, rot_y)
+    }
+
+    pub fn scaled(&self, factor: f64) -> Coords {
+        let mut coords = self.clone();
+        coords.scale(factor);
+        coords
     }
 }

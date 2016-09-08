@@ -28,12 +28,20 @@ pub fn get_degrees(radians: f64) -> f64 {
 // Returns an angle, 0 to 180
 pub fn get_angle(rise: f64, run: f64) -> f64 {
     let hypotenuse = (rise.powi(2) + run.powi(2)).sqrt();
-    let angle = get_degrees((run / hypotenuse).asin());
+    let mut angle = get_degrees((run / hypotenuse).asin());
 
-    if rise < 0.0 {
-        return 90.0 + (90.0 - angle);
+    angle = if rise < 0.0 {
+        90.0 + (90.0 - angle)
     } else {
-        return angle;
+        angle
+    };
+
+    if angle.is_normal() {
+        angle
+    } else {
+        // Remove this
+        debug!("Found subnormal angle: {}", angle);
+        0.0
     }
 }
 
@@ -46,6 +54,12 @@ pub fn get_angle2(dx: f64, dy: f64) -> f64 {
     } else {
         angle
     };
+
+    if !(angle.is_normal()) {
+        // Remove this
+        debug!("Found subnormal angle: {}", angle);
+        return 0.0;
+    }
 
     // Rotate angle 180 degrees, because it is always backwards
     Direction(angle + 180.0).wrap().0

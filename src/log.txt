@@ -1,262 +1,145 @@
-02:13:29 [INFO] gfx_device_gl: Vendor: "NVIDIA Corporation"
-02:13:29 [INFO] gfx_device_gl: Renderer: "GeForce GT 320M/PCIe/SSE2"
-02:13:29 [INFO] gfx_device_gl: Version: 3.3.0
-02:13:29 [INFO] gfx_device_gl: Shading Language: 3.30, NVIDIA via Cg compiler
-02:13:29 [DEBUG] gfx_device_gl: Loaded Extensions:
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_internalformat_query
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_timer_query
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_non_power_of_two
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_color_buffer_float
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_rectangle
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_framebuffer_sRGB
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_multi_bind
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_fragment_program
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_program2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_sync
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_rgb10_a2ui
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shader_texture_lod
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_storage
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shader_objects
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_import_sync_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_mirror_clamp
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_program1_1
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_multisample_blit_scaled
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_transform_feedback
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_stencil_wrap
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_swizzle
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_explicit_uniform_location
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_packed_depth_stencil
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_clear_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_stencil8
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_depth_clamp
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_stencil_texturing
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_integer
-02:13:29 [DEBUG] gfx_device_gl: - GL_IBM_rasterpos_clip
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_draw_instanced
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_program3
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_sRGB
-02:13:29 [DEBUG] gfx_device_gl: - GL_IBM_texture_mirrored_repeat
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_barrier
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_draw_instanced
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_include
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_geometry_shader4
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_array_bgra
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_point_parameters
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_conditional_render
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_point_sprite
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_sample_shading
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_stencil_two_side
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_vertex_array_bgra
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_multitexture
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_multisample
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_multisample_filter_hint
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_view
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_secondary_color
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_vertex_array
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_type_2_10_10_10_rev
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_depth_clamp
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_fragment_coord_conventions
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_cube_map
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_compatibility
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_env_combine
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_rectangle
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_arrays_of_arrays
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_internalformat_query2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_robustness
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_mirrored_repeat
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_transform_feedback2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ATI_draw_buffers
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXTX_framebuffer_mixed_formats
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_half_float_pixel
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_blend_equation_separate
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_draw_buffers2
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_multisample
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_depth_bounds_test
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_pixel_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_debug_output
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_explicit_attrib_location
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_storage_multisample
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_Cg_shader
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_path_rendering
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_gpu_program4
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_ES1_1_compatibility
-02:13:29 [DEBUG] gfx_device_gl: - GL_S3_s3tc
-02:13:29 [DEBUG] gfx_device_gl: - GL_SUN_slice_accum
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_draw_elements_base_vertex
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_instanced_arrays
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_robust_buffer_access_behavior
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_fragment_program_shadow
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_packed_pixels
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_viewport_array
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_env_add
-02:13:29 [DEBUG] gfx_device_gl: - GL_NVX_conditional_render
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_lod_bias
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_array
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_filter_anisotropic
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_shader_integer_mix
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_fog_coord
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_copy_image
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_copy_image
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_dxt1
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_parameter_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_point_parameters
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_transform_feedback2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_query_lod
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_multisample
-02:13:29 [DEBUG] gfx_device_gl: - GL_ATI_texture_float
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_blend_square
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_420pack
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_depth_texture
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_shared_exponent
-02:13:29 [DEBUG] gfx_device_gl: - GL_ATI_texture_mirror_once
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_border_clamp
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_program_interface_query
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_invalidate_subdata
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_bgra
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_primitive_restart
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_explicit_multisample
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_rgtc
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_blend_color
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_lod
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_s3tc
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_edge_clamp
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_rg
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_ES3_compatibility
-02:13:29 [DEBUG] gfx_device_gl: - GL_WIN_swap_hint
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_map_buffer_range
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_framebuffer_no_attachments
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_half_float
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_light_max_exponent
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_separate_shader_objects
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_fog_distance
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_transform_feedback2
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_rescale_normal
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_shader3
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_float
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_separate_shader_objects
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_attrib_binding
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_env_dot3
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_swizzle
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_gather
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_multi_draw_arrays
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_provoking_vertex
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_packing
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_blend_func_separate
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_combine
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_gpu_program4_1
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_abgr
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_blit
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_fence
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_gpu_shader4
-02:13:29 [DEBUG] gfx_device_gl: - GL_SGIS_texture_lod
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_compiled_vertex_array
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_compression
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_fragment_program2
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_fragment_program_option
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_fragment_layer_viewport
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_cube_map
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_imaging
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_seamless_cube_map
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_geometry_shader4
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_fragment_shader
-02:13:29 [DEBUG] gfx_device_gl: - GL_SGIS_generate_mipmap
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_shader_buffer_load
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_window_pos
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shading_language_100
-02:13:29 [DEBUG] gfx_device_gl: - GL_KTX_buffer_region
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_buffer_range
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_packed_float
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_sampler_objects
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_multisample_coverage
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_register_combiners
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_float_buffer
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_draw_range_elements
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_pixel_data_range
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_buffer_unified_memory
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_shader2
-02:13:29 [DEBUG] gfx_device_gl: - GL_SGIX_depth_texture
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_array_range2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_depth_buffer_float
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_compression_vtc
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shadow
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_ES2_compatibility
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_pixel_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_occlusion_query
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_draw_buffers_blend
-02:13:29 [DEBUG] gfx_device_gl: - GL_NVX_gpu_memory_info
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_compression_latc
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_bindable_uniform
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_timer_query
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_shader_bit_encoding
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_enhanced_layouts
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_point_sprite
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_conservative_depth
-02:13:29 [DEBUG] gfx_device_gl: - GL_KHR_debug
-02:13:29 [DEBUG] gfx_device_gl: - WGL_EXT_swap_control
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_program
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_copy_buffer
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_storage
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texgen_reflection
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_cube_map_array
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_dot3
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_separate_specular_color
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_array_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_framebuffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_blend_subtract
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_occlusion_query2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_transform_feedback_instanced
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_shadow_funcs
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_shader
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_program
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_crossbar
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_blend_func_extended
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_array_range
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_packed_depth_stencil
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_framebuffer_sRGB
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_mirror_clamp_to_edge
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_direct_state_access
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture3D
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_half_float_vertex
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_base_instance
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_parameter_buffer_object2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_uniform_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_buffer_object
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_framebuffer_multisample_coverage
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_provoking_vertex
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_transpose_matrix
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_copy_depth_to_color
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_fragment_program
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_texture_sRGB_decode
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_expand_normal
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_depth_buffer_float
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_get_program_binary
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_shader
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_compressed_texture_pixel_storage
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_vertex_type_10f_11f_11f_rev
-02:13:29 [DEBUG] gfx_device_gl: - GL_SGIX_shadow
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_blend_minmax
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_map_buffer_alignment
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_register_combiners2
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_occlusion_query
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_draw_buffers
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_query_levels
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_vertex_program2_option
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_geometry_shader4
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_env_add
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_compression_rgtc
-02:13:29 [DEBUG] gfx_device_gl: - GL_EXT_gpu_program_parameters
-02:13:29 [DEBUG] gfx_device_gl: - GL_NV_texture_env_combine4
-02:13:29 [DEBUG] gfx_device_gl: - GL_ARB_texture_multisample
-02:13:29 [INFO] gfx_device_gl::factory: 	Created frame buffer 1
-02:13:29 [INFO] gfx_device_gl::shade: 	Compiled shader 1
-02:13:29 [INFO] gfx_device_gl::shade: 	Compiled shader 2
-02:13:29 [INFO] gfx_device_gl::shade: 	Linked program 3
-02:13:29 [INFO] gfx_device_gl::shade: 		Attrib[1] = "a_Color"	F32	Vector(3)
-02:13:29 [INFO] gfx_device_gl::shade: 		Attrib[0] = "a_Pos"	F32	Vector(2)
-02:13:29 [DEBUG] gfx_device_gl::shade: Program 3 reflection: ProgramInfo { vertex_attributes: [AttributeVar { name: "a_Color", slot: 1, base_type: F32, container: Vector(3) }, AttributeVar { name: "a_Pos", slot: 0, base_type: F32, container: Vector(2) }], globals: [], constant_buffers: [], textures: [], unordereds: [], samplers: [], outputs: [OutputVar { name: "Target0", slot: 0, base_type: F32, container: Vector(4) }], output_depth: false, knows_outputs: true }
-02:13:29 [INFO] gfx_device_gl::factory: 	Created buffer 1
-02:13:48 [INFO] horde_survival: Closed Horde Survival
+23:06:19 [INFO] horde_survival: Building window...
+23:06:20 [INFO] horde_survival: Initializing game...
+23:06:20 [INFO] horde_survival: Done
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
+23:06:25 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
+23:06:25 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 4: FlyingBallArc
+23:06:25 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.3612831551628265 spawned by ID 0
+23:06:25 [DEBUG] horde_survival::entity::update::flying_ball: flying ball hit entity
+23:06:25 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 5: FlyingBallArc
+23:06:26 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
+23:06:26 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 6: FlyingBallArc
+23:06:26 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 1.021017612416683 spawned by ID 0
+23:06:27 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
+23:06:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 8: FlyingBallArc
+23:06:27 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.1570796326794889 spawned by ID 0
+23:06:27 [DEBUG] horde_survival::entity::update::flying_ball: flying ball hit entity
+23:06:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 2: Zombie
+23:06:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 9: FlyingBallArc
+23:06:28 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
+23:06:28 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 10: FlyingBallArc
+23:06:28 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.5890486225480854 spawned by ID 0
+23:06:29 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
+23:06:30 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 12: FlyingBallArc
+23:06:30 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.9555677654668949 spawned by ID 0
+23:06:30 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 7: FlyingBallArc
+23:06:31 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
+23:06:31 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 14: FlyingBallArc
+23:06:31 [INFO] horde_survival: Closed Horde Survival

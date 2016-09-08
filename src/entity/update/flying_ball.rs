@@ -2,7 +2,6 @@ use consts::*;
 use entity::*;
 use player::*;
 use world::*;
-use log_utils::*;
 use map::*;
 
 pub fn update_flying_ball_linear(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) {
@@ -99,22 +98,41 @@ pub fn update_flying_ball(target_index: usize, entities: &mut Vec<Entity>, playe
             let id;
             let weapon;
             let index;
+            let source_found;
 
             hit = true;
             // Scoped for damage call
             {
                 id = entities[target_index].health as usize - 1;
-                let (i, entity) = unwrap_or_log!(entities.iter().enumerate().find(|e| e.1.id == id),
-                                                 "Source of flying ball not found");
-                damage = entity.get_damage_multiplier();
-                weapon = entity.current_weapon.clone();
-                index = i;
+                let result = entities.iter().enumerate().find(|e| e.1.id == id);
+
+                if let Some(r) = result {
+                    let (i, entity) = r;
+
+                    damage = entity.get_damage();
+                    weapon = entity.current_weapon.clone();
+                    index = i;
+                    source_found = true;
+                } else {
+                    damage = 0.0;
+                    weapon = UNARMED;
+                    index = 0;
+                    source_found = false;
+                }
+            }
+
+            // If source entity not found, delete the flying ball
+            if !source_found {
+                let entity = &mut entities[e];
+
+                entity.lifetime = 1;
+                warn!("Source of flying ball not found: {}", entity.id);
+                return false;
             }
 
             if entities[e].damage(damage, e, index, raw_entities, player) && id == player.entity_id {
                 player.gold += player.bounty;
             }
-
 
             if let Some(f) = weapon.on_hit {
                 f(e, e, raw_entities, player);
@@ -128,6 +146,7 @@ pub fn update_flying_ball(target_index: usize, entities: &mut Vec<Entity>, playe
     let entity = &mut entities[target_index];
 
     if hit {
+        debug!("flying ball hit entity");
         entity.lifetime = 1;
     }
 
