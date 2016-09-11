@@ -23,6 +23,7 @@ pub fn update_entity(entities: &mut Vec<Entity>, index: usize, map: &Map, player
         entity_type = entity.entity_type.clone();
         has_ai = entity.has_ai();
 
+        entity.on_ground = map.test_collision(&entity.coords, entity.entity_height);
         update_modifiers(&mut entity.damage_mods);
         update_modifiers(&mut entity.as_mods);
         update_modifiers(&mut entity.damage_taken_mods);
@@ -30,7 +31,6 @@ pub fn update_entity(entities: &mut Vec<Entity>, index: usize, map: &Map, player
         update_attack_animation(&mut entity.attack_animation);
         update_lifetime(&mut entity.lifetime);
         update_gravity(&map, entity);
-        entity.on_ground = map.test_collision(&entity.coords);
     }
 
     if has_ai {
@@ -69,7 +69,7 @@ pub fn update_lifetime(timer: &mut usize) {
 }
 
 pub fn update_gravity(map: &Map, entity: &mut Entity) {
-    if EntityType::FlyingBallArc == entity.entity_type && map.test_collision(&entity.coords) {
+    if EntityType::FlyingBallArc == entity.entity_type && map.test_collision(&entity.coords, entity.entity_height) {
         entity.lifetime = 1;
         return;
     }
@@ -78,8 +78,8 @@ pub fn update_gravity(map: &Map, entity: &mut Entity) {
         let mut coords = entity.coords.clone();
         coords.translate(&Coords::new(0.0, entity.velocity.component_y, 0.0));
 
-        if map.test_collision(&coords) {
-            map.put_on_ground(&mut entity.coords);
+        if map.test_collision(&coords, entity.entity_height) {
+            map.put_on_ground(&mut entity.coords, entity.entity_height);
             entity.velocity.component_y = 0.0;
             return;
         }

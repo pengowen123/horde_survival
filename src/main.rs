@@ -1,4 +1,5 @@
 // TODO: Fix attack_ranged_projectile (fix angle and make sure the physics is correct)
+//       Fix AI direction control
 #![feature(const_fn)]
 
 // Graphics
@@ -9,7 +10,6 @@ extern crate gfx_device_gl;
 extern crate glutin;
 extern crate cgmath;
 
-// Windows API
 extern crate user32;
 extern crate winapi;
 
@@ -86,16 +86,20 @@ fn main() {
     let mut game = GameState::new(player, map, Coords::origin(), Team::Players);
 
     // Use this for testing the game
-    game.spawn_entity(Entity::zombie(Coords::new(-10.0, 0.0, 5.0), 0, Team::Monsters));
-    game.spawn_entity(Entity::zombie(Coords::new(-10.0, 0.0, -5.0), 0, Team::Monsters));
-    game.spawn_entity(Entity::zombie(Coords::new(-10.0, 0.0, 0.0), 0, Team::Monsters));
-    game.entities[0].coords = Coords::new(10.0, 0.0, 0.0);
-    game.entities[1].coords = Coords::new(0.0, 0.0, 5.0);
-    game.entities[2].coords = Coords::new(10.0, 0.0, -5.0);
-    game.entities[3].coords = Coords::new(-10.0, 0.0, 0.0);
-    game.entities[0].armor[0] = consts::items::armor::HEAL;
-    game.entities[1].current_weapon = TEST_BOW;
+    game.entities[0].coords.x += 5.0;
     game.entities[0].current_weapon = TEST_BOW;
+    //game.entities[0].armor[0] = consts::items::armor::HEAL;
+
+    game.spawn_entity(Entity::zombie(Coords::new(0.0, 0.0, 0.0), 0, Team::Monsters));
+    game.spawn_entity(Entity::zombie(Coords::new(-1.0, 0.0, 1.0), 0, Team::Monsters));
+    game.spawn_entity(Entity::zombie(Coords::new(-2.0, 0.0, -1.0), 0, Team::Monsters));
+    game.spawn_entity(Entity::zombie(Coords::new(-3.0, 0.0, -4.0), 0, Team::Monsters));
+    game.spawn_entity(Entity::zombie(Coords::new(-4.0, 0.0, 3.0), 0, Team::Monsters));
+    game.entities[1].current_weapon = TEST_BOW;
+    game.entities[2].current_weapon = TEST_BOW;
+    game.entities[3].current_weapon = TEST_BOW;
+    game.entities[4].current_weapon = TEST_BOW;
+    game.entities[5].current_weapon = TEST_BOW;
 
     // Graphics state
     let mut graphics = GraphicsState::new(&mut factory);
@@ -213,5 +217,8 @@ fn main() {
         if elapsed < expected_elapsed {
             sleeping_until = current + (expected_elapsed - elapsed);
         }
+
+        let entity = &game.entities[0];
+        println!("player health: {:?}", entity.health);
     }
 }

@@ -1,145 +1,268 @@
-23:06:19 [INFO] horde_survival: Building window...
-23:06:20 [INFO] horde_survival: Initializing game...
-23:06:20 [INFO] horde_survival: Done
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:20 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:21 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:22 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:23 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:24 [WARN] horde_survival::world::direction: Found subnormal angle: NaN
-23:06:25 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
-23:06:25 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 4: FlyingBallArc
-23:06:25 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.3612831551628265 spawned by ID 0
-23:06:25 [DEBUG] horde_survival::entity::update::flying_ball: flying ball hit entity
-23:06:25 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 5: FlyingBallArc
-23:06:26 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
-23:06:26 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 6: FlyingBallArc
-23:06:26 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 1.021017612416683 spawned by ID 0
-23:06:27 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
-23:06:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 8: FlyingBallArc
-23:06:27 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.1570796326794889 spawned by ID 0
-23:06:27 [DEBUG] horde_survival::entity::update::flying_ball: flying ball hit entity
-23:06:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 2: Zombie
-23:06:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 9: FlyingBallArc
-23:06:28 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
-23:06:28 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 10: FlyingBallArc
-23:06:28 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.5890486225480854 spawned by ID 0
-23:06:29 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
-23:06:30 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 12: FlyingBallArc
-23:06:30 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0.9555677654668949 spawned by ID 0
-23:06:30 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 7: FlyingBallArc
-23:06:31 [DEBUG] horde_survival::entity::attack: FlyingBallArc angle: 0 spawned by ID 1
-23:06:31 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 14: FlyingBallArc
-23:06:31 [INFO] horde_survival: Closed Horde Survival
+22:14:26 [INFO] horde_survival: Building window...
+22:14:26 [INFO] horde_survival: Initializing game...
+22:14:26 [INFO] horde_survival: Done
+22:14:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 6: FlyingBallArc
+22:14:27 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 7: FlyingBallArc
+22:14:28 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 8: FlyingBallArc
+22:14:29 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 11: FlyingBallArc
+22:14:29 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 9: FlyingBallArc
+22:14:29 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 10: FlyingBallArc
+22:14:30 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 12: FlyingBallArc
+22:14:30 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 13: FlyingBallArc
+22:14:30 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 14: FlyingBallArc
+22:14:31 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 15: FlyingBallArc
+22:14:31 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 16: FlyingBallArc
+22:14:32 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 17: FlyingBallArc
+22:14:32 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 18: FlyingBallArc
+22:14:32 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 19: FlyingBallArc
+22:14:32 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 20: FlyingBallArc
+22:14:32 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 23: FlyingBallArc
+22:14:33 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 21: FlyingBallArc
+22:14:33 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 22: FlyingBallArc
+22:14:33 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 25: FlyingBallArc
+22:14:33 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 26: FlyingBallArc
+22:14:34 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 27: FlyingBallArc
+22:14:34 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 24: FlyingBallArc
+22:14:34 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 28: FlyingBallArc
+22:14:34 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 29: FlyingBallArc
+22:14:35 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 30: FlyingBallArc
+22:14:35 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 31: FlyingBallArc
+22:14:35 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 32: FlyingBallArc
+22:14:36 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 33: FlyingBallArc
+22:14:36 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 34: FlyingBallArc
+22:14:36 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 35: FlyingBallArc
+22:14:36 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 36: FlyingBallArc
+22:14:37 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 37: FlyingBallArc
+22:14:37 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 38: FlyingBallArc
+22:14:37 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 39: FlyingBallArc
+22:14:38 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 40: FlyingBallArc
+22:14:38 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 41: FlyingBallArc
+22:14:38 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 46: FlyingBallArc
+22:14:38 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 42: FlyingBallArc
+22:14:38 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 43: FlyingBallArc
+22:14:38 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 44: FlyingBallArc
+22:14:39 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 45: FlyingBallArc
+22:14:39 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 50: FlyingBallArc
+22:14:39 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 51: FlyingBallArc
+22:14:39 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 47: FlyingBallArc
+22:14:39 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 48: FlyingBallArc
+22:14:40 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 49: FlyingBallArc
+22:14:40 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 53: FlyingBallArc
+22:14:40 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 54: FlyingBallArc
+22:14:40 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 55: FlyingBallArc
+22:14:41 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 52: FlyingBallArc
+22:14:41 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 57: FlyingBallArc
+22:14:41 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 58: FlyingBallArc
+22:14:41 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 56: FlyingBallArc
+22:14:41 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 59: FlyingBallArc
+22:14:42 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 60: FlyingBallArc
+22:14:42 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 61: FlyingBallArc
+22:14:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 63: FlyingBallArc
+22:14:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 66: FlyingBallArc
+22:14:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 64: FlyingBallArc
+22:14:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 62: FlyingBallArc
+22:14:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 65: FlyingBallArc
+22:14:44 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 68: FlyingBallArc
+22:14:44 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 69: FlyingBallArc
+22:14:44 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 67: FlyingBallArc
+22:14:44 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 73: FlyingBallArc
+22:14:45 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 74: FlyingBallArc
+22:14:45 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 70: FlyingBallArc
+22:14:45 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 71: FlyingBallArc
+22:14:45 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 75: FlyingBallArc
+22:14:45 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 72: FlyingBallArc
+22:14:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 77: FlyingBallArc
+22:14:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 78: FlyingBallArc
+22:14:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 79: FlyingBallArc
+22:14:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 76: FlyingBallArc
+22:14:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 80: FlyingBallArc
+22:14:47 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 82: FlyingBallArc
+22:14:47 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 81: FlyingBallArc
+22:14:47 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 83: FlyingBallArc
+22:14:47 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 84: FlyingBallArc
+22:14:48 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 86: FlyingBallArc
+22:14:48 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 85: FlyingBallArc
+22:14:48 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 88: FlyingBallArc
+22:14:48 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 89: FlyingBallArc
+22:14:49 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 87: FlyingBallArc
+22:14:49 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 90: FlyingBallArc
+22:14:49 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 92: FlyingBallArc
+22:14:49 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 91: FlyingBallArc
+22:14:50 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 93: FlyingBallArc
+22:14:50 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 94: FlyingBallArc
+22:14:50 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 95: FlyingBallArc
+22:14:50 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 96: FlyingBallArc
+22:14:51 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 97: FlyingBallArc
+22:14:51 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 98: FlyingBallArc
+22:14:51 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 99: FlyingBallArc
+22:14:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 100: FlyingBallArc
+22:14:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 103: FlyingBallArc
+22:14:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 104: FlyingBallArc
+22:14:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 102: FlyingBallArc
+22:14:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 101: FlyingBallArc
+22:14:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 105: FlyingBallArc
+22:14:53 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 107: FlyingBallArc
+22:14:53 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 108: FlyingBallArc
+22:14:53 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 109: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 110: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 111: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 112 hit entity ID 0
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 112: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 113 hit entity ID 0
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 106: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 113: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 114 hit entity ID 0
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 114: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 115 hit entity ID 0
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 115: FlyingBallArc
+22:14:54 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 116 hit entity ID 0
+22:14:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 116: FlyingBallArc
+22:14:55 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 117 hit entity ID 0
+22:14:55 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 117: FlyingBallArc
+22:14:55 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 118 hit entity ID 0
+22:14:55 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 118: FlyingBallArc
+22:14:55 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 120 hit entity ID 0
+22:14:55 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 120: FlyingBallArc
+22:14:55 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 121 hit entity ID 0
+22:14:55 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 121: FlyingBallArc
+22:14:55 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 122 hit entity ID 0
+22:14:55 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 122: FlyingBallArc
+22:14:56 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 123 hit entity ID 0
+22:14:56 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 123: FlyingBallArc
+22:14:56 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 124 hit entity ID 0
+22:14:56 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 124: FlyingBallArc
+22:14:56 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 119: FlyingBallArc
+22:14:56 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 126 hit entity ID 0
+22:14:56 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 126: FlyingBallArc
+22:14:57 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 127 hit entity ID 0
+22:14:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 127: FlyingBallArc
+22:14:57 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 128 hit entity ID 0
+22:14:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 128: FlyingBallArc
+22:14:57 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 129 hit entity ID 0
+22:14:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 129: FlyingBallArc
+22:14:57 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 130 hit entity ID 0
+22:14:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 130: FlyingBallArc
+22:14:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 125: FlyingBallArc
+22:14:58 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 132 hit entity ID 0
+22:14:58 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 132: FlyingBallArc
+22:14:58 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 135 hit entity ID 0
+22:14:58 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 135: FlyingBallArc
+22:14:59 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 136 hit entity ID 0
+22:14:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 136: FlyingBallArc
+22:14:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 133: FlyingBallArc
+22:14:59 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 138 hit entity ID 0
+22:14:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 138: FlyingBallArc
+22:14:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 134: FlyingBallArc
+22:14:59 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 140 hit entity ID 0
+22:14:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 140: FlyingBallArc
+22:14:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 131: FlyingBallArc
+22:14:59 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 139 hit entity ID 0
+22:14:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 139: FlyingBallArc
+22:15:00 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 142 hit entity ID 0
+22:15:00 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 142: FlyingBallArc
+22:15:00 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 144 hit entity ID 0
+22:15:00 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 144: FlyingBallArc
+22:15:00 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 141: FlyingBallArc
+22:15:00 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 137: FlyingBallArc
+22:15:01 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 148 hit entity ID 0
+22:15:01 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 148: FlyingBallArc
+22:15:01 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 150 hit entity ID 0
+22:15:01 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 150: FlyingBallArc
+22:15:01 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 145: FlyingBallArc
+22:15:01 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 146: FlyingBallArc
+22:15:02 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 152 hit entity ID 0
+22:15:02 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 152: FlyingBallArc
+22:15:02 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 143: FlyingBallArc
+22:15:02 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 147: FlyingBallArc
+22:15:02 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 154 hit entity ID 0
+22:15:02 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 154: FlyingBallArc
+22:15:02 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 156 hit entity ID 0
+22:15:02 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 156: FlyingBallArc
+22:15:03 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 151: FlyingBallArc
+22:15:03 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 158 hit entity ID 0
+22:15:03 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 158: FlyingBallArc
+22:15:03 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 149: FlyingBallArc
+22:15:03 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 160 hit entity ID 0
+22:15:03 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 160: FlyingBallArc
+22:15:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 153: FlyingBallArc
+22:15:04 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 161 hit entity ID 0
+22:15:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 161: FlyingBallArc
+22:15:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 157: FlyingBallArc
+22:15:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 155: FlyingBallArc
+22:15:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 162: FlyingBallArc
+22:15:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 163: FlyingBallArc
+22:15:05 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 159: FlyingBallArc
+22:15:05 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 165 hit entity ID 0
+22:15:05 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 165: FlyingBallArc
+22:15:05 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 166: FlyingBallArc
+22:15:06 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 167: FlyingBallArc
+22:15:06 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 168: FlyingBallArc
+22:15:06 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 169: FlyingBallArc
+22:15:06 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 164: FlyingBallArc
+22:15:07 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 170: FlyingBallArc
+22:15:07 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 171: FlyingBallArc
+22:15:07 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 173: FlyingBallArc
+22:15:08 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 172: FlyingBallArc
+22:15:08 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 175: FlyingBallArc
+22:15:08 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 174: FlyingBallArc
+22:15:09 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 176: FlyingBallArc
+22:15:09 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 177: FlyingBallArc
+22:15:09 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 178: FlyingBallArc
+22:15:09 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 182: FlyingBallArc
+22:15:09 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 179: FlyingBallArc
+22:15:10 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 180: FlyingBallArc
+22:15:10 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 181: FlyingBallArc
+22:15:10 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 186: FlyingBallArc
+22:15:10 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 183: FlyingBallArc
+22:15:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 188: FlyingBallArc
+22:15:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 185: FlyingBallArc
+22:15:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 189: FlyingBallArc
+22:15:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 184: FlyingBallArc
+22:15:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 190: FlyingBallArc
+22:15:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 187: FlyingBallArc
+22:15:12 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 191: FlyingBallArc
+22:15:13 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 192: FlyingBallArc
+22:15:13 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 193: FlyingBallArc
+22:15:13 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 194: FlyingBallArc
+22:15:13 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 195: FlyingBallArc
+22:15:13 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 196: FlyingBallArc
+22:15:14 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 197: FlyingBallArc
+22:15:14 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 198: FlyingBallArc
+22:15:14 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 199: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 200: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 201: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 203: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 202: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 207: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 204: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 208: FlyingBallArc
+22:15:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 205: FlyingBallArc
+22:15:16 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 209: FlyingBallArc
+22:15:16 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 206: FlyingBallArc
+22:15:16 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 211: FlyingBallArc
+22:15:16 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 210: FlyingBallArc
+22:15:17 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 212: FlyingBallArc
+22:15:17 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 213: FlyingBallArc
+22:15:17 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 214: FlyingBallArc
+22:15:17 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 215 hit entity ID 0
+22:15:17 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 215: FlyingBallArc
+22:15:17 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 216: FlyingBallArc
+22:15:18 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 217 hit entity ID 0
+22:15:18 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 217: FlyingBallArc
+22:15:18 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 218 hit entity ID 0
+22:15:18 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 218: FlyingBallArc
+22:15:18 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 220 hit entity ID 0
+22:15:18 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 220: FlyingBallArc
+22:15:19 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 219 hit entity ID 0
+22:15:19 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 219: FlyingBallArc
+22:15:19 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 221 hit entity ID 0
+22:15:19 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 221: FlyingBallArc
+22:15:19 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 222 hit entity ID 0
+22:15:19 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 222: FlyingBallArc
+22:15:19 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 223 hit entity ID 0
+22:15:19 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 223: FlyingBallArc
+22:15:20 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 225 hit entity ID 0
+22:15:20 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 225: FlyingBallArc
+22:15:20 [DEBUG] horde_survival::entity::update::flying_ball: Flying ball ID 224 hit entity ID 0
+22:15:20 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 224: FlyingBallArc
+22:15:20 [INFO] horde_survival: Closed Horde Survival

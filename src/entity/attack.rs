@@ -101,16 +101,17 @@ pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, nex
     {
         let entity = &entities[target_index];
         dummy = Entity::new(*next_id,
-                            (entity.id + 1) as f64,
-                            0.0,
-                            entity.coords.clone(),
+                            1.0,
+                            1.0,
+                            entity.coords.translated(0.0, PROJECTILE_SPAWN_OFFSET, 0.0),
                             EntityType::FlyingBallLinear,
                             entity.team.clone(),
                             IsDummy::True,
                             entity.direction.clone(),
                             RANGED_LINEAR_LIFETIME,
                             HasGravity::False,
-                            HasAI::False);
+                            HasAI::False,
+                            Some(entity.id));
 
         *next_id += 1;
 
@@ -127,26 +128,25 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
 
     // Scoped for push call
     {
-        let entity = &mut entities[target_index];
+        let entity = &entities[target_index];
         dummy = Entity::new(*next_id,
-                            (entity.id + 1) as f64,
-                            0.0,
-                            entity.coords.clone(),
+                            1.0,
+                            1.0,
+                            entity.coords.translated(0.0, PROJECTILE_SPAWN_OFFSET, 0.0),
                             EntityType::FlyingBallArc,
                             entity.team.clone(),
                             IsDummy::True,
                             entity.direction.clone(),
-                            RANGED_ARC_LIFETIME,
+                            0,
                             HasGravity::False,
-                            HasAI::False);
+                            HasAI::False,
+                            Some(entity.id));
 
         *next_id += 1;
 
         let speed = entity.current_weapon.range;
         let angle = Direction((entity.direction.0 - 90.0).abs()).as_radians();
-        debug!("FlyingBallArc angle: {:?} spawned by ID {}", angle, entity.id);
         dummy.velocity.accelerate(angle.cos() * speed, angle.sin() * speed);
-        dummy.coords.y += PROJECTILE_SPAWN_OFFSET;
     }
 
     entities.push(dummy);

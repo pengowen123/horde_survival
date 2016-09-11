@@ -26,4 +26,4 @@ pub fn base_inventory() -> HashMap<usize, Item> {
     inventory
 }
 
-pub const CRASH_MESSAGE: &'static str = "Horde Survival has crashed. See log for more details.";
+pub const CRASH_MESSAGE: &'static str = "Horde Survival has crashed";

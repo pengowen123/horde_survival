@@ -43,6 +43,7 @@ pub struct Entity {
     // Physics info
     pub has_gravity: HasGravity,
     pub on_ground: bool,
+    pub entity_height: f64,
     
     // Flags
     pub has_ai: HasAI,
@@ -53,9 +54,18 @@ pub struct Entity {
     pub armor: [Armor; 4],
     pub current_weapon: Weapon,
 
+    // Animations
+    pub attack_animation: usize,
+
     // Misc
     pub lifetime: usize,
-    pub attack_animation: usize,
+    pub spawned_by: Option<usize>,
+
+    // AI
+    // TODO: Move these fields to an AI field of type AIData
+    pub ai_projectile_error: f64,
+    pub ai_target_id: usize,
+    pub ai_consecutive_error_increases: usize,
 }
 
 // Constructor
@@ -63,19 +73,24 @@ impl Entity {
     pub fn new(id: usize,
                health: f64,
                max_hp: f64,
-               coords: Coords,
+               mut coords: Coords,
                entity_type: EntityType,
                team: Team,
                is_dummy: IsDummy,
                direction: (f64, f64),
                lifetime: usize,
                has_gravity: HasGravity,
-               has_ai: HasAI) -> Entity {
+               has_ai: HasAI,
+               spawned_by: Option<usize>) -> Entity {
+
+        let height = get_entity_height(&entity_type);
+        coords.y += height;
 
         Entity {
             id: id,
-            entity_type: entity_type,
+            entity_height: height,
             coords: coords,
+            entity_type: entity_type,
             direction: direction,
             health: health,
             max_hp: max_hp,
@@ -93,6 +108,10 @@ impl Entity {
             has_ai: has_ai,
             current_weapon: UNARMED,
             armor: [HEAD_NONE, BODY_NONE, LEGS_NONE, FEET_NONE],
+            spawned_by: spawned_by,
+            ai_projectile_error: 0.0,
+            ai_target_id: 0,
+            ai_consecutive_error_increases: 0,
         }
     }
 }
@@ -110,7 +129,8 @@ impl Entity {
                     DEFAULT_DIRECTION,
                     INFINITE_LIFETIME,
                     HasGravity::True,
-                    HasAI::False)
+                    HasAI::False,
+                    None)
     }
 
     pub fn zombie(coords: Coords, entity_id: usize, team: Team) -> Entity {
@@ -124,7 +144,8 @@ impl Entity {
                     DEFAULT_DIRECTION,
                     INFINITE_LIFETIME,
                     HasGravity::True,
-                    HasAI::True)
+                    HasAI::True,
+                    None)
     }
 }
 

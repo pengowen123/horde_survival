@@ -43,6 +43,7 @@ pub struct Player {
     pub move_right: bool,
 }
 
+// Constructor
 impl Player {
     pub fn new(entity_id: usize, player_id: usize, class: Class) -> Player {
         Player {
@@ -65,6 +66,13 @@ impl Player {
             move_right: false,
         }
     }
+}
+
+// Misc
+impl Player {
+    pub fn give_bounty(&mut self, count: usize) {
+        self.gold += self.bounty * count;
+    }
 
     pub fn update_cooldowns(&mut self) {
         for cooldown in &mut self.current_cooldowns {
@@ -73,7 +81,10 @@ impl Player {
             }
         }
     }
+}
 
+// Abilities
+impl Player {
     pub fn ability_0(&mut self, entities: &mut Vec<Entity>) {
         self.current_cooldowns[0] = self.cooldown_mods.iter().fold(WARRIOR_COOLDOWN_0, |acc, x| (acc as f64 * x.value) as usize);
 

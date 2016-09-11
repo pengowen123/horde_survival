@@ -43,7 +43,7 @@ impl Weapon {
             WeaponType::MeleeLine => self.range * MELEE_LINE_INTERVAL * MELEE_LINE_RADIUS * 2.0,
             WeaponType::MeleeArea => self.range * 2.0,
             WeaponType::RangedLinear => (self.range as usize + 1) as f64 * RANGED_INTERVAL * RANGED_LINEAR_LIFETIME as f64,
-            WeaponType::RangedProjectile => self.range.powi(2) / G,
+            WeaponType::RangedProjectile => self.range * 2.0,
         }
     }
 

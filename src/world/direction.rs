@@ -1,3 +1,5 @@
+use consts::balance::ai_control::PROJECTILE_LEARNING_RATE;
+
 use std::f64::consts::PI;
 
 #[derive(Clone, Copy)]
@@ -30,18 +32,17 @@ pub fn get_angle(rise: f64, run: f64) -> f64 {
     let hypotenuse = (rise.powi(2) + run.powi(2)).sqrt();
     let mut angle = get_degrees((run / hypotenuse).asin());
 
-    angle = if rise < 0.0 {
+    angle = if rise > 0.0 {
         90.0 + (90.0 - angle)
     } else {
         angle
     };
 
-    if angle.is_normal() {
-        angle
-    } else {
-        // Remove this
-        debug!("Found subnormal angle: {}", angle);
+    if angle.is_nan() {
+        warn!("get_angle returned NAN");
         0.0
+    } else {
+        angle
     }
 }
 
@@ -55,12 +56,23 @@ pub fn get_angle2(dx: f64, dy: f64) -> f64 {
         angle
     };
 
-    if !(angle.is_normal()) {
-        // Remove this
-        debug!("Found subnormal angle: {}", angle);
-        return 0.0;
+    if angle.is_nan() {
+        warn!("get_angle2 returned NAN");
+        0.0
+    } else {
+        // Rotate angle 180 degrees, because it is always backwards
+        Direction(angle + 180.0).wrap().0
     }
+}
 
-    // Rotate angle 180 degrees, because it is always backwards
-    Direction(angle + 180.0).wrap().0
+pub fn correct_for_error(angle: f64, error: f64) -> f64 {
+    let corrected = angle + error * PROJECTILE_LEARNING_RATE;
+
+    if corrected < 45.0 {
+        45.0
+    } else if corrected > 180.0 {
+        180.0
+    } else {
+        corrected
+    }
 }

@@ -1,54 +1,47 @@
+use world::direction::correct_for_error;
+use items::WeaponType;
 use player::Player;
 use entity::*;
-use consts::entity::*;
+use consts::ai_control::*;
 
 pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut usize, player: &mut Player) {
-    let mut closest_index = None;
-    let mut closest_distance = None;
-    let id;
-
-    // Scoped for mutable borrow
-    {
-        let entity = &entities[target_index];
-        let coords = &entity.coords;
-        id = entity.id;
-
-        for (i, e) in entities.iter().enumerate().filter(|&(_, e)| e.is_enemy_of(entity)) {
-            let distance = e.coords.distance(coords);
-
-            match closest_distance {
-                Some(d) => {
-                    if distance < d {
-                        closest_distance = Some(distance);
-                        closest_index = Some(i);
-                    }
-                },
-                None => {
-                    closest_distance = Some(distance);
-                    closest_index = Some(i);
-                }
-            }
-        }
-    }
+    let closest = get_closest_entity(target_index, &*entities);
+    let id = entities[target_index].id;
 
     let mut attack = false;
 
-    if let Some(i) = closest_index {
-        let distance = closest_distance.unwrap();
-        let coords = entities[i].coords.clone();
+    if let Some((i, distance)) = closest {
+        let target_coords;
+        let target_id;
+        // Scoped for mutable borrow
+        {
+            let entity = &entities[i];
+            target_coords = entity.coords.clone();
+            target_id = entity.id;
+        }
+
         let entity = &mut entities[target_index];
         let range = entity.current_weapon.get_real_range();
 
-        entity.direction = entity.coords.direction_to(&coords);
+        entity.direction = entity.coords.direction_to(&target_coords);
 
         if distance <= range {
             attack = true;
+
+            if let WeaponType::RangedProjectile = entity.current_weapon.weapon_type {
+                if target_id != entity.ai_target_id {
+                    entity.ai_projectile_error = 0.0;
+                }
+
+                entity.ai_target_id = target_id;
+                entity.direction.0 = correct_for_error(entity.direction.0, entity.ai_projectile_error);
+            }
         }
 
-        if distance >= range * AI_RANGE_THRESHOLD {
+        if distance >= range * RANGE_THRESHOLD {
             // If out of range, move forward
             entity.move_forward(0.0);
-        } else if distance <= range * AI_RANGE_TOO_CLOSE_THRESHOLD {
+        } else if distance <= range * RANGE_TOO_CLOSE_THRESHOLD {
             // If too close, move backwards
             entity.move_forward(180.0);
         }
