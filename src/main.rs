@@ -1,5 +1,5 @@
-// TODO: Fix attack_ranged_projectile (fix angle and make sure the physics is correct)
-//       Fix AI direction control
+// TODO: Fix shape rotations stretching the shape
+
 #![feature(const_fn)]
 
 // Graphics
@@ -90,16 +90,9 @@ fn main() {
     game.entities[0].current_weapon = TEST_BOW;
     //game.entities[0].armor[0] = consts::items::armor::HEAL;
 
-    game.spawn_entity(Entity::zombie(Coords::new(0.0, 0.0, 0.0), 0, Team::Monsters));
-    game.spawn_entity(Entity::zombie(Coords::new(-1.0, 0.0, 1.0), 0, Team::Monsters));
-    game.spawn_entity(Entity::zombie(Coords::new(-2.0, 0.0, -1.0), 0, Team::Monsters));
-    game.spawn_entity(Entity::zombie(Coords::new(-3.0, 0.0, -4.0), 0, Team::Monsters));
-    game.spawn_entity(Entity::zombie(Coords::new(-4.0, 0.0, 3.0), 0, Team::Monsters));
-    game.entities[1].current_weapon = TEST_BOW;
-    game.entities[2].current_weapon = TEST_BOW;
-    game.entities[3].current_weapon = TEST_BOW;
-    game.entities[4].current_weapon = TEST_BOW;
-    game.entities[5].current_weapon = TEST_BOW;
+    let bounty = game.bounty;
+    game.spawn_entity(Entity::zombie(Coords::new(-4.0, 0.0, 3.0), 0, Team::Monsters, bounty));
+    game.entities[1].current_weapon = TEST_WAND;
 
     // Graphics state
     let mut graphics = GraphicsState::new(&mut factory);
@@ -173,10 +166,12 @@ fn main() {
             let player = &mut game.player;
 
             if player.left_click && player.capture_cursor {
-                player.gold += player.bounty * try_attack(player.entity_id,
-                                                          &mut game.entities,
-                                                          &mut game.next_entity_id,
-                                                          player);
+                let gold_gained = try_attack(player.entity_id,
+                                             &mut game.entities,
+                                             &mut game.next_entity_id,
+                                             player);
+
+                player.give_gold(gold_gained);
             }
 
             let player_entity = unwrap_or_log!(game.entities.iter_mut().find(|e| e.id == player.entity_id),
@@ -199,7 +194,6 @@ fn main() {
 
         // Bind direction to mouse
         if game.player.capture_cursor {
-            // TODO: Change center_mouse to use glutin::Window methods rather than winapi
             hscontrols::center_mouse(&mut game.player.mouse,
                                      hwnd,
                                      &mut graphics.window_position,
@@ -217,8 +211,5 @@ fn main() {
         if elapsed < expected_elapsed {
             sleeping_until = current + (expected_elapsed - elapsed);
         }
-
-        let entity = &game.entities[0];
-        println!("player health: {:?}", entity.health);
     }
 }

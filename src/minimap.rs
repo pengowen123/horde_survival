@@ -5,6 +5,7 @@ use entity::{Entity, EntityType};
 #[derive(Clone)]
 pub struct MinimapEntity {
     pub coords: [f32; 2],
+    pub direction: (f64, f64),
     pub color: Color,
     pub id: usize,
 }
@@ -12,28 +13,31 @@ pub struct MinimapEntity {
 pub struct Minimap {
     pub entities: Vec<MinimapEntity>,
     pub next_id: usize,
-    pub scale: f64,
+    pub scale: f32,
 }
 
 impl MinimapEntity {
-    pub fn new(coords: [f32; 2], color: Color) -> MinimapEntity {
+    pub fn new(coords: [f32; 2], direction: (f64, f64), color: Color) -> MinimapEntity {
         MinimapEntity {
             coords: coords,
+            direction: direction,
             color: color,
             id: 0,
         }
     }
 
-    pub fn from_entity(entity: &Entity, scale: f64) -> MinimapEntity {
-        let coords = entity.coords.scaled(scale);
+    pub fn from_entity(entity: &Entity, scale: f32) -> MinimapEntity {
+        let coords = entity.coords.scaled(scale as f64);
 
-        MinimapEntity::new([coords.x as f32, coords.z as f32], get_minimap_entity_color(&entity.entity_type))
+        MinimapEntity::new([coords.x as f32, coords.z as f32],
+                           entity.direction.clone(),
+                           get_minimap_entity_color(&entity.entity_type))
     }
 }
 
 // Constructors
 impl Minimap {
-    pub fn new(scale: f64) -> Minimap {
+    pub fn new(scale: f32) -> Minimap {
         Minimap {
             entities: Vec::new(),
             next_id: 0,
@@ -41,7 +45,7 @@ impl Minimap {
         }
     }
 
-    pub fn from_entities(entities: &[Entity], scale: f64) -> Minimap {
+    pub fn from_entities(entities: &[Entity], scale: f32) -> Minimap {
         let mut minimap = Minimap::new(scale);
 
         for entity in entities {

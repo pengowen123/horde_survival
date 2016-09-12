@@ -7,7 +7,7 @@ use hslog::*;
 
 pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> usize {
     let raw_entities = unsafe { &mut *(entities as *mut _) };
-    let mut killed = 0;
+    let mut bounty = 0;
     let point;
     let range;
     let team;
@@ -36,15 +36,17 @@ pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player
             f(target_index, i, raw_entities, player);
         }
 
-        killed += e.is_dead() as i32 as usize;
+        if e.is_dead() {
+            bounty += e.bounty;
+        }
     }
 
-    killed
+    bounty
 }
 
 pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> usize {
     let mut points;
-    let mut killed = 0;
+    let mut bounty = 0;
     let raw_entities = unsafe { &mut *(entities as *mut _) };
     let multiplier;
     let coords;
@@ -76,7 +78,10 @@ pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player
                     f(target_index, i, raw_entities, player);
                 }
 
-                killed = e.is_dead() as i32 as usize;
+                if e.is_dead() {
+                    bounty = e.bounty;
+                }
+
                 break;
             },
             None => {},
@@ -91,7 +96,7 @@ pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player
         }
     }
 
-    killed
+    bounty
 }
 
 pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut usize) -> usize {
@@ -109,6 +114,7 @@ pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, nex
                             IsDummy::True,
                             entity.direction.clone(),
                             RANGED_LINEAR_LIFETIME,
+                            0,
                             HasGravity::False,
                             HasAI::False,
                             Some(entity.id));
@@ -137,6 +143,7 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
                             entity.team.clone(),
                             IsDummy::True,
                             entity.direction.clone(),
+                            INFINITE_LIFETIME,
                             0,
                             HasGravity::False,
                             HasAI::False,
@@ -145,7 +152,7 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
         *next_id += 1;
 
         let speed = entity.current_weapon.range;
-        let angle = Direction((entity.direction.0 - 90.0).abs()).as_radians();
+        let angle = Direction(entity.direction.0 - 90.0).as_radians();
         dummy.velocity.accelerate(angle.cos() * speed, angle.sin() * speed);
     }
 

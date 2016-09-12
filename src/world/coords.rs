@@ -100,20 +100,3 @@ impl Coords {
         coords
     }
 }
-
-pub fn calculate_error(a: &Coords, b: &Coords, c: &Coords) -> f64 {
-    let side_a = a.distance(b);
-    let side_b = a.distance(c);
-    let side_c = b.distance(c);
-
-    let s = (side_a + side_b + side_c) / 2.0;
-    let area = ((s - side_a) * (s - side_b) * (s - side_c)).sqrt();
-    let height = area / (side_a / 2.0);
-    let side_d = (side_b.powi(2) - height.powi(2)).sqrt();
-
-    if side_d - side_a > 0.0 {
-        side_d * -1.0
-    } else {
-        side_d
-    }
-}

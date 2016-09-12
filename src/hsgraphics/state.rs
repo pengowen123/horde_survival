@@ -13,7 +13,6 @@ pub struct GraphicsState {
 
     // Objects
     pub objects: Vec<Object>,
-    pub next_object_id: usize,
 
     // PSO's
     pub pso: Vec<ObjectPSO>,
@@ -41,7 +40,6 @@ impl GraphicsState {
             window_position: (0, 0),
             window_center: (0, 0),
             objects: Vec::new(),
-            next_object_id: 1,
             pso: pso,
             minimap: Minimap::new(MINIMAP_SCALE),
         }
@@ -60,9 +58,8 @@ impl GraphicsState {
 
 // Object methods
 impl GraphicsState {
-    pub fn add_object(&mut self, mut object: Object) {
-        object.id = self.next_object_id;
-        self.next_object_id += 1;
+    pub fn add_object(&mut self, mut object: Object, id: usize) {
+        object.id = id;
         self.objects.push(object);
     }
 
@@ -88,9 +85,13 @@ impl GraphicsState {
 
         // TODO: Make minimap bounded, and draw borders
         for entity in &self.minimap.entities {
-            let square = shapes::square(entity.coords, MINIMAP_ENTITY_SIZE, entity.color.clone());
-            let square_object = Object::from_slice(0, factory, &square, color.clone());
+            let square = shapes::square(entity.coords,
+                                        MINIMAP_ENTITY_SIZE,
+                                        entity.color.clone(),
+                                        entity.direction.1 as f32);
 
+            let mut square_object = Object::from_slice(0, factory, &square, color.clone());
+            square_object.id = MINIMAP_OBJECT_ID;
             self.objects.push(square_object);
         }
     }

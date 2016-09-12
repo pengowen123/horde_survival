@@ -1,4 +1,4 @@
-use world::direction::correct_for_error;
+use world::Coords;
 use items::WeaponType;
 use player::Player;
 use entity::*;
@@ -34,7 +34,7 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut u
                 }
 
                 entity.ai_target_id = target_id;
-                entity.direction.0 = correct_for_error(entity.direction.0, entity.ai_projectile_error);
+                entity.direction.0 = correct_for_error(entity.current_weapon.range, entity.direction.0, entity.ai_projectile_error);
             }
         }
 
@@ -49,5 +49,34 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut u
 
     if attack {
         try_attack(id, entities, next_id, player);
+    }
+}
+
+pub fn correct_for_error(speed: f64, angle: f64, error: f64) -> f64 {
+    let corrected = angle + error * PROJECTILE_LEARNING_RATE / speed;
+
+    if corrected < 45.0 {
+        45.0
+    } else if corrected > 180.0 {
+        180.0
+    } else {
+        corrected
+    }
+}
+
+pub fn calculate_error(a: &Coords, b: &Coords, c: &Coords) -> f64 {
+    let side_a = a.distance(b);
+    let side_b = a.distance(c);
+    let side_c = b.distance(c);
+
+    let s = (side_a + side_b + side_c) / 2.0;
+    let area = ((s - side_a) * (s - side_b) * (s - side_c)).sqrt();
+    let height = area / (side_a / 2.0);
+    let side_d = (side_b.powi(2) - height.powi(2)).sqrt();
+
+    if side_d - side_a > 0.0 {
+        side_d
+    } else {
+        side_d * -1.0
     }
 }

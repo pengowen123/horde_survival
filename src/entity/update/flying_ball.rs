@@ -1,6 +1,6 @@
-use world::coords::calculate_error;
 use consts::*;
 use entity::*;
+use entity::update::ai::calculate_error;
 use player::*;
 use world::*;
 use map::*;
@@ -154,9 +154,10 @@ pub fn update_flying_ball(target_index: usize, entities: &mut Vec<Entity>, playe
             let source_found;
 
             hit = true;
-            debug!("Flying ball ID {} hit entity ID {}", entities[target_index].id, entities[e].id);
             // Scoped for damage call
             {
+                // NOTE: If this fails, it means that the spawned_by field was None. If the source
+                //       entity is gone, it will simply kill the flying ball
                 id = unwrap_or_log!(entities[target_index].spawned_by, "Flying ball ID {} has no source", entities[target_index].id);
                 let result = entities.iter().enumerate().find(|e| e.1.id == id);
 
@@ -181,8 +182,10 @@ pub fn update_flying_ball(target_index: usize, entities: &mut Vec<Entity>, playe
                 return false;
             }
 
-            if entities[e].damage(damage, e, index, raw_entities, player) && id == player.entity_id {
-                player.give_bounty(1);
+            let entity = &mut entities[e];
+
+            if entity.damage(damage, e, index, raw_entities, player) && id == player.entity_id {
+                player.give_gold(entity.bounty);
             }
 
             if let Some(f) = weapon.on_hit {

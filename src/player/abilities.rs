@@ -59,7 +59,7 @@ pub fn warrior_ability_3(player: &mut Player, entities: &mut Vec<Entity>) {
         *entity = clone;
 
         if entity.is_dead() {
-            player.give_bounty(1);
+            player.give_gold(entity.bounty);
         }
     }
 }

@@ -60,6 +60,7 @@ pub struct Entity {
     // Misc
     pub lifetime: usize,
     pub spawned_by: Option<usize>,
+    pub bounty: usize,
 
     // AI
     // TODO: Move these fields to an AI field of type AIData
@@ -79,6 +80,7 @@ impl Entity {
                is_dummy: IsDummy,
                direction: (f64, f64),
                lifetime: usize,
+               bounty: usize,
                has_gravity: HasGravity,
                has_ai: HasAI,
                spawned_by: Option<usize>) -> Entity {
@@ -112,6 +114,7 @@ impl Entity {
             ai_projectile_error: 0.0,
             ai_target_id: 0,
             ai_consecutive_error_increases: 0,
+            bounty: bounty,
         }
     }
 }
@@ -128,12 +131,13 @@ impl Entity {
                     IsDummy::False,
                     DEFAULT_DIRECTION,
                     INFINITE_LIFETIME,
+                    0,
                     HasGravity::True,
                     HasAI::False,
                     None)
     }
 
-    pub fn zombie(coords: Coords, entity_id: usize, team: Team) -> Entity {
+    pub fn zombie(coords: Coords, entity_id: usize, team: Team, bounty: usize) -> Entity {
         Entity::new(entity_id,
                     ZOMBIE_HEALTH,
                     ZOMBIE_HEALTH,
@@ -143,6 +147,7 @@ impl Entity {
                     IsDummy::False,
                     DEFAULT_DIRECTION,
                     INFINITE_LIFETIME,
+                    bounty,
                     HasGravity::True,
                     HasAI::True,
                     None)

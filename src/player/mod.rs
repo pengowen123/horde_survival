@@ -19,6 +19,7 @@ pub struct Player {
     pub gold: usize,
     pub class: Class,
     pub inventory: HashMap<usize, Item>,
+    pub dead: bool,
 
     // Id numbers
     pub entity_id: usize,
@@ -28,11 +29,6 @@ pub struct Player {
     pub current_cooldowns: [usize; 4],
     pub cooldown_mods: Vec<Modifier>,
 
-    // Game variables
-    pub wave: usize,
-    pub bounty: usize,
-    pub dead: bool,
-    
     // Controls
     pub left_click: bool,
     pub capture_cursor: bool,
@@ -50,11 +46,9 @@ impl Player {
             entity_id: entity_id,
             player_id: player_id,
             gold: 0,
-            bounty: BASE_BOUNTY,
             class: class,
             current_cooldowns: [0; 4],
             cooldown_mods: Vec::new(),
-            wave: 0,
             inventory: base_inventory(),
             dead: false,
             left_click: false,
@@ -70,8 +64,8 @@ impl Player {
 
 // Misc
 impl Player {
-    pub fn give_bounty(&mut self, count: usize) {
-        self.gold += self.bounty * count;
+    pub fn give_gold(&mut self, gold: usize) {
+        self.gold += gold;
     }
 
     pub fn update_cooldowns(&mut self) {

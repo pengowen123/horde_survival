@@ -1,5 +1,3 @@
-use consts::balance::ai_control::PROJECTILE_LEARNING_RATE;
-
 use std::f64::consts::PI;
 
 #[derive(Clone, Copy)]
@@ -62,17 +60,5 @@ pub fn get_angle2(dx: f64, dy: f64) -> f64 {
     } else {
         // Rotate angle 180 degrees, because it is always backwards
         Direction(angle + 180.0).wrap().0
-    }
-}
-
-pub fn correct_for_error(angle: f64, error: f64) -> f64 {
-    let corrected = angle + error * PROJECTILE_LEARNING_RATE;
-
-    if corrected < 45.0 {
-        45.0
-    } else if corrected > 180.0 {
-        180.0
-    } else {
-        corrected
     }
 }
