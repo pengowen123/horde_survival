@@ -1,4 +1,6 @@
-use hsgraphics::Color;
+#![allow(dead_code)]
+
+use hsgraphics::gfx2d::Color;
 use consts::graphics::minimap::*;
 use entity::{Entity, EntityType};
 

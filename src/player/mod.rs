@@ -2,12 +2,12 @@ pub mod class;
 mod abilities;
 mod inventory;
 
-pub use self::class::Class;
-
-use self::abilities::*;
-
 use winapi::POINT;
 
+pub use self::class::Class;
+
+use player::abilities::*;
+use world::Coords;
 use items::*;
 use entity::*;
 use consts::*;
@@ -37,6 +37,10 @@ pub struct Player {
     pub move_left: bool,
     pub move_backward: bool,
     pub move_right: bool,
+
+    // Used for camera control
+    pub direction: (f64, f64),
+    pub coords: Coords,
 }
 
 // Constructor
@@ -58,6 +62,8 @@ impl Player {
             move_left: false,
             move_backward: false,
             move_right: false,
+            direction: START_CAMERA_ANGLE,
+            coords: Coords::origin(),
         }
     }
 }

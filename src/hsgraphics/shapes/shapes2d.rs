@@ -1,12 +1,12 @@
 use consts::graphics::minimap::*;
-use world::Direction;
 use hsgraphics::utils::*;
-use hsgraphics::gfx_utils::*;
+use hsgraphics::gfx2d::{self, Color};
+use world::Direction;
 
 macro_rules! shape {
     ($color:expr, $([$x:expr, $y:expr]),*) => {{
         [$(
-            Vertex { pos: [$x + MINIMAP_LOCATION.0, $y + MINIMAP_LOCATION.1], color: $color.clone() },
+            gfx2d::Vertex { pos: [$x + MINIMAP_LOCATION.0, $y + MINIMAP_LOCATION.1], color: $color.clone() },
          )*]
     }}
 }
@@ -27,14 +27,14 @@ pub fn rotate_point(point: &mut [f32; 2], pivot: &[f32; 2], mut angle: f32) {
     point[1] = y + pivot[1];
 }
 
-pub fn rotate_shape(shape: &mut [Vertex], pivot: [f32; 2], angle: f32) {
+pub fn rotate_shape(shape: &mut [gfx2d::Vertex], pivot: [f32; 2], angle: f32) {
     // TODO: inline rotate_point here to avoid recalculation of sine and cosine
     for vertex in shape {
         rotate_point(&mut vertex.pos, &pivot, angle)
     }
 }
 
-pub fn square(position: [f32; 2], size: f32, color: Color, rotation: f32) -> [Vertex; 6] {
+pub fn square(position: [f32; 2], size: f32, color: Color, rotation: f32) -> [gfx2d::Vertex; 6] {
     let x = position[0] - size / 2.0;
     let y = position[1] - size / 2.0;
     let center = [x + size / 2.0, y + size / 2.0];

@@ -1,5 +1,5 @@
 use consts::graphics::window::*;
-use hsgraphics::Color;
+use hsgraphics::gfx2d::Color;
 
 pub const MINIMAP_LOCATION: (f32, f32) = (0.0, 0.0);
 pub const MINIMAP_SIZE: f32 = 200.0;

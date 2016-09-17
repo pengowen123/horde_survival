@@ -11,8 +11,13 @@ pub fn update_flying_ball_linear(target_index: usize, entities: &mut Vec<Entity>
 
     // Scoped for update_flying_ball call
     {
-        let entity = &entities[target_index];
+        let entity = &mut entities[target_index];
         points = (entity.as_mods[0].value * 10.0) as usize / 10 + 1;
+
+        if entity.on_ground {
+            entity.lifetime = 1;
+            return;
+        }
     }
 
     for _ in 0..points {
