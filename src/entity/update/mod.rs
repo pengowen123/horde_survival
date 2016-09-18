@@ -74,7 +74,7 @@ pub fn update_gravity(map: &Map, entity: &mut Entity) {
         return;
     }
 
-    if entity.has_gravity() && !entity.on_ground {
+    if entity.has_gravity() {
         let mut coords = entity.coords.clone();
         coords.translate(&Coords::new(0.0, entity.velocity.component_y, 0.0));
 

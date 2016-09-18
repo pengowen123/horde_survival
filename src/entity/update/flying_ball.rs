@@ -161,8 +161,8 @@ pub fn update_flying_ball(target_index: usize, entities: &mut Vec<Entity>, playe
             hit = true;
             // Scoped for damage call
             {
-                // NOTE: If this fails, it means that the spawned_by field was None. If the source
-                //       entity is gone, it will simply kill the flying ball
+                // NOTE: If this fails, it means that the spawned_by field was None. This is
+                //       different from the source entity not being found
                 id = unwrap_or_log!(entities[target_index].spawned_by, "Flying ball ID {} has no source", entities[target_index].id);
                 let result = entities.iter().enumerate().find(|e| e.1.id == id);
 

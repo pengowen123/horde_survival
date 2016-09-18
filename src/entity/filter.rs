@@ -12,7 +12,7 @@ pub fn filter_entities(entities: &mut Vec<Entity>) {
 
         let keep = result && !(e.lifetime == 1);
 
-        if !keep {
+        if !keep && !e.is_dummy() {
             debug!("Entity removed by filter: ID {}: {:?}", e.id, e.entity_type);
         }
 
@@ -34,8 +34,10 @@ pub fn get_closest_entity(index: usize, entities: &[Entity]) -> Option<(usize, f
         let distance = e.coords.distance(&entity.coords);
 
         if let Some(ref mut d) = closest_distance {
-            let x: f64 = *d;
-            *d = x.max(distance);
+            if distance < *d {
+                *d = distance;
+                closest_index = i;
+            }
         } else {
             closest_distance = Some(distance);
             closest_index = i;

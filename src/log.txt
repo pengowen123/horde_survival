@@ -1,16 +1,34 @@
-21:35:05 [INFO] horde_survival: Building window...
-21:35:06 [INFO] horde_survival: Initializing game...
-21:35:06 [INFO] horde_survival: Done
-21:35:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 2: FlyingBallLinear
-21:35:15 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 3: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 4: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 10: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 11: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 5: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 12: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 6: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 13: FlyingBallLinear
-21:36:46 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 7: FlyingBallLinear
-21:36:47 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 8: FlyingBallLinear
-21:36:47 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 9: FlyingBallLinear
-21:36:55 [INFO] horde_survival: Closed Horde Survival
+15:45:42 [INFO] horde_survival: Building window...
+15:45:42 [INFO] horde_survival: Initializing game...
+15:45:42 [INFO] horde_survival: Done
+15:45:49 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 30: Zombie
+15:45:50 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 23: Zombie
+15:45:50 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 26: Zombie
+15:45:51 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 24: Zombie
+15:45:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 15: Zombie
+15:45:52 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 20: Zombie
+15:45:53 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 18: Zombie
+15:45:54 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 10: Zombie
+15:45:55 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 13: Zombie
+15:45:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 27: Zombie
+15:45:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 1: Zombie
+15:45:57 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 25: Zombie
+15:45:58 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 8: Zombie
+15:45:59 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 29: Zombie
+15:46:01 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 12: Zombie
+15:46:02 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 19: Zombie
+15:46:03 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 17: Zombie
+15:46:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 16: Zombie
+15:46:04 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 28: Zombie
+15:46:06 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 11: Zombie
+15:46:07 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 21: Zombie
+15:46:07 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 7: Zombie
+15:46:08 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 9: Zombie
+15:46:09 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 3: Zombie
+15:46:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 6: Zombie
+15:46:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 5: Zombie
+15:46:11 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 22: Zombie
+15:46:12 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 14: Zombie
+15:46:12 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 4: Zombie
+15:46:13 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 2: Zombie
+15:46:25 [INFO] horde_survival: Closed Horde Survival

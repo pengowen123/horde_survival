@@ -99,4 +99,8 @@ impl Coords {
         coords.scale(factor);
         coords
     }
+
+    pub fn as_array(&self) -> [f32; 3] {
+        [self.x as f32, self.y as f32, self.z as f32]
+    }
 }

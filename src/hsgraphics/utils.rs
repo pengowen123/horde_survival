@@ -1,28 +1,31 @@
-use cgmath::{self, Point3, Vector3, Matrix4, Transform};
 use consts::*;
+use entity::EntityType;
 use world::Coords;
+
+pub fn get_entity_box_size(entity_type: &EntityType) -> f32 {
+    match *entity_type {
+        EntityType::Player => 0.3,
+        EntityType::Zombie => 0.3,
+        EntityType::FlyingBallLinear => 0.075,
+        EntityType::FlyingBallArc => 0.075,
+    }
+}
+
+pub fn get_texture_id(entity_type: &EntityType) -> usize {
+    match *entity_type {
+        EntityType::Player => 1,
+        EntityType::Zombie => 2,
+        EntityType::FlyingBallLinear => 3,
+        EntityType::FlyingBallArc => 4,
+    }
+}
 
 pub fn get_scales(d: f32) -> (f32, f32) {
     (d * MINIMAP_SCALE / WINDOW_WIDTH as f32,
      d * MINIMAP_SCALE / WINDOW_HEIGHT as f32)
 }
 
-pub fn get_camera(mut coords: Coords, direction: (f64, f64), aspect_ratio: f32) -> [[f32; 4]; 4] {
-    coords.scale(WORLD_SCALE as f64);
-
-    let mut pointing_to = coords.clone();
-    pointing_to.move_3d(direction, 1.0);
-
-    let camera_pos = Point3::new(coords.x as f32, coords.z as f32, coords.y as f32);
-    let pointing_to = Point3::new(pointing_to.x as f32, pointing_to.z as f32, pointing_to.y as f32);
-
-    let view: Matrix4<f32> = Transform::look_at(
-        camera_pos,
-        pointing_to,
-        Vector3::unit_z(),
-    );
-
-    let proj = cgmath::perspective(cgmath::Deg(VERTICAL_FOV), aspect_ratio, 0.01, 100.0);
-
-    (proj * view).into()
+pub fn get_unscaled_cube_coords(coords: &Coords, cube_size: f32) -> [f32; 3] {
+    let height = coords.y as f32 + cube_size + FLOOR_HEIGHT;
+    [coords.x as f32, coords.z as f32, height]
 }

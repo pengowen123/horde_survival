@@ -72,17 +72,13 @@ fn main() {
     let (window, mut device, mut factory, main_color, main_depth) =
         gfx_window_glutin::init::<gfx3d::ColorFormat, gfx3d::DepthFormat>(builder);
     let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
-
-    let hwnd = unsafe {
-        let name = convert_str(WINDOW_NAME);
-
-        FindWindowW(ptr::null(), name.as_ptr())
-    };
+    let hwnd = unsafe { FindWindowW(ptr::null(), convert_str(WINDOW_NAME).as_ptr()) };
 
     info!("Initializing game...");
 
     // Graphics state
-    let mut graphics = GraphicsState::new(&mut factory);
+    let options = GraphicsOptions::new().minimap_enabled(false).clone();
+    let mut graphics = GraphicsState::new(options, &mut factory, main_color.clone(), main_depth.clone());
 
     // Game state
     let player_entity_id = 0;
@@ -91,9 +87,8 @@ fn main() {
     let mut game = GameState::new(player, map, Coords::origin(), Team::Players);
 
     // Use this for testing the game
-    game.entities[0].coords.x += 5.0;
-    game.entities[0].current_weapon = TEST_GUN;
-    game.spawn_entity(Entity::zombie(Coords::new(10.0, 0.0, 0.0), 0, Team::Players, 0));
+    game.entities[0].current_weapon = TEST_WAND;
+
     //game.entities[0].armor[0] = consts::items::armor::HEAL;
 
     // TODO: Fix performance issues with spawning 100 entities
@@ -101,11 +96,10 @@ fn main() {
     //       It only appears when a certain distance from the entities for some reason (maybe its
     //       the AI?)
     //       While running in release mode reduces the issue, it would still be nice to fix it
-    //
     //use rand::Rng;
     //let bounty = game.bounty;
     //for i in 0..100 {
-        //let coords = [rand::thread_rng().gen::<f64>() * 5.0; 3];
+        //let coords = [(rand::thread_rng().gen::<f64>() - 0.5) * 40.0; 3];
         //let coords = Coords::new(coords[0], coords[1], coords[2]);
         //let team = Team::Monsters;
         //game.spawn_entity(Entity::zombie(coords, 0, team, bounty));
@@ -116,26 +110,6 @@ fn main() {
     let mut time;
     let mut sleeping_until = Instant::now();
     let expected_elapsed = Duration::from_millis(1_000_000_000 / TPS / 1_000_000);
-
-    // NOTE: Remove cube_object when 3d entity objects are implemented
-    use hsgraphics::object::object3d::Object3d;
-
-    let cube_object = Object3d::from_slice(&mut factory,
-                                           shapes3d::cube([0.0, 0.0, 0.0], 1.0),
-                                           main_color.clone(),
-                                           main_depth.clone(),
-                                           graphics.get_texture(1),
-                                           graphics.sampler.clone());
-
-    let floor_object = Object3d::from_slice(&mut factory,
-                                            shapes3d::plane(FLOOR_HEIGHT, 1000.0),
-                                            main_color.clone(),
-                                            main_depth.clone(),
-                                            graphics.get_texture(0),
-                                            graphics.sampler.clone());
-
-    graphics.add_object3d(floor_object, 0);
-    graphics.add_object3d(cube_object, 1);
 
     // Event loop
 
@@ -176,7 +150,7 @@ fn main() {
             }
         }
 
-        encoder.clear(&main_color, hsgraphics::CLEAR_COLOR);
+        encoder.clear(&graphics.main_color, hsgraphics::CLEAR_COLOR);
         encoder.clear_depth(&main_depth, 1.0);
         graphics.encode_objects3d(&mut encoder);
         graphics.encode_objects2d(&mut encoder);
@@ -248,6 +222,8 @@ fn main() {
         // Update minimap
         graphics.update_minimap(&game.entities);
         graphics.update_minimap_objects(&mut factory, &main_color);
+        // Update 3d objects
+        graphics.update_entity_objects(&mut factory, &game.entities, game.player.entity_id);
 
         // Set duration to skip game loop for
         let current = Instant::now();

@@ -88,6 +88,13 @@ impl Entity {
         let height = get_entity_height(&entity_type);
         coords.y += height;
 
+        let mut movespeed_mods = Vec::new();
+        let movespeed = get_movespeed(&entity_type);
+
+        if let Some(m) = movespeed {
+            movespeed_mods.push(Modifier::new(m, 0));
+        }
+
         Entity {
             id: id,
             entity_height: height,
@@ -100,7 +107,7 @@ impl Entity {
             damage_mods: Vec::new(),
             as_mods: Vec::new(),
             damage_taken_mods: Vec::new(),
-            movespeed_mods: Vec::new(),
+            movespeed_mods: movespeed_mods,
             team: team,
             is_dummy: is_dummy,
             lifetime: lifetime,

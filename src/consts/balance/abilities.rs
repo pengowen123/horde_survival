@@ -16,5 +16,5 @@ pub const WARRIOR_MAIM_RADIUS: f64 = 3.0;
 pub const WARRIOR_RAGE_AS: Modifier = Modifier::new(1.3, time(4.0));
 pub const WARRIOR_RAGE_DAMAGE: Modifier = Modifier::new(1.3, time(4.0));
 
-pub const WARRIOR_EXECUTE_DAMAGE: f64 = 120.0;
-pub const WARRIOR_EXECUTE_RADIUS: f64 = 2.0;
+pub const WARRIOR_EXECUTE_DAMAGE: f64 = 1000.0;
+pub const WARRIOR_EXECUTE_RADIUS: f64 = 4.0;

@@ -1,0 +1,9 @@
+21:45:37 [INFO] horde_survival: Building window...
+21:45:38 [INFO] horde_survival: Initializing game...
+21:45:38 [INFO] horde_survival: Done
+21:45:42 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 2: FlyingBallLinear
+21:45:42 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 3: FlyingBallLinear
+21:45:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 4: FlyingBallLinear
+21:45:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 5: FlyingBallLinear
+21:45:43 [DEBUG] horde_survival::entity::filter: Entity removed by filter: ID 6: FlyingBallLinear
+21:46:02 [INFO] horde_survival: Closed Horde Survival

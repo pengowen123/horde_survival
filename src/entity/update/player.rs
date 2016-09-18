@@ -18,7 +18,6 @@ pub fn update_player(player: &mut Entity,
 
     *dead = player.is_dead();
 
-
     if move_forward || move_left || move_right || move_backward {
         let speed = player.movespeed_mods.iter().fold(BASE_MOVESPEED, |acc, x| acc * x.value);
 
@@ -28,6 +27,8 @@ pub fn update_player(player: &mut Entity,
         player.move_forward(offset);
         player_coords.move_forward(Direction(player_direction.1 + offset).wrap().0, speed);
     }
+
+    player_coords.y = player.coords.y;
     
     let x = &mut player.direction.0;
     let y = &mut player.direction.1;
@@ -39,6 +40,14 @@ pub fn update_player(player: &mut Entity,
     player_direction.0 += move_x;
     player_direction.1 += move_y * -1.0;
 
+    player_direction.1 = Direction(player_direction.1).wrap().0;
+
+    if player_direction.0 < 1.0 {
+        player_direction.0 = 1.0
+    } else if player_direction.0 > 179.0 {
+        player_direction.0 = 179.0
+    }
+
     // I don't know why this is necessary, but it works
     if let WeaponType::RangedProjectile = player.current_weapon.weapon_type {
         move_x *= -1.0;
@@ -48,5 +57,5 @@ pub fn update_player(player: &mut Entity,
     *y += move_y * -1.0;
 
     *y = Direction(*y).wrap().0;
-    if *x < 0.0 { *x = 0.0; } else if *x > 180.0 { *x = 180.0; }
+    if *x < 1.0 { *x = 1.0; } else if *x > 179.0 { *x = 179.0; }
 }

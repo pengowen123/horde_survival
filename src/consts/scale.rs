@@ -1,1 +1,1 @@
-pub const WORLD_SCALE: f32 = 0.3;
+pub const WORLD_SCALE: f32 = 1.0;

@@ -1,5 +1,3 @@
-// TODO: Finish logger
-
 #[macro_use]
 pub mod log_utils;
 
@@ -45,12 +43,12 @@ impl Log for HSLogger {
             let time = time::now();
 
             let result = writeln!(file, "{:02}:{:02}:{:02} [{}] {}: {}",
-                     time.tm_hour,
-                     time.tm_min,
-                     time.tm_sec,
-                     record.level(),
-                     record.target(),
-                     record.args());
+                                  time.tm_hour,
+                                  time.tm_min,
+                                  time.tm_sec,
+                                  record.level(),
+                                  record.target(),
+                                  record.args());
 
             if let Err(e) = result {
                 panic!("Failed to write to log file: {}", e);
