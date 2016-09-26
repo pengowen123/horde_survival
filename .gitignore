@@ -3,4 +3,4 @@ src/include
 *.swp
 *.vi
 *.tdl
-*.vimrc
+.local.vimrc
