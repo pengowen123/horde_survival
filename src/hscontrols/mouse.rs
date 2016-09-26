@@ -1,26 +1,16 @@
-use consts::graphics::*;
-use user32::{GetCursorPos, SetCursorPos};
-use utils::*;
-use winapi::*;
+use glutin::Window;
 
-pub fn center_mouse(mouse: &mut POINT,
-                    hwnd: *mut HWND__,
-                    window_position: &mut (i32, i32),
-                    center: &mut (i32, i32)) {
+use hsgraphics::GraphicsState;
 
-    unsafe {
-        GetCursorPos(mouse);
-    }
+pub fn center_mouse(state: &mut GraphicsState, mouse: &mut (i32, i32), window: &Window) {
+    let (x, y) = state.window_center;
 
-    *window_position = get_window_position(hwnd, *window_position);
+    mouse.0 = state.last_cursor_pos.0 - x;
+    mouse.1 = state.last_cursor_pos.1 - y;
 
-    *center = (window_position.0 + WINDOW_WIDTH as i32 / 2,
-              window_position.1 + WINDOW_HEIGHT as i32 / 2);
+    state.last_cursor_pos = state.window_center;
 
-    mouse.x -= center.0;
-    mouse.y -= center.1;
-
-    unsafe {
-        SetCursorPos(center.0, center.1);
+    if window.set_cursor_position(x, y).is_err() {
+        error!("Failed to set cursor position to ({}, {})", x, y);
     }
 }

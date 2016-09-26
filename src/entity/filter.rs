@@ -1,4 +1,9 @@
+// TODO: Implement a EntitySearch trait on KDTree<Entity> to avoid this iterator mess
+
+use collision::{Ray, Intersect};
+
 use entity::{Entity, EntityType};
+use world::Coords;
 
 pub fn filter_entities(entities: &mut Vec<Entity>) {
     *entities = entities.iter().cloned().filter(|e| {
@@ -49,4 +54,27 @@ pub fn get_closest_entity(index: usize, entities: &[Entity]) -> Option<(usize, f
     } else {
         None
     }
+}
+
+pub fn get_collided_entity(projectile_index: usize, entities: &[Entity], old_pos: Coords, new_pos: Coords) -> Option<usize> {
+    let distance = old_pos.distance(&new_pos);
+    let diff = Coords::new(new_pos.x - old_pos.x, new_pos.y - old_pos.y, new_pos.z - old_pos.z).as_vector();
+    let ray = Ray::new(old_pos.as_point(), diff);
+    let entity = &entities[projectile_index];
+
+    for (i, e) in entities.iter().enumerate() {
+        if e.is_dummy() || !e.is_enemy_of(&entity) {
+            continue;
+        }
+
+        let intersection = (ray, e.hitbox).intersection();
+
+        if let Some(p) = intersection {
+            if old_pos.distance(&Coords::new(p.x, p.y, p.z)) <= distance {
+                return Some(i);
+            }
+        }
+    }
+
+    None
 }

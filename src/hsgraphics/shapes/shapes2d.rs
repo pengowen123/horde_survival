@@ -1,5 +1,4 @@
 use consts::graphics::minimap::*;
-use hsgraphics::utils::*;
 use hsgraphics::gfx2d::{self, Color};
 use world::Direction;
 
@@ -32,10 +31,10 @@ pub fn rotate_shape(shape: &mut [gfx2d::Vertex], pivot: [f32; 2], angle: f32) {
     }
 }
 
-pub fn square(position: [f32; 2], size: f32, color: Color, rotation: f32) -> [gfx2d::Vertex; 6] {
+pub fn square(position: [f32; 2], size: f32, color: Color, rotation: f32, scales: (f32, f32)) -> [gfx2d::Vertex; 6] {
     let zero = 0.0 - size / 2.0;
     let center = [0.0, 0.0];
-    let (scale_x, scale_y) = get_scales(size);
+    let (scale_x, scale_y) = scales;
 
     let mut square = shape!(
         color,

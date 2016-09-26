@@ -121,7 +121,7 @@ pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, nex
 
         *next_id += 1;
 
-        dummy.as_mods.push(Modifier::new(entity.current_weapon.range, 0));
+        dummy.as_mods.push(Modifier::additive(entity.current_weapon.range, 0));
     }
 
     entities.push(dummy);
@@ -151,7 +151,7 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
 
         *next_id += 1;
 
-        let speed = entity.current_weapon.range;
+        let speed = entity.current_weapon.range * RANGED_ARC_SPEED;
         let angle = Direction(entity.direction.0 - 90.0).as_radians();
         dummy.velocity.accelerate(angle.cos() * speed, angle.sin() * speed);
     }
@@ -161,33 +161,41 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
     0
 }
 
+// NOTE: Do not call this function directly, instead set the entities `attack` field to true
 pub fn try_attack(id: usize, entities: &mut Vec<Entity>, next_id: &mut usize, player: &mut Player) -> usize {
-    // NOTE: Dummy entities created by ranged attacks use their health to store the id of the
-    //       entity they were created by
-    //
-    // NOTE: health = id + 1
-
     let index = unwrap_or_log!(entities.iter().enumerate().find(|&(_, e)| e.id == id),
                                "Entity not found: {}", id).0;
     let weapon_type;
+    let is_casting;
     
     // Scoped for attack function calls
     {
         let entity = &mut entities[index];
         weapon_type = entity.current_weapon.weapon_type.clone();
+        is_casting = entity.animations.is_casting(0);
 
-        if entity.attack_animation > 0 {
-            return 0;
+        if !(entity.animations.can_attack() && !is_casting) {
+            if !is_casting {
+                return 0;
+            }
         }
 
-        let attack_speed = entity.as_mods.iter().fold(entity.current_weapon.attack_speed, |acc, x| acc * x.value);
-        entity.attack_animation = entity.current_weapon.get_attack_time(attack_speed);
+        let attack_speed = apply(&entity.as_mods, entity.current_weapon.attack_speed);
+        let attack_time = entity.current_weapon.get_attack_time(attack_speed);
+        let pre = entity.current_weapon.anim_pre as f64 * attack_time;
+        let post = entity.current_weapon.anim_post as f64 * attack_time;
+
+        entity.animations.start(0, pre as usize, post as usize);
     }
 
-    match weapon_type {
-        WeaponType::MeleeArea => attack_melee_area(index, entities, player),
-        WeaponType::MeleeLine => attack_melee_line(index, entities, player),
-        WeaponType::RangedLinear => attack_ranged_linear(index, entities, next_id),
-        WeaponType::RangedProjectile => attack_ranged_projectile(index, entities, next_id),
+    if is_casting {
+        match weapon_type {
+            WeaponType::MeleeArea => attack_melee_area(index, entities, player),
+            WeaponType::MeleeLine => attack_melee_line(index, entities, player),
+            WeaponType::RangedLinear => attack_ranged_linear(index, entities, next_id),
+            WeaponType::RangedProjectile => attack_ranged_projectile(index, entities, next_id),
+        }
+    } else {
+        0
     }
 }

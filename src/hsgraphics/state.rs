@@ -1,23 +1,32 @@
 use gfx::{self, tex, Factory};
 use gfx::traits::FactoryExt;
-use gfx_device_gl;
+use cgmath::Matrix4;
+use glutin::{self, Window};
+use {gfx_device_gl, gfx_window_glutin};
+use gfx::Device;
 
-use consts::graphics::*;
+use consts::*;
 use hsgraphics::*;
 use hsgraphics::utils::*;
 use hsgraphics::object2d::Object2d;
 use hsgraphics::object3d::*;
+use hsgraphics::gfx2d::Vertex;
 use entity::Entity;
 use minimap::Minimap;
 use world::Coords;
+use gamestate::GameState;
 
 pub struct GraphicsState {
     // Options
     pub options: GraphicsOptions,
 
     // Window state variables
-    pub window_position: (i32, i32),
+    pub window_size: (u32, u32),
     pub window_center: (i32, i32),
+    pub aspect_ratio: f32,
+    pub factory: gfx_device_gl::Factory,
+    pub encoder: ObjectEncoder,
+    pub device: gfx_device_gl::Device,
 
     // Objects
     pub objects2d: Vec<Object2d>,
@@ -30,23 +39,26 @@ pub struct GraphicsState {
     // Textures
     pub textures: Vec<ShaderView>,
 
-    // Constants
-    pub aspect_ratio: f32,
-
     // Misc
     pub minimap: Minimap,
     pub sampler: gfx::handle::Sampler<gfx_device_gl::Resources>,
-    pub camera: [[f32; 4]; 4],
+    pub camera: Matrix4<f32>,
     pub main_color: Object3dColor,
     pub main_depth: Object3dDepth,
+    pub last_cursor_pos: (i32, i32),
 }
 
 // Constructor
 impl GraphicsState {
-    pub fn new(options: GraphicsOptions,
-               factory: &mut gfx_device_gl::Factory,
-               main_color: Object3dColor,
-               main_depth: Object3dDepth) -> GraphicsState {
+    pub fn new(options: GraphicsOptions) -> (GraphicsState, Window) {
+        let builder = glutin::WindowBuilder::new()
+            .with_title(WINDOW_NAME)
+            .with_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+        let (window, device, mut factory, main_color, main_depth) =
+            gfx_window_glutin::init::<gfx3d::ColorFormat, gfx3d::DepthFormat>(builder);
+        let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
+
         let pso2d = match factory.create_pipeline_simple(
             include_bytes!("../include/triangle/shader/triangle_150.glslv"),
             include_bytes!("../include/triangle/shader/triangle_150.glslf"),
@@ -65,11 +77,11 @@ impl GraphicsState {
 
         let textures = vec![
             // NOTE: If the order of these changes, also update get_entity_texture
-            texture::create_texture(factory, &[TEXELS_FLOOR]),
-            texture::create_texture(factory, &[TEXELS_PLAYER]),
-            texture::create_texture(factory, &[TEXELS_ZOMBIE]),
-            texture::create_texture(factory, &[TEXELS_FLYING_BALL_LINEAR]),
-            texture::create_texture(factory, &[TEXELS_FLYING_BALL_ARC]),
+            texture::create_texture(&mut factory, &[TEXELS_FLOOR]),
+            texture::create_texture(&mut factory, &[TEXELS_PLAYER]),
+            texture::create_texture(&mut factory, &[TEXELS_ZOMBIE]),
+            texture::create_texture(&mut factory, &[TEXELS_FLYING_BALL_LINEAR]),
+            texture::create_texture(&mut factory, &[TEXELS_FLYING_BALL_ARC]),
         ];
 
         let sampler_info = tex::SamplerInfo::new(tex::FilterMethod::Bilinear, tex::WrapMode::Clamp);
@@ -77,11 +89,13 @@ impl GraphicsState {
         let aspect_ratio = WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32;
 
         let mut state = GraphicsState {
+            factory: factory,
+            encoder: encoder,
             options: options,
-            window_position: (0, 0),
-            window_center: (0, 0),
             objects2d: Vec::new(),
             objects3d: Vec::new(),
+            window_size: (WINDOW_WIDTH, WINDOW_HEIGHT),
+            window_center: WINDOW_CENTER,
             pso2d: pso2d,
             pso3d: pso3d,
             minimap: Minimap::new(MINIMAP_SCALE),
@@ -91,30 +105,64 @@ impl GraphicsState {
             textures: textures,
             main_color: main_color,
             main_depth: main_depth,
+            device: device,
+            last_cursor_pos: WINDOW_CENTER,
         };
 
+        let texture = state.get_texture(0);
         let (i, v) = shapes3d::plane(FLOOR_HEIGHT, 1000.0);
-        let floor_object = Object3d::from_slice(factory,
+        let floor_object = Object3d::from_slice(&mut state.factory,
                                                 (&i, &v),
                                                 state.main_color.clone(),
                                                 state.main_depth.clone(),
-                                                state.get_texture(0),
+                                                texture,
                                                 state.sampler.clone());
 
         state.add_object3d(floor_object, 0);
-        state
+
+        (state, window)
+    }
+}
+
+// Updates
+impl GraphicsState {
+    pub fn draw(&mut self, window: &Window) {
+        self.encoder.clear(&self.main_color, CLEAR_COLOR);
+        self.encoder.clear_depth(&self.main_depth, 1.0);
+        self.encode_objects3d();
+        self.encode_objects2d();
+        self.encoder.flush(&mut self.device);
+
+        if let Err(e) = window.swap_buffers() {
+            error!("Failed to swap buffers: {}", e);
+        }
+
+        self.device.cleanup();
+    }
+
+    pub fn update(&mut self, game: &GameState) {
+        self.update_crosshair();
+        self.update_minimap(&game.entities);
+        self.update_minimap_objects();
+        self.update_entity_objects(&game.entities, game.player.entity_id);
+
     }
 }
 
 // Object methods (2d)
 impl GraphicsState {
+    pub fn add_object2d(&mut self, mut object: Object2d, id: usize) {
+        object.id = id;
+        self.objects2d.push(object);
+    }
+
     pub fn remove_objects2d(&mut self, id: usize) {
         self.objects2d = self.objects2d.iter().cloned().filter(|o| o.id != id).collect();
     }
 
-    pub fn encode_objects2d(&self, encoder: &mut ObjectEncoder) {
+    pub fn encode_objects2d(&mut self) {
         for object in &self.objects2d {
-            object.encode(encoder, &self.pso2d);
+            object.encode(&mut self.encoder, &self.pso2d);
         }
     }
 }
@@ -130,30 +178,31 @@ impl GraphicsState {
         self.objects3d = self.objects3d.iter().cloned().filter(|o| o.id != id).collect();
     }
 
-    pub fn encode_objects3d(&self, encoder: &mut ObjectEncoder) {
+    pub fn encode_objects3d(&mut self) {
         for object in &self.objects3d {
-            object.encode(encoder, &self.pso3d, self.camera);
+            object.encode(&mut self.encoder, &self.pso3d, self.camera.into());
         }
     }
 
-    pub fn update_entity_objects(&mut self,
-                                 factory: &mut gfx_device_gl::Factory,
-                                 entities: &[Entity],
-                                 player_entity_id: usize) {
+    pub fn update_entity_objects(&mut self, entities: &[Entity], player_entity_id: usize) {
 
+        // TODO: Don't remove all objects, only remove them if their entity was updated
         self.remove_objects3d(ENTITY_OBJECT_ID);
 
         for entity in entities {
+            //if entity.id == player_entity_id || !entity.needs_update{
+                //continue;
+            //}
             if entity.id == player_entity_id {
                 continue;
             }
 
             let texture = self.get_texture(get_texture_id(&entity.entity_type));
             let size = get_entity_box_size(&entity.entity_type);
-            let coords = get_unscaled_cube_coords(&entity.coords, size);
-            let (v, i) = shapes3d::cube(coords, size, entity.direction);
+            let coords = get_unscaled_cube_coords(&entity.coords);
+            let (v, i) = shapes3d::cube(coords, size);
 
-            let mut cube_object = Object3d::from_slice(factory,
+            let mut cube_object = Object3d::from_slice(&mut self.factory,
                                                        (&v, &i),
                                                        self.main_color.clone(),
                                                        self.main_depth.clone(),
@@ -174,7 +223,7 @@ impl GraphicsState {
         }
     }
 
-    pub fn update_minimap_objects(&mut self, factory: &mut gfx_device_gl::Factory, color: &ObjectColor)
+    pub fn update_minimap_objects(&mut self)
     {
         if !self.options.minimap_enabled {
             return;
@@ -187,14 +236,15 @@ impl GraphicsState {
             let mut square = shapes2d::square(entity.coords,
                                               MINIMAP_ENTITY_SIZE,
                                               entity.color.clone(),
-                                              entity.direction.1 as f32);
+                                              entity.direction.1 as f32,
+                                              self.get_scales(MINIMAP_ENTITY_SIZE));
 
             for vertex in &mut square {
                 vertex.pos[0] += MINIMAP_LOCATION.0;
                 vertex.pos[1] += MINIMAP_LOCATION.1;
             }
 
-            let mut square_object = Object2d::from_slice(factory, &square, color.clone());
+            let mut square_object = Object2d::from_slice(&mut self.factory, &square, self.main_color.clone());
             square_object.id = MINIMAP_OBJECT_ID;
             self.objects2d.push(square_object);
         }
@@ -212,5 +262,43 @@ impl GraphicsState {
             Some(t) => t.clone(),
             None => crash!("Failed to find texture with ID {}", id),
         }
+    }
+
+    pub fn update_crosshair(&mut self) {
+        self.remove_objects2d(CROSSHAIR_OBJECT_ID);
+
+        if self.options.crosshair {
+            let mut vertices = [
+                Vertex { pos: [1.0, 0.0], color: CROSSHAIR_COLOR },
+                Vertex { pos: [0.0, 1.0], color: CROSSHAIR_COLOR },
+                Vertex { pos: [-1.0, 0.0], color: CROSSHAIR_COLOR },
+                Vertex { pos: [1.0, 0.0], color: CROSSHAIR_COLOR },
+                Vertex { pos: [-1.0, 0.0], color: CROSSHAIR_COLOR },
+                Vertex { pos: [0.0, -1.0], color: CROSSHAIR_COLOR },
+            ];
+
+            let (scale_x, scale_y) = (CROSSHAIR_SIZE / self.window_size.0 as f32,
+                                      CROSSHAIR_SIZE / self.window_size.1 as f32);
+            for v in vertices.iter_mut() {
+                v.pos[1] += CROSSHAIR_VERTICAL_OFFSET;
+                v.pos[0] *= scale_x;
+                v.pos[1] *= scale_y;
+            }
+
+            let object = Object2d::from_slice(&mut self.factory, &vertices, self.main_color.clone());
+            self.add_object2d(object, CROSSHAIR_OBJECT_ID);
+        }
+    }
+
+    pub fn get_scales(&self, d: f32) -> (f32, f32) {
+        (d * MINIMAP_SCALE / self.window_size.0 as f32,
+         d * MINIMAP_SCALE / self.window_size.1 as f32)
+    }
+
+    pub fn resize(&mut self, width: u32, height: u32, window: &Window) {
+        self.window_size = (width, height);
+        self.window_center = (width as i32 / 2, height as i32 / 2);
+
+        gfx_window_glutin::update_views(window, &mut self.main_color, &mut self.main_depth);
     }
 }

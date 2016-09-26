@@ -1,14 +1,10 @@
 use world::Coords;
 use items::WeaponType;
-use player::Player;
 use entity::*;
 use consts::ai_control::*;
 
-pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut usize, player: &mut Player) {
+pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>) {
     let closest = get_closest_entity(target_index, &*entities);
-    let id = entities[target_index].id;
-
-    let mut attack = false;
 
     if let Some((i, distance)) = closest {
         let target_coords;
@@ -26,7 +22,7 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut u
         entity.direction = entity.coords.direction_to(&target_coords);
 
         if distance <= range {
-            attack = true;
+            entity.attack = true;
 
             if let WeaponType::RangedProjectile = entity.current_weapon.weapon_type {
                 if target_id != entity.ai_target_id {
@@ -46,19 +42,15 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut u
             entity.move_forward(180.0);
         }
     }
-
-    if attack {
-        try_attack(id, entities, next_id, player);
-    }
 }
 
 pub fn correct_for_error(speed: f64, angle: f64, error: f64) -> f64 {
-    let corrected = angle + error * PROJECTILE_LEARNING_RATE / speed;
+    let corrected = 4.0 + angle + error * PROJECTILE_LEARNING_RATE / speed;
 
     if corrected < 45.0 {
         45.0
-    } else if corrected > 180.0 {
-        180.0
+    } else if corrected > 135.0 {
+        135.0
     } else {
         corrected
     }

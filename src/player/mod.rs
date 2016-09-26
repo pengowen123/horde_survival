@@ -2,8 +2,6 @@ pub mod class;
 mod abilities;
 mod inventory;
 
-use winapi::POINT;
-
 pub use self::class::Class;
 
 use player::abilities::*;
@@ -32,7 +30,7 @@ pub struct Player {
     // Controls
     pub left_click: bool,
     pub capture_cursor: bool,
-    pub mouse: POINT,
+    pub mouse: (i32, i32),
     pub move_forward: bool,
     pub move_left: bool,
     pub move_backward: bool,
@@ -57,7 +55,7 @@ impl Player {
             dead: false,
             left_click: false,
             capture_cursor: false,
-            mouse: POINT { x: 0, y: 0 },
+            mouse: (0, 0),
             move_forward: false,
             move_left: false,
             move_backward: false,
@@ -81,47 +79,111 @@ impl Player {
             }
         }
     }
+
+    pub fn start_cooldown(&mut self, id: usize) {
+        let base = match self.class {
+            Class::Warrior => WARRIOR_COOLDOWNS[id],
+        };
+
+        self.current_cooldowns[id] = apply(&self.cooldown_mods, base as f64) as usize;
+    }
 }
 
 // Abilities
 impl Player {
     pub fn ability_0(&mut self, entities: &mut Vec<Entity>) {
-        self.current_cooldowns[0] = self.cooldown_mods.iter().fold(WARRIOR_COOLDOWN_0, |acc, x| (acc as f64 * x.value) as usize);
+        let mut is_casting = false;
 
-        match self.class {
-            Class::Warrior => {
-                warrior_ability_0(self, entities);
-            },
+        if self.current_cooldowns[0] == 0 {
+            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+
+            is_casting = player_entity.animations.is_casting(1);
+
+            if player_entity.animations.can_cast(1) && !is_casting {
+                player_entity.animations.start(1, WARRIOR_PRE_0, WARRIOR_POST_0);
+            }
+        }
+
+        if is_casting {
+            self.start_cooldown(0);
+
+            match self.class {
+                Class::Warrior => {
+                    warrior_ability_0(self, entities);
+                },
+            }
         }
     }
 
     pub fn ability_1(&mut self, entities: &mut Vec<Entity>) {
-        self.current_cooldowns[1] = self.cooldown_mods.iter().fold(WARRIOR_COOLDOWN_1, |acc, x| (acc as f64 * x.value) as usize);
+        let mut is_casting = false;
 
-        match self.class {
-            Class::Warrior => {
-                warrior_ability_1(self, entities);
-            },
+        if self.current_cooldowns[1] == 0 {
+            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+
+            is_casting = player_entity.animations.is_casting(2);
+
+            if player_entity.animations.can_cast(2) && !is_casting {
+                player_entity.animations.start(2, WARRIOR_PRE_1, WARRIOR_POST_1);
+            }
+        }
+
+        if is_casting {
+            self.start_cooldown(1);
+
+            match self.class {
+                Class::Warrior => {
+                    warrior_ability_1(self, entities);
+                },
+            }
         }
     }
 
     pub fn ability_2(&mut self, entities: &mut Vec<Entity>) {
-        self.current_cooldowns[2] = self.cooldown_mods.iter().fold(WARRIOR_COOLDOWN_2, |acc, x| (acc as f64 * x.value) as usize);
+        let mut is_casting = false;
 
-        match self.class {
-            Class::Warrior => {
-                warrior_ability_2(self, entities);
-            },
+        if self.current_cooldowns[2] == 0 {
+            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+
+            is_casting = player_entity.animations.is_casting(3);
+
+            if player_entity.animations.can_cast(3) && !is_casting {
+                player_entity.animations.start(3, WARRIOR_PRE_2, WARRIOR_POST_2);
+            }
+        }
+
+        if is_casting {
+            self.start_cooldown(2);
+
+            match self.class {
+                Class::Warrior => {
+                    warrior_ability_2(self, entities);
+                },
+            }
         }
     }
 
     pub fn ability_3(&mut self, entities: &mut Vec<Entity>) {
-        self.current_cooldowns[3] = self.cooldown_mods.iter().fold(WARRIOR_COOLDOWN_3, |acc, x| (acc as f64 * x.value) as usize);
+        let mut is_casting = false;
 
-        match self.class {
-            Class::Warrior => {
-                warrior_ability_3(self, entities);
-            },
+        if self.current_cooldowns[3] == 0 {
+            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+
+            is_casting = player_entity.animations.is_casting(4);
+
+            if player_entity.animations.can_cast(4) && !is_casting {
+                player_entity.animations.start(4, WARRIOR_PRE_3, WARRIOR_POST_3);
+            }
+        }
+
+        if is_casting {
+            self.start_cooldown(3);
+
+            match self.class {
+                Class::Warrior => {
+                    warrior_ability_3(self, entities);
+                },
+            }
         }
     }
 }

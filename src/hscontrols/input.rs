@@ -35,42 +35,34 @@ pub fn handle_keyboard_input(key: Option<VirtualKeyCode>,
                     }
                 },
                 // Movement
-                VirtualKeyCode::W => player.move_forward = true,
-                VirtualKeyCode::A => player.move_left = true,
-                VirtualKeyCode::S => player.move_backward = true,
-                VirtualKeyCode::D => player.move_right = true,
+                VirtualKeyCode::W => player.move_forward = player.capture_cursor,
+                VirtualKeyCode::A => player.move_left = player.capture_cursor,
+                VirtualKeyCode::S => player.move_backward = player.capture_cursor,
+                VirtualKeyCode::D => player.move_right = player.capture_cursor,
                 // Abilities
                 VirtualKeyCode::Key1 => {
-                    if player.current_cooldowns[0] > 0 {
-                        info!("Ability 0: on cooldown");
-                    } else if player.dead {
+                    if player.dead {
                         info!("Ability 0: dead");
                     } else {
                         player.ability_0(entities);
                     }
                 },
                 VirtualKeyCode::Key2 => {
-                    if player.current_cooldowns[1] > 0 {
-                        info!("Ability 1: on cooldown");
-                    } else if player.dead {
+                    if player.dead {
                         info!("Ability 1: dead");
                     } else {
                         player.ability_1(entities);
                     }
                 },
                 VirtualKeyCode::Key3 => {
-                    if player.current_cooldowns[2] > 0 {
-                        info!("Ability 2: on cooldown");
-                    } else if player.dead {
+                    if player.dead {
                         info!("Ability 2: dead");
                     } else {
                         player.ability_2(entities);
                     }
                 },
                 VirtualKeyCode::Key4 => {
-                    if player.current_cooldowns[3] > 0 {
-                        info!("Ability 3: on cooldown");
-                    } else if player.dead {
+                    if player.dead {
                         info!("Ability 3: dead");
                     } else {
                         player.ability_3(entities);
@@ -88,5 +80,12 @@ pub fn handle_keyboard_input(key: Option<VirtualKeyCode>,
                 _ => {},
             }
         },
+    }
+
+    if !player.capture_cursor {
+        player.move_left = false;
+        player.move_right = false;
+        player.move_forward = false;
+        player.move_backward = false;
     }
 }

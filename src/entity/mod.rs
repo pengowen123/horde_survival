@@ -4,18 +4,24 @@ pub mod attack;
 pub mod update;
 pub mod filter;
 pub mod flags;
+pub mod animation;
 
 pub use self::entity_type::EntityType;
-pub use self::modifiers::Modifier;
+pub use self::modifiers::*;
 pub use self::attack::try_attack;
 pub use self::update::*;
 pub use self::filter::*;
 pub use self::flags::*;
+pub use self::animation::*;
 
+use collision::Aabb3;
+
+use consts::balance::*;
 use items::*;
 use world::*;
 use player::Player;
-use consts::balance::*;
+
+pub type Hitbox = Aabb3<f64>;
 
 #[derive(Clone)]
 pub struct Entity {
@@ -43,7 +49,7 @@ pub struct Entity {
     // Physics info
     pub has_gravity: HasGravity,
     pub on_ground: bool,
-    pub entity_height: f64,
+    pub hitbox: Hitbox,
     
     // Flags
     pub has_ai: HasAI,
@@ -55,12 +61,14 @@ pub struct Entity {
     pub current_weapon: Weapon,
 
     // Animations
-    pub attack_animation: usize,
+    pub animations: AnimationList,
 
     // Misc
     pub lifetime: usize,
     pub spawned_by: Option<usize>,
     pub bounty: usize,
+    pub needs_update: bool,
+    pub attack: bool,
 
     // AI
     // TODO: Move these fields to an AI field of type AIData
@@ -74,7 +82,7 @@ impl Entity {
     pub fn new(id: usize,
                health: f64,
                max_hp: f64,
-               mut coords: Coords,
+               coords: Coords,
                entity_type: EntityType,
                team: Team,
                is_dummy: IsDummy,
@@ -85,25 +93,24 @@ impl Entity {
                has_ai: HasAI,
                spawned_by: Option<usize>) -> Entity {
 
-        let height = get_entity_height(&entity_type);
-        coords.y += height;
+        let hitbox = get_hitbox(&entity_type, &coords);
 
         let mut movespeed_mods = Vec::new();
         let movespeed = get_movespeed(&entity_type);
 
         if let Some(m) = movespeed {
-            movespeed_mods.push(Modifier::new(m, 0));
+            movespeed_mods.push(Modifier::multiplicative(m, 0));
         }
 
         Entity {
             id: id,
-            entity_height: height,
             coords: coords,
+            hitbox: hitbox,
             entity_type: entity_type,
             direction: direction,
             health: health,
             max_hp: max_hp,
-            attack_animation: 0,
+            animations: AnimationList::new(),
             damage_mods: Vec::new(),
             as_mods: Vec::new(),
             damage_taken_mods: Vec::new(),
@@ -122,6 +129,8 @@ impl Entity {
             ai_target_id: 0,
             ai_consecutive_error_increases: 0,
             bounty: bounty,
+            needs_update: true,
+            attack: false,
         }
     }
 }
@@ -144,12 +153,19 @@ impl Entity {
                     None)
     }
 
-    pub fn zombie(coords: Coords, entity_id: usize, team: Team, bounty: usize) -> Entity {
+    pub fn monster(entity_type: EntityType,
+                   coords: Coords,
+                   entity_id: usize,
+                   team: Team,
+                   bounty: usize) -> Entity {
+
+        let health = get_monster_health(&entity_type);
+
         Entity::new(entity_id,
-                    ZOMBIE_HEALTH,
-                    ZOMBIE_HEALTH,
+                    health,
+                    health,
                     coords,
-                    EntityType::Zombie,
+                    entity_type,
                     team,
                     IsDummy::False,
                     DEFAULT_DIRECTION,
@@ -180,26 +196,38 @@ impl Entity {
             }
         }
 
-        self.health -= self.damage_taken_mods.iter().fold(damage, |acc, x| acc * x.value);
+        self.health -= apply(&self.damage_taken_mods, damage);
         self.is_dead()
     }
 
     pub fn get_damage(&self) -> f64 {
-        self.damage_mods.iter().fold(self.current_weapon.damage, |acc, x| acc * x.value)
+        apply(&self.damage_mods, self.current_weapon.damage)
     }
 
     pub fn move_forward(&mut self, movement_offset: f64) {
-        let speed = self.movespeed_mods.iter().fold(BASE_MOVESPEED, |acc, x| acc * x.value);
+        let speed = apply(&self.movespeed_mods, BASE_MOVESPEED);
 
         self.coords.move_forward(self.direction.1 + movement_offset, speed);
     }
 
-    pub fn has_gravity(&self) -> bool {
-        self.has_gravity == HasGravity::True
-    }
-
     pub fn kill(&mut self) {
         self.health = DEAD_ENTITY_HEALTH;
+    }
+
+    pub fn update_hitbox(&mut self) {
+        self.hitbox = get_hitbox(&self.entity_type, &self.coords);
+    }
+
+    pub fn get_height(&self) -> f64 {
+        self.hitbox.max.y - self.hitbox.min.y
+    }
+
+    pub fn is_monster(&self) -> bool {
+        // NOTE: Update this when new entity types are added
+        match self.entity_type {
+            EntityType::Zombie => true,
+            _ => false,
+        }
     }
 }
 
@@ -219,5 +247,9 @@ impl Entity {
 
     pub fn has_ai(&self) -> bool {
         self.has_ai == HasAI::True
+    }
+
+    pub fn has_gravity(&self) -> bool {
+        self.has_gravity == HasGravity::True
     }
 }

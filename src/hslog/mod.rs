@@ -6,7 +6,7 @@ pub use self::log_utils::*;
 use log::*;
 use time;
 
-use consts::log_str::LOG_FILE;
+use consts::log_str::*;
 
 use std::fs::File;
 use std::io::Write;
@@ -42,13 +42,14 @@ impl Log for HSLogger {
             let mut file = self.file.lock().expect("Failed to acquire lock on log file");
             let time = time::now();
 
-            let result = writeln!(file, "{:02}:{:02}:{:02} [{}] {}: {}",
-                                  time.tm_hour,
-                                  time.tm_min,
-                                  time.tm_sec,
-                                  record.level(),
-                                  record.target(),
-                                  record.args());
+            let result = write!(file, "{:02}:{:02}:{:02} [{}] {}: {}{}",
+                                time.tm_hour,
+                                time.tm_min,
+                                time.tm_sec,
+                                record.level(),
+                                record.target(),
+                                record.args(),
+                                NEWLINE);
 
             if let Err(e) = result {
                 panic!("Failed to write to log file: {}", e);

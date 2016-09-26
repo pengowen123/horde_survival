@@ -1,4 +1,5 @@
 use world::*;
+use cgmath::{Vector3, Point3};
 
 #[derive(Clone, Debug)]
 pub struct Coords {
@@ -8,7 +9,7 @@ pub struct Coords {
 }
 
 impl Coords {
-    pub fn new(x: f64, y: f64, z: f64) -> Coords {
+    pub const fn new(x: f64, y: f64, z: f64) -> Coords {
         Coords {
             x: x,
             y: y,
@@ -55,6 +56,7 @@ impl Coords {
         self.translate(&Coords::new(slope_x, 0.0, slope_z))
     }
 
+    // NOTE: Apparently cgmath has some rotation methods, use those instead
     pub fn move_3d(&mut self, direction: (f64, f64), distance: f64) {
         let angle_x = Direction(direction.0).wrap().as_radians();
         let angle_y = Direction(direction.1).wrap().as_radians();
@@ -100,7 +102,11 @@ impl Coords {
         coords
     }
 
-    pub fn as_array(&self) -> [f32; 3] {
-        [self.x as f32, self.y as f32, self.z as f32]
+    pub fn as_vector(&self) -> Vector3<f64> {
+        Vector3::new(self.x, self.y, self.z)
+    }
+
+    pub fn as_point(&self) -> Point3<f64> {
+        Point3::new(self.x, self.y, self.z)
     }
 }

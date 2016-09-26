@@ -1,9 +1,8 @@
 use consts::scale::WORLD_SCALE;
 use hsgraphics::gfx3d::Vertex;
-use world::{Coords, Direction};
 
 // TODO: Add rotation
-pub fn cube(position: [f32; 3], size: f32, rotation: (f64, f64)) -> ([Vertex; 24], [u16; 36])
+pub fn cube(position: [f32; 3], size: f32) -> ([Vertex; 24], [u16; 36])
 {
     let mut v = [
         [1.0, 1.0, 1.0],
@@ -23,7 +22,7 @@ pub fn cube(position: [f32; 3], size: f32, rotation: (f64, f64)) -> ([Vertex; 24
     }
 
     // NOTE: Add rotation code before this to operate on a smaller array
-    let mut vertex_data = [
+    let vertex_data = [
         // top
         Vertex::new(v[5], [0.0, 0.0]),
         Vertex::new(v[4], [1.0, 0.0]),
@@ -70,10 +69,10 @@ pub fn cube(position: [f32; 3], size: f32, rotation: (f64, f64)) -> ([Vertex; 24
 
 pub fn plane(height: f32, size: f32) -> ([Vertex; 4], [u16; 6]) {
     let mut vertex_data = [
-        Vertex::new([-1.0, -1.0,  height], [0.0, 0.0]),
-        Vertex::new([ 1.0, -1.0,  height], [1.0, 0.0]),
-        Vertex::new([ 1.0,  1.0,  height], [1.0, 1.0]),
-        Vertex::new([-1.0,  1.0,  height], [0.0, 1.0]),
+        Vertex::new([-0.5, -0.5,  height], [0.0, 0.0]),
+        Vertex::new([ 0.5, -0.5,  height], [1.0, 0.0]),
+        Vertex::new([ 0.5,  0.5,  height], [1.0, 1.0]),
+        Vertex::new([-0.5,  0.5,  height], [0.0, 1.0]),
     ];
     
     let index_data = [0, 1, 2, 2, 3, 0];

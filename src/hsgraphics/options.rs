@@ -1,12 +1,16 @@
 #[derive(Clone)]
 pub struct GraphicsOptions {
     pub minimap_enabled: bool,
+    pub display_debug: bool,
+    pub crosshair: bool,
 }
 
 impl GraphicsOptions {
     pub fn new() -> GraphicsOptions {
         GraphicsOptions {
             minimap_enabled: false,
+            display_debug: false,
+            crosshair: false,
         }
     }
 }
@@ -14,6 +18,16 @@ impl GraphicsOptions {
 impl GraphicsOptions {
     pub fn minimap_enabled(&mut self, value: bool) -> &mut GraphicsOptions {
         self.minimap_enabled = value;
+        self
+    }
+
+    pub fn display_debug(&mut self, value: bool) -> &mut GraphicsOptions {
+        self.display_debug = value;
+        self
+    }
+
+    pub fn crosshair(&mut self, value: bool) -> &mut GraphicsOptions {
+        self.crosshair = value;
         self
     }
 }

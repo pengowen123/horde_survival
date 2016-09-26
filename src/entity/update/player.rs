@@ -1,9 +1,7 @@
-use winapi::POINT;
-
 use consts::{DEFAULT_MOUSE_SENSITIVITY, BASE_MOVESPEED};
 use hscontrols::*;
 use world::*;
-use entity::Entity;
+use entity::{Entity, apply};
 use items::WeaponType;
 
 pub fn update_player(player: &mut Entity,
@@ -12,16 +10,16 @@ pub fn update_player(player: &mut Entity,
                      move_left: bool,
                      move_right: bool,
                      move_backward: bool,
-                     mouse: &POINT,
+                     mouse: &(i32, i32),
                      player_direction: &mut (f64, f64),
-                     player_coords: &mut Coords) {
+                     player_coords: &mut Coords) -> [bool; 4] {
 
     *dead = player.is_dead();
 
     if move_forward || move_left || move_right || move_backward {
-        let speed = player.movespeed_mods.iter().fold(BASE_MOVESPEED, |acc, x| acc * x.value);
+        let speed = apply(&player.movespeed_mods, BASE_MOVESPEED);
 
-        // NOTE: move_left and move_right are swapped to fix a camera issu3
+        // NOTE: move_left and move_right are swapped to fix a camera issue
         let offset = get_movement_offset(move_forward, move_right, move_left, move_backward);
 
         player.move_forward(offset);
@@ -34,8 +32,8 @@ pub fn update_player(player: &mut Entity,
     let y = &mut player.direction.1;
 
     // NOTE: Values get multiplied by -1.0 to invert controls
-    let mut move_x = DEFAULT_MOUSE_SENSITIVITY * mouse.y as f64;
-    let move_y = DEFAULT_MOUSE_SENSITIVITY * mouse.x as f64;
+    let mut move_x = DEFAULT_MOUSE_SENSITIVITY * mouse.1 as f64;
+    let move_y = DEFAULT_MOUSE_SENSITIVITY * mouse.0 as f64;
 
     player_direction.0 += move_x;
     player_direction.1 += move_y * -1.0;
@@ -58,4 +56,11 @@ pub fn update_player(player: &mut Entity,
 
     *y = Direction(*y).wrap().0;
     if *x < 1.0 { *x = 1.0; } else if *x > 179.0 { *x = 179.0; }
+
+    [
+        player.animations.is_casting(1),
+        player.animations.is_casting(2),
+        player.animations.is_casting(3),
+        player.animations.is_casting(4),
+    ]
 }

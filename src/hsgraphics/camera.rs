@@ -1,9 +1,10 @@
 use cgmath::{self, Point3, Vector3, Matrix4, Transform};
 
 use world::Coords;
-use consts::graphics::*;
+use consts::{VERTICAL_FOV, WORLD_SCALE};
 
-pub fn get_camera(mut coords: Coords, direction: (f64, f64), aspect_ratio: f32) -> [[f32; 4]; 4] {
+pub fn get_camera(mut coords: Coords, direction: (f64, f64), aspect_ratio: f32) -> Matrix4<f32> {
+    coords.scale(WORLD_SCALE as f64);
     let mut pointing_to = coords.clone();
     pointing_to.move_3d(direction, 1.0);
 
@@ -18,5 +19,5 @@ pub fn get_camera(mut coords: Coords, direction: (f64, f64), aspect_ratio: f32) 
 
     let proj = cgmath::perspective(cgmath::Deg(VERTICAL_FOV), aspect_ratio, 0.01, 100.0);
 
-    (proj * view).into()
+    proj * view
 }
