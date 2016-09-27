@@ -45,13 +45,11 @@ pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player
 }
 
 pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> usize {
-    let mut points;
     let mut bounty = 0;
     let raw_entities = unsafe { &mut *(entities as *mut _) };
     let multiplier;
     let coords;
     let direction;
-    let team;
     let weapon;
 
     // Scoped for iter_mut call
@@ -59,40 +57,26 @@ pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player
         let entity = &entities[target_index];
 
         // If this is 0, the weapon cannot hit anything
-        points = entity.current_weapon.range as usize;
         multiplier = entity.get_damage();
         coords = entity.coords.clone();
         direction = entity.direction.clone();
-        team = entity.team.clone();
         weapon = entity.current_weapon.clone();
     }
 
-    for point in coords.ray(MELEE_LINE_INTERVAL, direction).skip(1) {
-        match entities.iter_mut().enumerate().filter(|&(_, ref e)| {
-            e.coords.in_radius(&point, MELEE_LINE_RADIUS) && e.team != team && !e.is_dummy()
-        }).nth(0) {
-            Some((i, e)) => {
-                e.damage(multiplier, i, target_index, raw_entities, player);
+    let mut new = coords.clone();
+    new.move_3d(direction, weapon.range);
 
-                if let Some(f) = weapon.on_hit {
-                    f(target_index, i, raw_entities, player);
-                }
+    if let Some(e) = get_collided_entity(target_index, &*entities, coords, new) {
+        let entity = &mut entities[e];
 
-                if e.is_dead() {
-                    bounty = e.bounty;
-                }
+        entity.damage(multiplier, e, target_index, raw_entities, player);
 
-                break;
-            },
-            None => {},
+        if let Some(f) = weapon.on_hit {
+            f(target_index, e, raw_entities, player);
         }
 
-        if points > 0 {
-            points -= 1;
-        }
-
-        if points == 0 {
-            break;
+        if entity.is_dead() {
+            bounty = entity.bounty;
         }
     }
 

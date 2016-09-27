@@ -27,6 +27,7 @@ pub struct GraphicsState {
     pub factory: gfx_device_gl::Factory,
     pub encoder: ObjectEncoder,
     pub device: gfx_device_gl::Device,
+    pub should_close: bool,
 
     // Objects
     pub objects2d: Vec<Object2d>,
@@ -39,18 +40,23 @@ pub struct GraphicsState {
     // Textures
     pub textures: Vec<ShaderView>,
 
-    // Misc
+    // Minimap
     pub minimap: Minimap,
-    pub sampler: gfx::handle::Sampler<gfx_device_gl::Resources>,
+
+    // Controls
+    pub last_cursor_pos: (i32, i32),
     pub camera: Matrix4<f32>,
+
+    // Misc
+    pub sampler: gfx::handle::Sampler<gfx_device_gl::Resources>,
     pub main_color: Object3dColor,
     pub main_depth: Object3dDepth,
-    pub last_cursor_pos: (i32, i32),
+    pub pixel_size: (f32, f32),
 }
 
 // Constructor
 impl GraphicsState {
-    pub fn new(options: GraphicsOptions) -> (GraphicsState, Window) {
+    pub fn new(options: GraphicsOptions, game: &GameState) -> (GraphicsState, Window) {
         let builder = glutin::WindowBuilder::new()
             .with_title(WINDOW_NAME)
             .with_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -96,17 +102,19 @@ impl GraphicsState {
             objects3d: Vec::new(),
             window_size: (WINDOW_WIDTH, WINDOW_HEIGHT),
             window_center: WINDOW_CENTER,
+            should_close: false,
             pso2d: pso2d,
             pso3d: pso3d,
             minimap: Minimap::new(MINIMAP_SCALE),
             aspect_ratio: aspect_ratio,
             sampler: sampler,
-            camera: get_camera(Coords::origin(), START_CAMERA_ANGLE, aspect_ratio),
+            camera: get_camera(game.map.player_spawn.clone(), START_CAMERA_ANGLE, aspect_ratio),
             textures: textures,
             main_color: main_color,
             main_depth: main_depth,
             device: device,
             last_cursor_pos: WINDOW_CENTER,
+            pixel_size: (1.0 / WINDOW_WIDTH as f32, 1.0 / WINDOW_HEIGHT as f32),
         };
 
         let texture = state.get_texture(0);
@@ -145,7 +153,16 @@ impl GraphicsState {
         self.update_minimap(&game.entities);
         self.update_minimap_objects();
         self.update_entity_objects(&game.entities, game.player.entity_id);
+    }
 
+    pub fn draw_gui(&mut self, window: &Window) {
+        self.encoder.flush(&mut self.device);
+
+        if let Err(e) = window.swap_buffers() {
+            error!("Failed to swap buffers: {}", e);
+        }
+
+        self.device.cleanup();
     }
 }
 
@@ -185,7 +202,6 @@ impl GraphicsState {
     }
 
     pub fn update_entity_objects(&mut self, entities: &[Entity], player_entity_id: usize) {
-
         // TODO: Don't remove all objects, only remove them if their entity was updated
         self.remove_objects3d(ENTITY_OBJECT_ID);
 
@@ -293,12 +309,5 @@ impl GraphicsState {
     pub fn get_scales(&self, d: f32) -> (f32, f32) {
         (d * MINIMAP_SCALE / self.window_size.0 as f32,
          d * MINIMAP_SCALE / self.window_size.1 as f32)
-    }
-
-    pub fn resize(&mut self, width: u32, height: u32, window: &Window) {
-        self.window_size = (width, height);
-        self.window_center = (width as i32 / 2, height as i32 / 2);
-
-        gfx_window_glutin::update_views(window, &mut self.main_color, &mut self.main_depth);
     }
 }

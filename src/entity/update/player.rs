@@ -31,7 +31,6 @@ pub fn update_player(player: &mut Entity,
     let x = &mut player.direction.0;
     let y = &mut player.direction.1;
 
-    // NOTE: Values get multiplied by -1.0 to invert controls
     let mut move_x = DEFAULT_MOUSE_SENSITIVITY * mouse.1 as f64;
     let move_y = DEFAULT_MOUSE_SENSITIVITY * mouse.0 as f64;
 

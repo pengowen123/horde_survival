@@ -32,7 +32,7 @@ macro_rules! crash {
         error!($msg);
         panic!($crate::consts::misc::CRASH_MESSAGE);
     }};
-    ($msg:tt, $($arg:tt),*) => {{
+    ($msg:tt, $($arg:expr),*) => {{
         error!($msg, $($arg)*);
         panic!($crate::consts::misc::CRASH_MESSAGE);
     }};

@@ -2,7 +2,7 @@ use glutin::Window;
 
 use gamestate::GameState;
 use hsgraphics::GraphicsState;
-use entity::{try_attack, update_player};
+use entity::update_player;
 use hslog::CanUnwrap;
 use hscontrols::center_mouse;
 
@@ -16,19 +16,10 @@ pub fn update_player_state(game: &mut GameState, graphics: &mut GraphicsState, w
         let player = &mut game.player;
         let direction = player.direction;
 
-        if player.left_click && player.capture_cursor {
-            let gold_gained = try_attack(player.entity_id,
-                                         &mut game.entities,
-                                         &mut game.next_entity_id,
-                                         player);
-
-            player.give_gold(gold_gained);
-        }
-
         let player_entity = unwrap_or_log!(game.entities.iter_mut().find(|e| e.id == player.entity_id),
                                            "Player entity disappeared");
 
-        if player.left_click && player.capture_cursor {
+        if player.left_click {
             player_entity.attack = true;
         }
 
@@ -50,9 +41,5 @@ pub fn update_player_state(game: &mut GameState, graphics: &mut GraphicsState, w
     if casts[2] { game.player.ability_2(&mut game.entities); }
     if casts[3] { game.player.ability_3(&mut game.entities); }
 
-    if game.player.capture_cursor {
-        center_mouse(graphics, &mut game.player.mouse, window);
-    } else {
-        game.player.mouse = (0, 0);
-    }
+    center_mouse(graphics, &mut game.player.mouse, window);
 }

@@ -77,7 +77,7 @@ pub fn get_random_monster_weapon(wave: usize) -> Weapon {
         6...100 => ..3,
         3...100 => ..2,
         0...100 => ..1,
-        _ => ..0,
+        _ => ..items.len(),
     };
 
     rng.random_choice_f64(&items[range.clone()], &weights[range], 1)[0].clone()

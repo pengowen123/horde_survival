@@ -1,13 +1,21 @@
-use consts::graphics::minimap::*;
+use collision::Aabb2;
+
+use consts::graphics::*;
+use hsgraphics::GraphicsState;
 use hsgraphics::gfx2d::{self, Color};
 use world::Direction;
 
 macro_rules! shape {
     ($color:expr, $([$x:expr, $y:expr]),*) => {{
         [$(
+            gfx2d::Vertex { pos: [$x, $y], color: $color.clone() },
+         )*]
+    }};
+    (MINIMAP: $color:expr, $([$x:expr, $y:expr]),*) => {{
+        [$(
             gfx2d::Vertex { pos: [$x + MINIMAP_LOCATION.0, $y + MINIMAP_LOCATION.1], color: $color.clone() },
          )*]
-    }}
+    }};
 }
 
 pub fn rotate_point(point: &mut [f32; 2], pivot: &[f32; 2], rot_x: f32, rot_y: f32) {
@@ -58,4 +66,26 @@ pub fn square(position: [f32; 2], size: f32, color: Color, rotation: f32, scales
     }
 
     square
+}
+
+pub fn rectangle_from_aabb(aabb: &Aabb2<f32>, color: Color, graphics: &GraphicsState) -> [gfx2d::Vertex; 6] {
+    let corners = aabb.to_corners();
+
+    let mut rect = shape!(
+        color,
+        [corners[0].x, corners[0].y],
+        [corners[1].x, corners[1].y],
+        [corners[2].x, corners[2].y],
+        [corners[2].x, corners[2].y],
+        [corners[3].x, corners[3].y],
+        [corners[1].x, corners[0].y]
+    );
+
+    for vertex in rect.iter_mut() {
+        let pos = &mut vertex.pos;
+        pos[0] *= graphics.pixel_size.0 * GUI_SCALE;
+        pos[1] *= graphics.pixel_size.1 * GUI_SCALE;
+    }
+
+    rect
 }

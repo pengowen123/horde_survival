@@ -55,8 +55,10 @@ pub fn update_entity(entities: &mut Vec<Entity>, index: usize, map: &Map, player
     }
 
     if is_casting || attack {
-        if !(id == player.entity_id && player.left_click) {
-            try_attack(id, entities, next_id, player);
+        let gold_gained = try_attack(id, entities, next_id, player);
+
+        if id == player.entity_id {
+            player.give_gold(gold_gained);
         }
     }
 

@@ -25,9 +25,7 @@ impl Object2d {
         }
     }
 
-    pub fn from_slice(factory: &mut Factory,
-                            slice: &[Vertex],
-                            color: ObjectColor) -> Object2d {
+    pub fn from_slice(factory: &mut Factory, slice: &[Vertex], color: ObjectColor) -> Object2d {
         let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(slice, ());
         let data = pipe::Data {
             vbuf: vertex_buffer,

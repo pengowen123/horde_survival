@@ -29,7 +29,6 @@ pub struct Player {
 
     // Controls
     pub left_click: bool,
-    pub capture_cursor: bool,
     pub mouse: (i32, i32),
     pub move_forward: bool,
     pub move_left: bool,
@@ -43,7 +42,7 @@ pub struct Player {
 
 // Constructor
 impl Player {
-    pub fn new(entity_id: usize, player_id: usize, class: Class) -> Player {
+    pub fn new(entity_id: usize, player_id: usize, class: Class, coords: Coords) -> Player {
         Player {
             entity_id: entity_id,
             player_id: player_id,
@@ -54,14 +53,13 @@ impl Player {
             inventory: base_inventory(),
             dead: false,
             left_click: false,
-            capture_cursor: false,
             mouse: (0, 0),
             move_forward: false,
             move_left: false,
             move_backward: false,
             move_right: false,
             direction: START_CAMERA_ANGLE,
-            coords: Coords::origin(),
+            coords: coords,
         }
     }
 }
@@ -86,6 +84,14 @@ impl Player {
         };
 
         self.current_cooldowns[id] = apply(&self.cooldown_mods, base as f64) as usize;
+    }
+
+    pub fn reset_controls(&mut self) {
+        self.move_left = false;
+        self.move_right = false;
+        self.move_forward = false;
+        self.move_backward = false;
+        self.left_click = false;
     }
 }
 

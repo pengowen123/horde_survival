@@ -4,15 +4,13 @@ use gamestate::GameState;
 use hsgraphics::GraphicsState;
 use hscontrols::handle_keyboard_input;
 
-pub fn handle_event(event: Event, game: &mut GameState, graphics: &mut GraphicsState, window: &Window) -> bool {
+pub fn handle_event(event: Event, game: &mut GameState, graphics: &mut GraphicsState, window: &Window) {
     match event {
-        Event::Resized(w, h) => {
-            graphics.resize(w, h, &window);
-            false
+        Event::Resized(..) => {
+            window.set_inner_size(graphics.window_size.0, graphics.window_size.1);
         },
         Event::MouseMoved(x, y) => {
             graphics.last_cursor_pos = (x, y);
-            false
         },
         Event::KeyboardInput(state, scan_code, key) => {
             let player = &mut game.player;
@@ -21,10 +19,7 @@ pub fn handle_event(event: Event, game: &mut GameState, graphics: &mut GraphicsS
                                   state,
                                   scan_code,
                                   &mut game.entities,
-                                  player,
-                                  &window);
-
-            false
+                                  player);
         },
         Event::MouseInput(state, button) => {
             match button {
@@ -33,12 +28,8 @@ pub fn handle_event(event: Event, game: &mut GameState, graphics: &mut GraphicsS
                 },
                 _ => {},
             }
-
-            false
         },
-        Event::Closed => {
-            return true;
-        }
-        _ => false,
+        Event::Closed => graphics.should_close = true,
+        _ => {},
     }
 }
