@@ -17,3 +17,6 @@ log-panics = "1.0.0"
 time = "0.1.35"
 collision = "0.9.0"
 random_choice = "0.3.2"
+rusttype = "0.2.1"
+
+image_utils = { path = "image_utils" }

@@ -1,3 +1,4 @@
+#[macro_use]
 pub mod shapes;
 pub mod state;
 pub mod gfx3d;
@@ -6,7 +7,10 @@ pub mod gfx2d;
 pub mod texture;
 pub mod camera;
 pub mod options;
+mod minimap;
+mod entity;
 mod utils;
+mod init;
 
 pub use self::state::*;
 pub use self::object::*;

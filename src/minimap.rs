@@ -1,14 +1,12 @@
-#![allow(dead_code)]
-
-use hsgraphics::gfx2d::Color;
-use consts::graphics::minimap::*;
+use hsgraphics::GraphicsState;
+use hsgraphics::texture::Texture;
 use entity::{Entity, EntityType};
 
 #[derive(Clone)]
 pub struct MinimapEntity {
     pub coords: [f32; 2],
     pub direction: (f64, f64),
-    pub color: Color,
+    pub texture: Texture,
     pub id: usize,
 }
 
@@ -19,21 +17,22 @@ pub struct Minimap {
 }
 
 impl MinimapEntity {
-    pub fn new(coords: [f32; 2], direction: (f64, f64), color: Color) -> MinimapEntity {
+    pub fn new(coords: [f32; 2], direction: (f64, f64), texture: Texture) -> MinimapEntity {
         MinimapEntity {
             coords: coords,
             direction: direction,
-            color: color,
+            texture: texture,
             id: 0,
         }
     }
 
-    pub fn from_entity(entity: &Entity, scale: f32) -> MinimapEntity {
+    pub fn from_entity(entity: &Entity, scale: f32, graphics: &GraphicsState) -> MinimapEntity {
         let coords = entity.coords.scaled(scale as f64);
+        let texture = graphics.get_texture(get_minimap_entity_texture_id(&entity.entity_type));
 
         MinimapEntity::new([coords.x as f32, coords.z as f32],
                            entity.direction.clone(),
-                           get_minimap_entity_color(&entity.entity_type))
+                           texture)
     }
 }
 
@@ -47,11 +46,11 @@ impl Minimap {
         }
     }
 
-    pub fn from_entities(entities: &[Entity], scale: f32) -> Minimap {
+    pub fn from_entities(entities: &[Entity], scale: f32, graphics: &GraphicsState) -> Minimap {
         let mut minimap = Minimap::new(scale);
 
         for entity in entities {
-            minimap.add_entity(MinimapEntity::from_entity(entity, scale));
+            minimap.add_entity(MinimapEntity::from_entity(entity, scale, graphics));
         }
 
         minimap
@@ -68,11 +67,11 @@ impl Minimap {
 }
 
 // Utility function
-fn get_minimap_entity_color(entity_type: &EntityType) -> Color {
+fn get_minimap_entity_texture_id(entity_type: &EntityType) -> usize {
     match *entity_type {
-        EntityType::Player => MINIMAP_COLOR_PLAYER,
-        EntityType::Zombie => MINIMAP_COLOR_ZOMBIE,
-        EntityType::FlyingBallLinear => MINIMAP_COLOR_FLYING_BALL_LINEAR,
-        EntityType::FlyingBallArc => MINIMAP_COLOR_FLYING_BALL_ARC,
+        EntityType::Player => 5,
+        EntityType::Zombie => 6,
+        EntityType::FlyingBallLinear => 7,
+        EntityType::FlyingBallArc => 8,
     }
 }

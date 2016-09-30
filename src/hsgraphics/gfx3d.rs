@@ -1,5 +1,3 @@
-// TODO: Read more about shaders
-
 use gfx;
 
 pub type ColorFormat = gfx::format::Rgba8;

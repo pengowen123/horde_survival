@@ -36,7 +36,10 @@ impl GameState {
     }
 
     pub fn new_game(&mut self) {
+        info!("Started new game");
         *self = GameState::new();
+        // TODO: Delete this
+        self.entities[0].armor[0] = balance::items::armor::HEAL;
     }
 }
 

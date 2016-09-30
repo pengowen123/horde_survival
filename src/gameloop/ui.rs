@@ -31,7 +31,6 @@ pub fn run_gui(event: Option<Event>,
                 let mouse = mouse_pos_as_point(&*graphics, graphics.last_cursor_pos);
                 mouse.map_or((), |m| ui.click(m, game, loop_type, window, graphics));
             },
-            Event::MouseInput(ElementState::Released, MouseButton::Left) => ui.release_lmb(),
             Event::KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::Escape)) => {
                 match ui.state {
                     UIState::ShopMenu => {
@@ -39,6 +38,7 @@ pub fn run_gui(event: Option<Event>,
                     UIState::EscapeMenu => {
                         *loop_type = LoopType::Game;
                         set_cursor_state(window, CursorState::Hide);
+                        graphics.reset_cursor(window);
                     },
                     UIState::OptionsMenu => {
                         ui.set_state(UIState::MainMenu, graphics);
@@ -53,7 +53,7 @@ pub fn run_gui(event: Option<Event>,
         }
     }
     
-    graphics.encoder.clear(&graphics.main_color, GUI_CLEAR_COLOR);
+    graphics.encoder.clear(&graphics.data.out_color, GUI_CLEAR_COLOR);
     ui.draw(graphics);
     graphics.draw_gui(window);
 

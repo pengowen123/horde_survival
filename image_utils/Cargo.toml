@@ -1,0 +1,9 @@
+[package]
+name = "image_utils"
+version = "0.1.0"
+authors = ["pengowen123 <pengowen816@gmail.com>"]
+
+[dependencies]
+image = "0.10.3"
+gfx_device_gl = "0.11.2"
+gfx = "0.12.1"

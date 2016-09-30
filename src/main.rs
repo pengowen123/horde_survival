@@ -20,6 +20,7 @@ extern crate log_panics;
 extern crate rand;
 extern crate time;
 extern crate random_choice;
+extern crate image_utils;
 
 #[macro_use]
 mod hslog;
@@ -46,22 +47,21 @@ fn main() {
 
     info!("Initializing game...");
 
+    // Initialize states
     let mut game = gamestate::GameState::new();
     let options = hsgraphics::GraphicsOptions::new()
         .minimap_enabled(false)
         .display_debug(true)
         .crosshair(true)
+        .fullscreen(false)
         .clone();
+
     let (mut graphics, window) = hsgraphics::GraphicsState::new(options, &game);
     let mut loop_type = gameloop::LoopType::GUI;
     let mut ticks = tps::Ticks::new();
     let mut ui = gui::UI::new(&mut graphics);
 
     info!("Done");
-
-    // Use this for testing the game
-    game.entities[0].current_weapon = consts::items::weapon::TEST_GUN;
-    game.entities[0].armor[0] = consts::items::armor::HEAL;
 
     // Event loop
     let mut events = window.poll_events();

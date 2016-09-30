@@ -1,5 +1,4 @@
 target
-src/include
 *.swp
 *.vi
 *.tdl

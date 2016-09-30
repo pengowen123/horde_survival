@@ -1,19 +1,18 @@
 use collision::Aabb2;
 
 use consts::graphics::*;
-use hsgraphics::GraphicsState;
-use hsgraphics::gfx2d::{self, Color};
+use hsgraphics::gfx2d;
 use world::Direction;
 
 macro_rules! shape {
-    ($color:expr, $([$x:expr, $y:expr]),*) => {{
+    ($([$x:expr, $y:expr], [$tex_x:expr, $tex_y:expr]),*) => {{
         [$(
-            gfx2d::Vertex { pos: [$x, $y], color: $color.clone() },
+            gfx2d::Vertex::new([$x, $y], [$tex_x, $tex_y]),
          )*]
     }};
-    (MINIMAP: $color:expr, $([$x:expr, $y:expr]),*) => {{
+    (MINIMAP $([$x:expr, $y:expr], [$tex_x:expr, $tex_y:expr]),*) => {{
         [$(
-            gfx2d::Vertex { pos: [$x + MINIMAP_LOCATION.0, $y + MINIMAP_LOCATION.1], color: $color.clone() },
+            gfx2d::Vertex::new([$x + MINIMAP_LOCATION.0, $y + MINIMAP_LOCATION.1], [$tex_x, $tex_y]),
          )*]
     }};
 }
@@ -39,19 +38,19 @@ pub fn rotate_shape(shape: &mut [gfx2d::Vertex], pivot: [f32; 2], angle: f32) {
     }
 }
 
-pub fn square(position: [f32; 2], size: f32, color: Color, rotation: f32, scales: (f32, f32)) -> [gfx2d::Vertex; 6] {
+pub fn square(position: [f32; 2], size: f32, rotation: f32, scales: (f32, f32)) -> [gfx2d::Vertex; 6] {
     let zero = 0.0 - size / 2.0;
     let center = [0.0, 0.0];
     let (scale_x, scale_y) = scales;
 
     let mut square = shape!(
-        color,
-        [zero, zero],
-        [zero + size, zero],
-        [zero, zero + size],
-        [zero + size, zero],
-        [zero, zero + size],
-        [zero + size, zero + size]
+        MINIMAP
+        [zero, zero], [1.0, 0.0],
+        [zero + size, zero], [0.0, 1.0],
+        [zero, zero + size], [1.0, 1.0],
+        [zero + size, zero], [0.0, 1.0],
+        [zero, zero + size], [1.0, 1.0],
+        [zero + size, zero + size], [0.0, 0.0]
     );
 
     rotate_shape(&mut square, center, rotation);
@@ -68,24 +67,16 @@ pub fn square(position: [f32; 2], size: f32, color: Color, rotation: f32, scales
     square
 }
 
-pub fn rectangle_from_aabb(aabb: &Aabb2<f32>, color: Color, graphics: &GraphicsState) -> [gfx2d::Vertex; 6] {
+pub fn rectangle_from_aabb(aabb: &Aabb2<f32>) -> [gfx2d::Vertex; 6] {
     let corners = aabb.to_corners();
 
-    let mut rect = shape!(
-        color,
-        [corners[0].x, corners[0].y],
-        [corners[1].x, corners[1].y],
-        [corners[2].x, corners[2].y],
-        [corners[2].x, corners[2].y],
-        [corners[3].x, corners[3].y],
-        [corners[1].x, corners[0].y]
-    );
-
-    for vertex in rect.iter_mut() {
-        let pos = &mut vertex.pos;
-        pos[0] *= graphics.pixel_size.0 * GUI_SCALE;
-        pos[1] *= graphics.pixel_size.1 * GUI_SCALE;
-    }
-
-    rect
+    shape!(
+        [corners[0].x, corners[0].y], [0.0, 0.0],
+        [corners[1].x, corners[1].y], [1.0, 0.0],
+        [corners[2].x, corners[2].y], [0.0, 1.0],
+        [corners[2].x, corners[2].y], [0.0, 1.0],
+        [corners[3].x, corners[3].y], [1.0, 1.0],
+        // NOTE: I think this was a typo, but removing it breaks the shape
+        [corners[1].x, corners[0].y], [0.0, 0.0]
+    )
 }

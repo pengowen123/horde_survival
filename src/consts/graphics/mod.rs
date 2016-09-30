@@ -3,14 +3,12 @@ pub mod minimap;
 pub mod textures;
 pub mod crosshair;
 mod camera;
-mod gui;
 
 pub use self::window::*;
 pub use self::minimap::*;
 pub use self::textures::*;
 pub use self::camera::*;
 pub use self::crosshair::*;
-pub use self::gui::*;
 
 pub const FLOOR_HEIGHT: f32 = 0.4;
 pub const UPDATE_THRESHOLD: f64 = 0.05;

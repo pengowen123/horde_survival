@@ -27,10 +27,3 @@ pub fn rect(a: (f32, f32), b: (f32, f32)) -> Aabb2<f32> {
 pub fn uiobject<T: UIObject + 'static>(object: T) -> Box<UIObject> {
     Box::new(object)
 }
-
-pub fn get_button_color(id: u32) -> [f32; 3] {
-    match id {
-        0 => [1.0, 1.0, 0.0],
-        _ => [0.0; 3],
-    }
-}

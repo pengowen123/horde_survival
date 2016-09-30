@@ -1,11 +1,18 @@
 pub mod text;
 pub mod button;
+pub mod colors;
+pub mod shape;
+mod alignment;
 mod menus;
 mod utils;
 mod consts;
 
 pub use self::utils::*;
 pub use self::button::*;
+pub use self::alignment::*;
+pub use self::colors::*;
+pub use self::consts::*;
+pub use self::shape::*;
 
 use glutin::Window;
 use cgmath::Point2;
@@ -18,25 +25,21 @@ use gameloop::LoopType;
 use std::collections::HashMap;
 
 pub trait UIObject {
+    // NOTE: graphics.aspect_ratio stores useful info for drawing fixed size things such as squares
     fn draw(&self, &mut GraphicsState);
-    fn is_selected(&self, mouse: Point2<f32>) -> bool;
-    fn select(&mut self,
-              selected_id: &mut Option<u32>,
-              state: &mut UIState,
-              game: &mut GameState,
-              loop_type: &mut LoopType,
-              window: &Window,
-              graphics: &mut GraphicsState);
+    fn is_selected(&self, Point2<f32>) -> bool;
+
+    // This is run when the object is clicked on, and the UI state is set to the return value
+    fn select(&mut self, &mut Option<u32>, &UIState, &mut GameState, &mut LoopType, &Window, &mut GraphicsState) -> UIState;
 }
 
 pub struct UI {
     pub state: UIState,
     objects: HashMap<u32, Box<UIObject>>,
     selected_id: Option<u32>,
-    can_click: bool,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum UIState {
     MainMenu,
     EscapeMenu,
@@ -50,7 +53,6 @@ impl UI {
             objects: HashMap::new(),
             state: UIState::MainMenu,
             selected_id: None,
-            can_click: true,
         };
 
         ui.set_state(UIState::MainMenu, graphics);
@@ -77,28 +79,27 @@ impl UI {
     }
 
     pub fn click(&mut self, mouse: Point2<f32>, game: &mut GameState, loop_type: &mut LoopType, window: &Window, graphics: &mut GraphicsState) {
-        if self.can_click {
-            println!("Clicked at ({}, {})", mouse.x, mouse.y);
-            self.can_click = false;
+        println!("Clicked at ({}, {})", mouse.x, mouse.y);
 
-            let mut selected = None;
+        let mut selected = None;
 
-            for (id, object) in &self.objects {
-                if object.is_selected(mouse) {
-                    selected = Some(*id);
-                }
-            }
-
-            if let Some(id) = selected {
-                let selected_id = &mut self.selected_id;
-                let state = &mut self.state;
-
-                self.objects.get_mut(&id).unwrap().select(selected_id, state, game, loop_type, window, graphics);
+        for (id, object) in &self.objects {
+            if object.is_selected(mouse) {
+                selected = Some(*id);
             }
         }
-    }
 
-    pub fn release_lmb(&mut self) {
-        self.can_click = true;
+        let state = if let Some(id) = selected {
+            let selected_id = &mut self.selected_id;
+            let state = &self.state;
+
+            self.objects.get_mut(&id).unwrap().select(selected_id, state, game, loop_type, window, graphics)
+        } else {
+            return;
+        };
+
+        if state != self.state {
+            self.set_state(state, graphics);
+        }
     }
 }
