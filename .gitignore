@@ -3,3 +3,4 @@ target
 *.vi
 *.tdl
 .local.vimrc
+src/test_assets
