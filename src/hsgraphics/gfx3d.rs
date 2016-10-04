@@ -1,6 +1,7 @@
 use gfx;
 
-pub type ColorFormat = gfx::format::Rgba8;
+pub use hsgraphics::ColorFormat;
+
 pub type DepthFormat = gfx::format::DepthStencil;
 
 gfx_defines!{

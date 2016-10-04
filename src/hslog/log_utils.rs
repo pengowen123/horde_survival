@@ -28,12 +28,12 @@ macro_rules! unwrap_or_log {
 }
 
 macro_rules! crash {
-    ($msg:tt) => {{
-        error!($msg);
+    ($msg:expr, $($arg:expr),*) => {{
+        error!($msg, $($arg)*);
         panic!($crate::consts::misc::CRASH_MESSAGE);
     }};
-    ($msg:tt, $($arg:expr),*) => {{
-        error!($msg, $($arg)*);
+    ($msg:expr) => {{
+        error!("{}", $msg);
         panic!($crate::consts::misc::CRASH_MESSAGE);
     }};
 }

@@ -6,8 +6,10 @@ use gfx_window_glutin;
 use consts::*;
 use hsgraphics::*;
 use hsgraphics::object3d::*;
+use assets::AssetLoader;
 use gamestate::GameState;
 use minimap::Minimap;
+use hslog::CanUnwrap;
 
 impl GraphicsState {
     pub fn new(options: GraphicsOptions, game: &GameState) -> (GraphicsState, Window) {
@@ -16,17 +18,26 @@ impl GraphicsState {
             opengl_version: (2, 1),
         };
 
+        let width = options.window_size.0;
+        let height = options.window_size.1;
+        let center = (width as i32 / 2, height as i32 / 2);
+
         let mut builder = glutin::WindowBuilder::new()
             .with_title(WINDOW_NAME)
-            .with_dimensions(WINDOW_WIDTH, WINDOW_HEIGHT)
             .with_gl(gl);
 
         if options.fullscreen {
-            builder = builder.with_fullscreen(glutin::get_primary_monitor());
+            let monitor = glutin::get_primary_monitor();
+            let (width, height) = monitor.get_dimensions();
+            builder = builder
+                .with_fullscreen(monitor)
+                .with_dimensions(width, height);
+        } else {
+            builder = builder.with_dimensions(width, height);
         }
 
         let (window, device, mut factory, main_color, main_depth) =
-            gfx_window_glutin::init::<gfx3d::ColorFormat, gfx3d::DepthFormat>(builder);
+            gfx_window_glutin::init::<ColorFormat, gfx3d::DepthFormat>(builder);
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
         let pso2d = match factory.create_pipeline_simple(
@@ -45,11 +56,9 @@ impl GraphicsState {
                 Err(e) => crash!("Failed to create 3d PSO: {}", e),
             };
 
-        let textures = create_all_textures(&mut factory);
-
         let sampler_info = tex::SamplerInfo::new(tex::FilterMethod::Bilinear, tex::WrapMode::Clamp);
         let sampler = factory.create_sampler(sampler_info);
-        let aspect_ratio = WINDOW_WIDTH as f32 / WINDOW_HEIGHT as f32;
+        let aspect_ratio = width as f32 / height as f32;
         let camera = get_camera(game.map.player_spawn.clone(), START_CAMERA_ANGLE, aspect_ratio);
 
         let vbuf = factory.create_vertex_buffer(&[]);
@@ -78,8 +87,8 @@ impl GraphicsState {
             options: options,
             objects2d: Vec::new(),
             objects3d: Vec::new(),
-            window_size: (WINDOW_WIDTH, WINDOW_HEIGHT),
-            window_center: WINDOW_CENTER,
+            window_size: (width, height),
+            window_center: center,
             should_close: false,
             pso2d: pso2d,
             pso3d: pso3d,
@@ -88,13 +97,20 @@ impl GraphicsState {
             minimap: Minimap::new(MINIMAP_SCALE),
             aspect_ratio: aspect_ratio,
             camera: camera,
-            textures: textures,
+            assets: AssetLoader::new("test_assets/Arial Unicode.ttf"),
             device: device,
-            last_cursor_pos: WINDOW_CENTER,
-            pixel_size: (1.0 / WINDOW_WIDTH as f32, 1.0 / WINDOW_HEIGHT as f32),
+            last_cursor_pos: center,
+            pixel_size: (1.0 / width as f32, 1.0 / height as f32),
         };
 
-        let texture = state.get_texture(0);
+        state.assets.add_texture_assets(&[("floor", "test_assets/floor.png")]);
+
+        if let Err(e) = state.assets.load_font(&mut state.factory) {
+            crash!("Failed to load font: {}", e);
+        }
+
+        let texture = unwrap_or_log!(state.assets.get_or_load_texture("floor", &mut state.factory),
+                                     "Failed to find texture: floor").clone();
         let (v, i) = shapes3d::plane(FLOOR_HEIGHT, 1000.0);
         let floor_object = Object3d::from_slice(&mut state.factory, &v, &i, texture);
 

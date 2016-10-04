@@ -1,6 +1,7 @@
 use hsgraphics::GraphicsState;
 use hsgraphics::texture::Texture;
 use entity::{Entity, EntityType};
+use hslog::CanUnwrap;
 
 #[derive(Clone)]
 pub struct MinimapEntity {
@@ -26,13 +27,15 @@ impl MinimapEntity {
         }
     }
 
-    pub fn from_entity(entity: &Entity, scale: f32, graphics: &GraphicsState) -> MinimapEntity {
+    pub fn from_entity(entity: &Entity, scale: f32, graphics: &mut GraphicsState) -> MinimapEntity {
         let coords = entity.coords.scaled(scale as f64);
-        let texture = graphics.get_texture(get_minimap_entity_texture_id(&entity.entity_type));
+        let name = get_minimap_entity_texture_name(&entity.entity_type);
+        let texture = unwrap_or_log!(graphics.assets.get_or_load_texture(name, &mut graphics.factory),
+                                     "Failed to load texture: {}", name);
 
         MinimapEntity::new([coords.x as f32, coords.z as f32],
                            entity.direction.clone(),
-                           texture)
+                           texture.clone())
     }
 }
 
@@ -46,7 +49,7 @@ impl Minimap {
         }
     }
 
-    pub fn from_entities(entities: &[Entity], scale: f32, graphics: &GraphicsState) -> Minimap {
+    pub fn from_entities(entities: &[Entity], scale: f32, graphics: &mut GraphicsState) -> Minimap {
         let mut minimap = Minimap::new(scale);
 
         for entity in entities {
@@ -67,11 +70,11 @@ impl Minimap {
 }
 
 // Utility function
-fn get_minimap_entity_texture_id(entity_type: &EntityType) -> usize {
+fn get_minimap_entity_texture_name(entity_type: &EntityType) -> &str {
     match *entity_type {
-        EntityType::Player => 5,
-        EntityType::Zombie => 6,
-        EntityType::FlyingBallLinear => 7,
-        EntityType::FlyingBallArc => 8,
+        EntityType::Player => "minimap_player",
+        EntityType::Zombie => "minimap_zombie",
+        EntityType::FlyingBallLinear => "minimap_ball_linear",
+        EntityType::FlyingBallArc => "minimap_ball_arc",
     }
 }

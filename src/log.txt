@@ -1,3 +1,15 @@
-13:21:39 [INFO] horde_survival: Initializing game...
-13:21:41 [INFO] horde_survival: Done
-13:21:44 [INFO] horde_survival: Closed Horde Survival
+11:27:49 [INFO] horde_survival: Initializing game...
+11:27:50 [INFO] horde_survival: Done
+11:27:54 [INFO] horde_survival::gameloop::loading: Loading texture 'pepe' (test_assets/pepe.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'player' (test_assets/player.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'zombie' (test_assets/zombie.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'blue' (test_assets/blue.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'red' (test_assets/red.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'black' (test_assets/black.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'green' (test_assets/green.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'crosshair' (test_assets/crosshair.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_linear' (test_assets/ball_linear.png)
+11:27:56 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_arc' (test_assets/ball_arc.png)
+11:28:19 [INFO] horde_survival::gamestate: Started new game
+11:28:19 [INFO] horde_survival::gamestate: Starting wave 1
+11:28:41 [INFO] horde_survival: Closed Horde Survival

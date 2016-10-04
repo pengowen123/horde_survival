@@ -1,37 +1,50 @@
 use glutin::Window;
 use cgmath::Point2;
-use collision::Aabb2;
+use collision::{Aabb, Aabb2};
 
-use hsgraphics::GraphicsState;
+use hsgraphics::*;
 use gamestate::GameState;
 use gameloop::LoopType;
+use consts::text::BUTTON_TEXT_HEIGHT;
 use gui::*;
 
 pub struct Text {
-    pos: [f32; 2],
-    text: String,
-    cache_id: usize,
+    object: object2d::Object2d,
 }
 
 impl Text {
-    pub fn new(text: String, pos: [f32; 2]) -> Text {
+    pub fn new<S: Into<String>>(text: S, rect: Aabb2<f32>, graphics: &mut GraphicsState) -> Text {
+        let text = text.into();
+        let height = rect.dim().y * graphics.window_size.1 as f32 * BUTTON_TEXT_HEIGHT;
+        let texture = graphics.create_text_texture(&text, height);
+        let shape = shapes2d::rectangle_from_aabb(&rect);
+        let object = object2d::Object2d::from_slice(&mut graphics.factory, &shape, texture);
+
+        object.encode(&mut graphics.encoder, &graphics.pso2d, &mut graphics.data2d);
         Text {
-            pos: pos,
-            text: text,
-            cache_id: 0,
+            object: object,
         }
     }
 
-    pub fn new_on_button(text: String, rect: &Aabb2<f32>) -> Text {
-        // TODO: Make the text centered on the button rect
-        Text::new(text, [rect.min.x, rect.min.y])
+    pub fn new_on_button<S: Into<String>>(text: S, rect: &Aabb2<f32>, graphics: &mut GraphicsState) -> Text {
+        // TODO: Resize the rect to avoid stretching or compressing of the text
+        Text::new(text, rect.clone(), graphics)
     }
 }
 
 impl UIObject for Text {
     fn draw(&self, graphics: &mut GraphicsState) {
+        self.object.encode(&mut graphics.encoder, &mut graphics.pso2d, &mut graphics.data2d);
     }
 
     fn is_selected(&self, _: Point2<f32>) -> bool { false }
-    fn select(&mut self, _: &mut Option<u32>, state: &UIState, _: &mut GameState, _: &mut LoopType, _: &Window, _: &mut GraphicsState) -> UIState { state.clone() }
+    fn select(&mut self,
+              _: &mut Option<u32>,
+              state: &UIState,
+              _: &mut GameState,
+              _: &mut LoopType,
+              _: &Window,
+              _: &mut GraphicsState) -> UIState { state.clone() }
+
+    fn get_layer(&self) -> usize { 2 }
 }

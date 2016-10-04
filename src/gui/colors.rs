@@ -1,33 +1,34 @@
 use gui::UIState;
 
-pub fn get_button_texture_id(state: UIState, id: u32) -> usize {
+pub fn get_button_texture_name(state: UIState, id: u32) -> &'static str {
     match state {
         UIState::MainMenu => {
             match id {
-                0 => 9,
-                1 => 9,
-                2 => 9,
-                _ => 10,
+                0 => "blue",
+                1 => "blue",
+                2 => "blue",
+                _ => "black",
             }
         },
         UIState::ShopMenu => {
             match id {
-                0 => 11,
-                _ => 10,
+                0 => "green",
+                _ => "black",
             }
         },
         UIState::EscapeMenu => {
             match id {
-                0 => 11,
-                1 => 9,
-                _ => 10,
+                0 => "green",
+                1 => "blue",
+                _ => "black",
             }
         },
         UIState::OptionsMenu => {
             match id {
-                0 => 9,
-                _ => 10,
+                0 => "blue",
+                _ => "black",
             }
         },
+        UIState::LoadingScreen => "black",
     }
 }

@@ -2,6 +2,7 @@ use consts::*;
 use hsgraphics::*;
 use hsgraphics::object3d::Object3d;
 use hsgraphics::utils::*;
+use hslog::CanUnwrap;
 use entity::Entity;
 
 impl GraphicsState {
@@ -17,12 +18,15 @@ impl GraphicsState {
                 continue;
             }
 
-            let texture = self.get_texture(get_texture_id(&entity.entity_type));
+            let name = get_texture_name(&entity.entity_type);
+            let texture = unwrap_or_log!(self.assets.get_or_load_texture(name, &mut self.factory),
+                                         "Failed to load texture for {:?}", entity.entity_type);
+
             let size = get_entity_box_size(&entity.entity_type);
             let coords = get_unscaled_cube_coords(&entity.coords);
             let (v, i) = shapes3d::cube(coords, size);
 
-            let mut cube_object = Object3d::from_slice(&mut self.factory, &v, &i, texture);
+            let mut cube_object = Object3d::from_slice(&mut self.factory, &v, &i, texture.clone());
 
             cube_object.id = ENTITY_OBJECT_ID;
             self.objects3d.push(cube_object);

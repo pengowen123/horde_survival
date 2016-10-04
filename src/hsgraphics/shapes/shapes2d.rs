@@ -71,12 +71,11 @@ pub fn rectangle_from_aabb(aabb: &Aabb2<f32>) -> [gfx2d::Vertex; 6] {
     let corners = aabb.to_corners();
 
     shape!(
-        [corners[0].x, corners[0].y], [0.0, 0.0],
-        [corners[1].x, corners[1].y], [1.0, 0.0],
-        [corners[2].x, corners[2].y], [0.0, 1.0],
-        [corners[2].x, corners[2].y], [0.0, 1.0],
-        [corners[3].x, corners[3].y], [1.0, 1.0],
-        // NOTE: I think this was a typo, but removing it breaks the shape
-        [corners[1].x, corners[0].y], [0.0, 0.0]
+        [corners[0].x, corners[0].y], [0.0, 1.0],
+        [corners[1].x, corners[1].y], [1.0, 1.0],
+        [corners[3].x, corners[3].y], [1.0, 0.0],
+        [corners[0].x, corners[0].y], [0.0, 1.0],
+        [corners[2].x, corners[2].y], [0.0, 0.0],
+        [corners[3].x, corners[3].y], [1.0, 0.0]
     )
 }

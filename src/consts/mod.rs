@@ -5,6 +5,8 @@ pub mod misc;
 pub mod physics;
 pub mod log_str;
 pub mod scale;
+pub mod text;
+pub mod defaults;
 
 pub use self::balance::*;
 pub use self::controls::*;

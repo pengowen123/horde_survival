@@ -7,6 +7,7 @@ use hsgraphics::object2d::Object2d;
 use gamestate::GameState;
 use gameloop::LoopType;
 use utils::set_cursor_state;
+use hslog::CanUnwrap;
 use gui::*;
 
 pub struct Button {
@@ -16,19 +17,22 @@ pub struct Button {
 }
 
 impl Button {
-    pub fn new(id: u32, mut rect: Aabb2<f32>, graphics: &mut GraphicsState, state: UIState, align: Align) -> Button {
+    pub fn new(id: u32, mut rect: Aabb2<f32>, graphics: &mut GraphicsState, state: UIState, align: Align) -> (Button, Aabb2<f32>) {
         align.apply(&mut rect);
 
-        let texture = graphics.get_texture(get_button_texture_id(state, id));
-        let texture = graphics.get_texture(13);
+        let name = get_button_texture_name(state, id);
+        let texture = unwrap_or_log!(graphics.assets.get_or_load_texture(&name, &mut graphics.factory),
+                                     "Failed to load texture: {}", name);
         let object_rect = shapes2d::rectangle_from_aabb(&rect);
-        let object = Object2d::from_slice(&mut graphics.factory, &object_rect, texture);
+        let object = Object2d::from_slice(&mut graphics.factory, &object_rect, texture.clone());
 
-        Button {
-            rect: rect,
+        let button = Button {
+            rect: rect.clone(),
             id: id,
             object: object,
-        }
+        };
+
+        (button, rect)
     }
 }
 
@@ -40,6 +44,8 @@ impl UIObject for Button {
     fn is_selected(&self, point: Point2<f32>) -> bool {
          self.rect.contains(point)
     }
+
+    fn get_layer(&self) -> usize { 1 }
 
     fn select(&mut self,
               _: &mut Option<u32>,
@@ -101,6 +107,7 @@ impl UIObject for Button {
                     _ => crash!("Button not found: {}", self.id),
                 }
             },
+            UIState::LoadingScreen => {},
         }
 
         state.clone()

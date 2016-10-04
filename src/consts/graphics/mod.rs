@@ -1,12 +1,10 @@
 pub mod window;
 pub mod minimap;
-pub mod textures;
 pub mod crosshair;
 mod camera;
 
 pub use self::window::*;
 pub use self::minimap::*;
-pub use self::textures::*;
 pub use self::camera::*;
 pub use self::crosshair::*;
 

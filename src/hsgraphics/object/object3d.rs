@@ -1,11 +1,10 @@
 use gfx;
-use gfx::format::Rgba8;
 use gfx::traits::FactoryExt;
 use gfx_device_gl::{Resources, Factory};
 
 use hsgraphics::*;
 
-pub type Object3dColor = gfx::handle::RenderTargetView<Resources, Rgba8>;
+pub type Object3dColor = gfx::handle::RenderTargetView<Resources, ColorFormat>;
 pub type Object3dDepth = gfx::handle::DepthStencilView<Resources, ObjectDepth>;
 pub type ObjectPSO = gfx::PipelineState<Resources, gfx3d::pipe::Meta>;
 pub type VBuffer = gfx::handle::Buffer<Resources, gfx3d::Vertex>;

@@ -46,6 +46,7 @@ pub fn run_gui(event: Option<Event>,
                     UIState::MainMenu => {
                         graphics.should_close = true;
                     },
+                    UIState::LoadingScreen => {},
                 }
             },
             Event::Closed => graphics.should_close = true,

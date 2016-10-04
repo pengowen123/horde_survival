@@ -1,12 +1,12 @@
 use entity::EntityType;
 use world::Coords;
 
-pub fn get_texture_id(entity_type: &EntityType) -> usize {
+pub fn get_texture_name(entity_type: &EntityType) -> &str {
     match *entity_type {
-        EntityType::Player => 1,
-        EntityType::Zombie => 2,
-        EntityType::FlyingBallLinear => 3,
-        EntityType::FlyingBallArc => 4,
+        EntityType::Player => "player",
+        EntityType::Zombie => "zombie",
+        EntityType::FlyingBallLinear => "ball_linear",
+        EntityType::FlyingBallArc => "ball_arc",
     }
 }
 

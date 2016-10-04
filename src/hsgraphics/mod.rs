@@ -11,6 +11,7 @@ mod minimap;
 mod entity;
 mod utils;
 mod init;
+mod text;
 
 pub use self::state::*;
 pub use self::object::*;
@@ -19,3 +20,7 @@ pub use self::gfx2d::CLEAR_COLOR;
 pub use self::texture::*;
 pub use self::camera::*;
 pub use self::options::*;
+
+use gfx::format;
+
+pub type ColorFormat = format::Srgba8;

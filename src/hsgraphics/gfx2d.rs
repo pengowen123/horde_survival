@@ -1,6 +1,5 @@
-use gfx;
+pub use hsgraphics::ColorFormat;
 
-pub type ColorFormat = gfx::format::Rgba8;
 pub type Color = [f32; 3];
 
 pub const CLEAR_COLOR: [f32; 4] = [0.0, 0.35, 0.5, 1.0];
@@ -14,7 +13,7 @@ gfx_defines! {
     pipeline pipe {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         color: gfx::TextureSampler<[f32; 4]> = "t_Color",
-        out: gfx::RenderTarget<ColorFormat> = "f_Color",
+        out: gfx::BlendTarget<ColorFormat> = ("f_Output", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
     }
 }
 

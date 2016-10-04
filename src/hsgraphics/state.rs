@@ -3,13 +3,15 @@ use glutin::Window;
 use cgmath::Matrix4;
 use gfx_device_gl;
 
-use consts::*;
-use hsgraphics::*;
 use hsgraphics::object2d::Object2d;
-use hsgraphics::object3d::*;
+use assets::AssetLoader;
 use minimap::Minimap;
 use world::Coords;
 use gamestate::GameState;
+use hsgraphics::object3d::*;
+use hsgraphics::*;
+use hslog::CanUnwrap;
+use consts::*;
 
 pub struct GraphicsState {
     // Options
@@ -34,8 +36,8 @@ pub struct GraphicsState {
     pub data: gfx3d::pipe::Data<gfx_device_gl::Resources>,
     pub data2d: gfx2d::pipe::Data<gfx_device_gl::Resources>,
 
-    // Textures
-    pub textures: Vec<Texture>,
+    // Assets
+    pub assets: AssetLoader<String>,
 
     // Minimap
     pub minimap: Minimap,
@@ -107,8 +109,9 @@ impl GraphicsState {
                 v.pos[0] *= scale_x;
                 v.pos[1] *= scale_y;
             }
-
-            let texture = self.get_texture(12);
+   
+            let texture = unwrap_or_log!(self.assets.get_or_load_texture("crosshair", &mut self.factory),
+                                         "Failed to get texture: crosshair").clone();
             let object = Object2d::from_slice(&mut self.factory, &vertices, texture);
             self.add_object2d(object, CROSSHAIR_OBJECT_ID);
         }
@@ -153,13 +156,6 @@ impl GraphicsState {
 
 // Misc
 impl GraphicsState {
-    pub fn get_texture(&self, id: usize) -> Texture {
-        match self.textures.get(id) {
-            Some(t) => t.clone(),
-            None => crash!("Failed to find texture with ID {}", id),
-        }
-    }
-
     pub fn get_scales(&self, d: f32) -> (f32, f32) {
         (d * MINIMAP_SCALE / self.window_size.0 as f32,
          d * MINIMAP_SCALE / self.window_size.1 as f32)
