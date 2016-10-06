@@ -30,6 +30,12 @@ impl Text {
         // TODO: Resize the rect to avoid stretching or compressing of the text
         Text::new(text, rect.clone(), graphics)
     }
+
+    pub fn new_aligned<S: Into<String>>(text: S, mut rect: Aabb2<f32>, align: Align, graphics: &mut GraphicsState) -> Text {
+        align.apply(&mut rect);
+
+        Text::new(text, rect, graphics)
+    }
 }
 
 impl UIObject for Text {

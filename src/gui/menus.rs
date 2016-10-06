@@ -32,6 +32,7 @@ pub fn get_main_menu_objects(objects: &mut HashMap<u32, Box<UIObject>>, graphics
     objects.insert(4, uiobject(Text::new_on_button("New game", &rect0, graphics)));
     objects.insert(5, uiobject(Text::new_on_button("Options", &rect1, graphics)));
     objects.insert(6, uiobject(Text::new_on_button("Quit", &rect2, graphics)));
+    objects.insert(7, uiobject(Text::new_aligned("Horde Survival", rect((0.0, 0.0), (1.2, 0.6)), Align::top(), graphics)));
 
     objects.insert(3, uiobject(Picture::new(rect((-1.0, -1.0), (1.0, 1.0)),
                                             graphics,

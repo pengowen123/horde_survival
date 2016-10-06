@@ -13,7 +13,7 @@ impl GraphicsState {
 }
 
 fn calc_text_width(glyphs: &[PositionedGlyph]) -> f32 {
-    glyphs.last().unwrap().pixel_bounding_box().expect("").max.x as f32
+    glyphs.last().unwrap().pixel_bounding_box().expect("No pixel bounding box found").max.x as f32
 }
 
 // NOTE: Taken from Zone of Control
@@ -24,7 +24,7 @@ fn text_to_texture(font: &Font, height: f32, text: &str) -> ([u32; 2], Vec<u8>) 
     let glyphs: Vec<_> = font.layout(text, scale, offset).collect();
     let pixel_height = height.ceil() as usize;
     let width = calc_text_width(&glyphs) as usize;
-    let mut pixel_data = transparent(4 * width * pixel_height);
+    let mut pixel_data = transparent(width * pixel_height * 4);
     let mapping_scale = 255.0;
     for g in glyphs {
         let bb = match g.pixel_bounding_box() {
@@ -50,6 +50,6 @@ fn text_to_texture(font: &Font, height: f32, text: &str) -> ([u32; 2], Vec<u8>) 
     (size, pixel_data)
 }
 
-pub fn transparent(size: usize) -> Vec<u8> {
+fn transparent(size: usize) -> Vec<u8> {
     [255, 255, 255, 0].iter().cloned().cycle().take(size).collect()
 }

@@ -18,26 +18,6 @@ pub enum ModifierKind {
 }
 
 impl Modifier {
-    pub const fn new(value: f64, timer: usize, kind: ModifierKind) -> Modifier {
-        Modifier {
-            value: value,
-            timer: timer,
-            kind: kind,
-        }
-    }
-
-    pub const fn additive(value: f64, timer: usize) -> Modifier {
-        Modifier::new(value, timer, ModifierKind::Additive)
-    }
-
-    pub const fn multiplier(value: f64, timer: usize) -> Modifier {
-        Modifier::new(value, timer, ModifierKind::Multiplier)
-    }
-
-    pub const fn multiplicative(value: f64, timer: usize) -> Modifier {
-        Modifier::new(value, timer, ModifierKind::Multiplicative)
-    }
-
     pub fn update(&mut self) {
         if self.timer > 1 {
             self.timer -= 1;
@@ -65,4 +45,26 @@ pub fn apply(mods: &[Modifier], mut base: f64) -> f64 {
     }
 
     base * multiplier
+}
+
+macro_rules! modifier {
+    (multiplicative, $value:expr, $timer:expr) => {{
+        modifier!($value, $timer, $crate::entity::modifiers::ModifierKind::Multiplicative)
+    }};
+
+    (multiplier, $value:expr, $timer:expr) => {{
+        modifier!($value, $timer, $crate::entity::modifiers::ModifierKind::Multiplier)
+    }};
+
+    (additive, $value:expr, $timer:expr) => {{
+        modifier!($value, $timer, $crate::entity::modifiers::ModifierKind::Additive)
+    }};
+
+    ($value:expr, $timer:expr, $kind:expr) => {{
+        Modifier {
+            value: $value,
+            timer: $timer,
+            kind: $kind,
+        }
+    }};
 }

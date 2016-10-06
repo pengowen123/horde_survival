@@ -1,3 +1,4 @@
+#[macro_use]
 pub mod modifiers;
 pub mod entity_type;
 pub mod attack;
@@ -99,7 +100,7 @@ impl Entity {
         let movespeed = get_movespeed(&entity_type);
 
         if let Some(m) = movespeed {
-            movespeed_mods.push(Modifier::multiplicative(m, 0));
+            movespeed_mods.push(modifier!(multiplicative, m, 0));
         }
 
         Entity {

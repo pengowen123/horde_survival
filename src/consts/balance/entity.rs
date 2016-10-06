@@ -1,4 +1,3 @@
-use consts::time;
 use entity::EntityType;
 
 // Special values
@@ -13,7 +12,7 @@ pub const DEFAULT_DIRECTION: (f64, f64) = (90.0, 0.0);
 // Attacks
 pub const MELEE_LINE_RADIUS: f64 = 0.3;
 pub const MELEE_LINE_INTERVAL: f64 = MELEE_LINE_RADIUS / 2.0;
-pub const RANGED_LINEAR_LIFETIME: usize = time(1.5);
+pub const RANGED_LINEAR_LIFETIME: usize = time!(1.5);
 pub const RANGED_LINEAR_SPEED: f64 = 0.5;
 pub const RANGED_ARC_SPEED: f64 = 0.2;
 pub const RANGED_RADIUS: f64 = 0.175;

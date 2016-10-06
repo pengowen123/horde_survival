@@ -5,8 +5,7 @@ use consts::items::weapon::*;
 use std::collections::HashMap;
 
 pub const TPS: u64 = 30;
-
-pub const fn time(seconds: f64) -> usize { (seconds * TPS as f64) as usize }
+pub const TPS_FLOAT: f64 = TPS as f64;
 
 pub const BASE_INVENTORY: [Item; 5] = [
     Item::Armor(HEAD_NONE),
@@ -27,3 +26,7 @@ pub fn base_inventory() -> HashMap<usize, Item> {
 }
 
 pub const CRASH_MESSAGE: &'static str = "Horde Survival has crashed";
+
+macro_rules! time {
+    ($seconds:expr) => { ($seconds * $crate::consts::TPS_FLOAT) as usize}
+}

@@ -4,12 +4,12 @@ use cgmath::Matrix4;
 use gfx_device_gl;
 
 use hsgraphics::object2d::Object2d;
+use hsgraphics::object3d::*;
+use hsgraphics::*;
+use gamestate::GameState;
 use assets::AssetLoader;
 use minimap::Minimap;
 use world::Coords;
-use gamestate::GameState;
-use hsgraphics::object3d::*;
-use hsgraphics::*;
 use hslog::CanUnwrap;
 use consts::*;
 
@@ -35,6 +35,9 @@ pub struct GraphicsState {
     pub pso3d: object3d::ObjectPSO,
     pub data: gfx3d::pipe::Data<gfx_device_gl::Resources>,
     pub data2d: gfx2d::pipe::Data<gfx_device_gl::Resources>,
+
+    // Glyph cache
+    pub cache: GlyphCache,
 
     // Assets
     pub assets: AssetLoader<String>,

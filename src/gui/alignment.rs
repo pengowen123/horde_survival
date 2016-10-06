@@ -8,6 +8,7 @@ pub struct Align {
 pub enum AlignType {
     Center,
     BottomRight,
+    Top,
 }
 
 impl Align {
@@ -24,6 +25,10 @@ impl Align {
 
     pub fn bottom_right() -> Self {
         Align::new(AlignType::BottomRight)
+    }
+
+    pub fn top() -> Self {
+        Align::new(AlignType::Top)
     }
 
     // NOTE: Offset is measured in units of object widths/heights
@@ -44,6 +49,7 @@ impl Align {
         let pos = match self.align {
             AlignType::Center => [-cx + offset_x, -cy + offset_y],
             AlignType::BottomRight => [1.0 + -dim[0] - offset_x, -1.0 + offset_y],
+            AlignType::Top => [-cx + offset_x, 1.0 + -dim[1] - offset_y],
         };
 
         object.set_position(pos);

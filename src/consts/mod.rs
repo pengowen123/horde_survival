@@ -1,7 +1,8 @@
+#[macro_use]
+pub mod misc;
 pub mod balance;
 pub mod controls;
 pub mod graphics;
-pub mod misc;
 pub mod physics;
 pub mod log_str;
 pub mod scale;
@@ -19,6 +20,6 @@ pub use self::scale::*;
 use world::Coords;
 
 pub const TEST_SPAWN_POINTS: ([Coords; 2], [f64; 2]) = (
-    [Coords::new(5.0, 0.0, 5.0), Coords::new(-5.0, 0.0, -5.0)],
+    [coords!(5.0, 0.0, 5.0), coords!(-5.0, 0.0, -5.0)],
     [1.0, 1.0]
 );

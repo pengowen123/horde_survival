@@ -105,7 +105,7 @@ pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, nex
 
         *next_id += 1;
 
-        dummy.as_mods.push(Modifier::additive(entity.current_weapon.range, 0));
+        dummy.as_mods.push(modifier!(additive, entity.current_weapon.range, 0));
     }
 
     entities.push(dummy);

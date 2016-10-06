@@ -1,6 +1,7 @@
 use glutin::{self, Window, GlRequest};
 use gfx::{self, tex, Factory};
 use gfx::traits::FactoryExt;
+use rusttype::gpu_cache::Cache;
 use gfx_window_glutin;
 
 use consts::*;
@@ -81,6 +82,13 @@ impl GraphicsState {
             out: main_color,
         };
 
+        let dpi = window.hidpi_factor() as u32;
+        let (window_width, window_height) = window.get_inner_size_pixels().unwrap();
+        let (cache_width, cache_height) = (window_width * dpi, window_height * dpi);
+
+        let cache = Cache::new(cache_width, cache_height, 0.1, 0.1);
+        let (cache_tex, cache_tex_view) = texture::create_cache_texture(&mut factory, CACHE_SIZE);
+
         let mut state = GraphicsState {
             factory: factory,
             encoder: encoder,
@@ -90,6 +98,7 @@ impl GraphicsState {
             window_size: (width, height),
             window_center: center,
             should_close: false,
+            cache: GlyphCache::new(cache, cache_tex, cache_tex_view),
             pso2d: pso2d,
             pso3d: pso3d,
             data: data,

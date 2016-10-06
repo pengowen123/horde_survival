@@ -9,7 +9,7 @@ pub struct Coords {
 }
 
 impl Coords {
-    pub const fn new(x: f64, y: f64, z: f64) -> Coords {
+    pub fn new(x: f64, y: f64, z: f64) -> Coords {
         Coords {
             x: x,
             y: y,
@@ -109,4 +109,14 @@ impl Coords {
     pub fn as_point(&self) -> Point3<f64> {
         Point3::new(self.x, self.y, self.z)
     }
+}
+
+macro_rules! coords {
+    ($x:expr, $y:expr, $z:expr) => {{
+        Coords {
+            x: $x,
+            y: $y,
+            z: $z,
+        }
+    }}
 }

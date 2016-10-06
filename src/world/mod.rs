@@ -1,3 +1,4 @@
+#[macro_use]
 pub mod coords;
 pub mod direction;
 pub mod vector;

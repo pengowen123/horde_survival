@@ -26,28 +26,6 @@ pub enum WeaponType {
 }
 
 impl Weapon {
-    pub const fn new(name: &'static str,
-                     damage: f64,
-                     range: f64,
-                     attack_speed: f64,
-                     weapon_type: WeaponType,
-                     anim_pre: usize,
-                     anim_post: usize,
-                     on_hit: Option<ItemEffect>) -> Weapon {
-        Weapon {
-            name: name,
-            damage: damage,
-            range: range,
-            attack_speed: attack_speed,
-            weapon_type: weapon_type,
-            anim_pre: anim_pre,
-            anim_post: anim_post,
-            on_hit: on_hit,
-        }
-    }
-}
-
-impl Weapon {
     pub fn get_real_range(&self) -> f64 {
         match self.weapon_type {
             WeaponType::MeleeLine => self.range * MELEE_LINE_INTERVAL * MELEE_LINE_RADIUS * 2.0,

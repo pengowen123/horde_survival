@@ -9,17 +9,6 @@ pub struct Armor {
 }
 
 impl Armor {
-    pub const fn new(name: &'static str, multiplier: f64, when_hit: Option<ItemEffect>, slot: ArmorSlot) -> Armor {
-        Armor {
-            name: name,
-            multiplier: multiplier,
-            when_hit: when_hit,
-            slot: slot,
-        }
-    }
-}
-
-impl Armor {
     pub fn is_none(&self) -> bool {
         self.name == "None"
     }

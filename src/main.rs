@@ -1,5 +1,3 @@
-#![feature(const_fn)]
-
 // Graphics
 #[macro_use]
 extern crate gfx;
@@ -25,11 +23,13 @@ extern crate image_utils;
 
 #[macro_use]
 mod hslog;
-mod utils;
+#[macro_use]
 mod entity;
 #[macro_use]
 mod items;
+#[macro_use]
 mod world;
+mod utils;
 mod player;
 mod consts;
 mod hscontrols;
