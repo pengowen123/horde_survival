@@ -54,6 +54,7 @@ pub fn run_gui(event: Option<Event>,
         }
     }
     
+    graphics.update_dpi(window);
     graphics.encoder.clear(&graphics.data.out_color, GUI_CLEAR_COLOR);
     ui.draw(graphics);
     graphics.draw_gui(window);

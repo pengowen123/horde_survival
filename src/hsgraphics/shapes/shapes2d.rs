@@ -7,12 +7,12 @@ use world::Direction;
 macro_rules! shape {
     ($([$x:expr, $y:expr], [$tex_x:expr, $tex_y:expr]),*) => {{
         [$(
-            gfx2d::Vertex::new([$x, $y], [$tex_x, $tex_y]),
+            $crate::hsgraphics::gfx2d::Vertex::new([$x, $y], [$tex_x, $tex_y]),
          )*]
     }};
     (MINIMAP $([$x:expr, $y:expr], [$tex_x:expr, $tex_y:expr]),*) => {{
         [$(
-            gfx2d::Vertex::new([$x + MINIMAP_LOCATION.0, $y + MINIMAP_LOCATION.1], [$tex_x, $tex_y]),
+            $crate::hsgraphics::gfx2d::Vertex::new([$x + MINIMAP_LOCATION.0, $y + MINIMAP_LOCATION.1], [$tex_x, $tex_y]),
          )*]
     }};
 }

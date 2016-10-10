@@ -51,6 +51,7 @@ pub struct GraphicsState {
 
     // Misc
     pub pixel_size: (f32, f32),
+    pub dpi: f32,
 }
 
 // Updates
@@ -90,6 +91,10 @@ impl GraphicsState {
         self.camera = get_camera(coords, direction, self.aspect_ratio);
         let locals = gfx3d::Locals { transform: self.camera.into() };
         self.encoder.update_constant_buffer(&self.data.locals, &locals);
+    }
+
+    pub fn update_dpi(&mut self, window: &Window) {
+        self.dpi = window.hidpi_factor();
     }
 
     pub fn update_crosshair(&mut self) {

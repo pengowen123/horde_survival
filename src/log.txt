@@ -1,13 +1,14 @@
-14:32:31 [INFO] horde_survival: Initializing game...
-14:32:32 [INFO] horde_survival: Done
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'pepe' (test_assets/pepe.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'player' (test_assets/player.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'zombie' (test_assets/zombie.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'blue' (test_assets/blue.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'red' (test_assets/red.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'black' (test_assets/black.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'green' (test_assets/green.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'crosshair' (test_assets/crosshair.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_linear' (test_assets/ball_linear.png)
-14:32:32 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_arc' (test_assets/ball_arc.png)
-14:32:33 [INFO] horde_survival: Closed Horde Survival
+20:03:32 [INFO] horde_survival: Initializing game...
+20:03:33 [INFO] horde_survival: Done
+20:03:35 [INFO] horde_survival::gameloop::loading: Loading texture 'pepe' (test_assets/pepe.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'player' (test_assets/player.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'zombie' (test_assets/zombie.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'blue' (test_assets/blue.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'red' (test_assets/red.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'black' (test_assets/black.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'green' (test_assets/green.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'crosshair' (test_assets/crosshair.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_linear' (test_assets/ball_linear.png)
+20:03:38 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_arc' (test_assets/ball_arc.png)
+20:03:38 [ERROR] horde_survival::gameloop::loading: Failed to load texture ball_arc: The system cannot find the file specified. (os error 2)
+20:03:38 [ERROR] log_panics: thread 'main' panicked at 'Horde Survival has crashed': gameloop\loading.rs:44

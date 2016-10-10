@@ -32,6 +32,11 @@ impl Object2d {
         let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(slice, ());
         Object2d::new(vertex_buffer, slice, texture)
     }
+
+    pub fn from_slice_indices(factory: &mut Factory, slice: &[Vertex], indices: &[u16], texture: Texture) -> Object2d {
+        let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(slice, indices);
+        Object2d::new(vertex_buffer, slice, texture)
+    }
 }
 
 impl Object2d {

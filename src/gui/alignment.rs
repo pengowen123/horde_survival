@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use gui::UIShape;
 
 pub struct Align {
@@ -8,6 +10,7 @@ pub struct Align {
 pub enum AlignType {
     Center,
     BottomRight,
+    BottomLeft,
     Top,
 }
 
@@ -31,6 +34,10 @@ impl Align {
         Align::new(AlignType::Top)
     }
 
+    pub fn bottom_left() -> Self {
+        Align::new(AlignType::BottomLeft)
+    }
+
     // NOTE: Offset is measured in units of object widths/heights
     pub fn with_offset(mut self, x: f32, y: f32) -> Self {
         self.offset = [x, y];
@@ -49,8 +56,11 @@ impl Align {
         let pos = match self.align {
             AlignType::Center => [-cx + offset_x, -cy + offset_y],
             AlignType::BottomRight => [1.0 + -dim[0] - offset_x, -1.0 + offset_y],
+            AlignType::BottomLeft => [offset_x - 1.0, -1.0 + offset_y],
             AlignType::Top => [-cx + offset_x, 1.0 + -dim[1] - offset_y],
         };
+
+        println!("pos, dim: {:?}, {:?}", pos, dim);
 
         object.set_position(pos);
     }

@@ -1,55 +1,97 @@
+use unicode_normalization::UnicodeNormalization;
 use rusttype::*;
+use collision::Aabb;
 
-use consts::text::TEXT_HEIGHT;
 use hsgraphics::*;
+use consts::text::TEXT_HEIGHT;
+use gui::{TextInfo, Align, rect};
 
 impl GraphicsState {
-    pub fn create_text_texture(&mut self, text: &str, height: f32) -> Texture {
+    pub fn layout_text(&mut self, text: &str, mut info: TextInfo, align: Option<Align>) -> Vec<PositionedGlyph<'static>> {
         let font = self.assets.font.get().unwrap();
-        let (size, texture) = text_to_texture(font, height, text);
+        let scale = Scale::uniform(self.dpi * info.size);
+        let v_metrics = font.v_metrics(scale);
+        let mut last_glyph_id = None;
 
-        texture::load_texture_raw(&mut self.factory, size, &texture)
-    }
-}
+        let (glyphs, mut text_rect) = {
+            let mut glyphs = Vec::new();
+            let mut width = 0.0;
+            let mut height = 0.0;
 
-fn calc_text_width(glyphs: &[PositionedGlyph]) -> f32 {
-    glyphs.last().unwrap().pixel_bounding_box().expect("No pixel bounding box found").max.x as f32
-}
+            for c in text.nfc() {
+                let glyph = match font.glyph(c) {
+                    Some(g) => g,
+                    None => continue,
+                };
 
-// NOTE: Taken from Zone of Control
-fn text_to_texture(font: &Font, height: f32, text: &str) -> ([u32; 2], Vec<u8>) {
-    let scale = Scale { x: height, y: height * TEXT_HEIGHT };
-    let v_metrics = font.v_metrics(scale);
-    let offset = point(0.0, v_metrics.ascent);
-    let glyphs: Vec<_> = font.layout(text, scale, offset).collect();
-    let pixel_height = height.ceil() as usize;
-    let width = calc_text_width(&glyphs) as usize;
-    let mut pixel_data = transparent(width * pixel_height * 4);
-    let mapping_scale = 255.0;
-    for g in glyphs {
-        let bb = match g.pixel_bounding_box() {
-            Some(bb) => bb,
-            None => continue,
-        };
-        g.draw(|x, y, v| {
-            let v = (v * mapping_scale + 0.5) as u8;
-            let x = x as i32 + bb.min.x;
-            let y = y as i32 + bb.min.y;
-            let i = (x as usize + y as usize * width) * 4;
-            // There's still a possibility that the glyph clips the boundaries of the bitmap
-            if v > 0 && x >= 0 && x < width as i32 && y >= 0 && y < pixel_height as i32 {
-                pixel_data[i] = 0;
-                pixel_data[i + 1] = 0;
-                pixel_data[i + 2] = 0;
-                pixel_data[i + 3] = v;
+                let scaled = glyph.scaled(scale);
+
+                // TODO: Fix text width calculations, ask for help on reddit
+                let h_metrics = scaled.h_metrics();
+                width += h_metrics.left_side_bearing + h_metrics.advance_width;
+
+                if let Some(b) = scaled.exact_bounding_box() {
+                    let box_height = b.height();
+
+                    if box_height > height {
+                        height = box_height;
+                    }
+                }
+
+                glyphs.push(scaled.into_unscaled());
             }
-        });
-    }
 
-    let size = [width as u32, pixel_height as u32];
-    (size, pixel_data)
+            let rect = rect((0.0, 0.0), (width / self.window_size.0 as f32,
+                                         height / self.window_size.1 as f32));
+
+            (glyphs, rect)
+        };
+        
+        if let Some(a) = align {
+            a.apply(&mut text_rect);
+
+            //println!("{:?}", text_rect.dim());
+
+            let caret = text_rect.min();
+
+            info.x = caret.x;
+            info.y = caret.y;
+
+            to_rusttype_coords(&mut info, self.window_size);
+        }
+
+        let mut caret = point(info.x, info.y + v_metrics.ascent);
+
+        let mut result = Vec::new();
+
+        for glyph in glyphs {
+            let base_id = glyph.id();
+
+            if let Some(id) = last_glyph_id.take() {
+                caret.x += font.pair_kerning(scale, id, base_id);
+            }
+
+            let glyph = glyph.scaled(scale).positioned(caret);
+
+            caret.x += glyph.unpositioned().h_metrics().advance_width;
+
+            result.push(glyph.standalone());
+
+            last_glyph_id = Some(base_id);
+        }
+
+        result
+    }
 }
 
-fn transparent(size: usize) -> Vec<u8> {
-    [255, 255, 255, 0].iter().cloned().cycle().take(size).collect()
+pub fn to_rusttype_coords(info: &mut TextInfo, window_size: (u32, u32)) {
+        // Map window coordinates to rusttype coordinates
+        info.x = (info.x + 1.0) / 2.0;
+        info.y = (info.y - 1.0) / 2.0;
+        info.y = -info.y;
+
+        // Convert rusttype coordinates to pixel coordinates
+        info.x *= window_size.0 as f32;
+        info.y *= window_size.1 as f32;
+        info.size *= window_size.1 as f32;
 }

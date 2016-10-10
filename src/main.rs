@@ -7,7 +7,6 @@ extern crate gfx_device_gl;
 extern crate glutin;
 extern crate cgmath;
 extern crate image;
-extern crate collision;
 extern crate rusttype;
 
 // Logging
@@ -20,6 +19,8 @@ extern crate rand;
 extern crate time;
 extern crate random_choice;
 extern crate image_utils;
+extern crate collision;
+extern crate unicode_normalization;
 
 #[macro_use]
 mod hslog;
@@ -28,12 +29,13 @@ mod entity;
 #[macro_use]
 mod items;
 #[macro_use]
+mod hsgraphics;
+#[macro_use]
 mod world;
 mod utils;
 mod player;
 mod consts;
 mod hscontrols;
-mod hsgraphics;
 mod gamestate;
 mod map;
 mod minimap;

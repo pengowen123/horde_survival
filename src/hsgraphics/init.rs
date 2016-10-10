@@ -82,12 +82,13 @@ impl GraphicsState {
             out: main_color,
         };
 
-        let dpi = window.hidpi_factor() as u32;
+        let dpi_factor = window.hidpi_factor();
+        let dpi = dpi_factor as u32;
         let (window_width, window_height) = window.get_inner_size_pixels().unwrap();
         let (cache_width, cache_height) = (window_width * dpi, window_height * dpi);
 
         let cache = Cache::new(cache_width, cache_height, 0.1, 0.1);
-        let (cache_tex, cache_tex_view) = texture::create_cache_texture(&mut factory, CACHE_SIZE);
+        let (cache_tex, cache_tex_view) = texture::create_cache_texture(&mut factory, window_width, window_height);
 
         let mut state = GraphicsState {
             factory: factory,
@@ -110,6 +111,7 @@ impl GraphicsState {
             device: device,
             last_cursor_pos: center,
             pixel_size: (1.0 / width as f32, 1.0 / height as f32),
+            dpi: dpi_factor,
         };
 
         state.assets.add_texture_assets(&[("floor", "test_assets/floor.png")]);
