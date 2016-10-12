@@ -27,10 +27,10 @@ pub fn gametick(event: Option<Event>,
             return;
         }
 
-        gameloop::handle_event(e, game, graphics, &window);
+        gameloop::handle_event(e, game, graphics, window);
     }
 
-    graphics.draw(&window);
+    graphics.draw(window);
 
     ticks.measure_frame_1();
 
@@ -38,7 +38,7 @@ pub fn gametick(event: Option<Event>,
         return;
     }
 
-    gameloop::update_player_state(game, graphics, &window);
+    gameloop::update_player_state(game, graphics, window);
 
     for i in 0..game.entities.len() {
         update_entity(&mut game.entities, i, &game.map, &mut game.player, &mut game.next_entity_id);
@@ -58,7 +58,7 @@ pub fn gametick(event: Option<Event>,
 
     ticks.measure_update();
 
-    graphics.update(&game);
+    graphics.update(game);
 
     ticks.measure_frame_2();
     ticks.end_tick();

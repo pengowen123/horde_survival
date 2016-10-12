@@ -50,13 +50,12 @@ pub fn get_random_monster_weapon(wave: usize) -> Weapon {
     //let inf = usize::MAX as i32 as f64 as i32 as usize;
 
     let range = match wave {
-        12...100 => ..items.len(),
-        9...100 => ..4,
-        6...100 => ..3,
-        3...100 => ..2,
-        0...100 => ..1,
+        9...11 => ..4,
+        6...8 => ..3,
+        3...5 => ..2,
+        0...2 => ..1,
         _ => ..items.len(),
     };
 
-    rng.random_choice_f64(&items[range.clone()], &weights[range], 1)[0].clone()
+    rng.random_choice_f64(&items[range], &weights[range], 1)[0].clone()
 }

@@ -5,6 +5,7 @@ use items::*;
 use consts::balance::*;
 use hslog::*;
 
+#[allow(needless_borrow)]
 pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> usize {
     let raw_entities = unsafe { &mut *(entities as *mut _) };
     let mut bounty = 0;
@@ -59,7 +60,7 @@ pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player
         // If this is 0, the weapon cannot hit anything
         multiplier = entity.get_damage();
         coords = entity.coords.clone();
-        direction = entity.direction.clone();
+        direction = entity.direction;
         weapon = entity.current_weapon.clone();
     }
 
@@ -96,7 +97,7 @@ pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, nex
                             EntityType::FlyingBallLinear,
                             entity.team.clone(),
                             IsDummy::True,
-                            entity.direction.clone(),
+                            entity.direction,
                             RANGED_LINEAR_LIFETIME,
                             0,
                             HasGravity::False,
@@ -126,7 +127,7 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
                             EntityType::FlyingBallArc,
                             entity.team.clone(),
                             IsDummy::True,
-                            entity.direction.clone(),
+                            entity.direction,
                             INFINITE_LIFETIME,
                             0,
                             HasGravity::False,
@@ -158,10 +159,8 @@ pub fn try_attack(id: usize, entities: &mut Vec<Entity>, next_id: &mut usize, pl
         weapon_type = entity.current_weapon.weapon_type.clone();
         is_casting = entity.animations.is_casting(0);
 
-        if !(entity.animations.can_attack() && !is_casting) {
-            if !is_casting {
-                return 0;
-            }
+        if !(entity.animations.can_attack() && !is_casting) && !is_casting {
+            return 0;
         }
 
         let attack_speed = apply(&entity.as_mods, entity.current_weapon.attack_speed);

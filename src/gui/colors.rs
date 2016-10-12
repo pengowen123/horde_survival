@@ -1,5 +1,6 @@
 use gui::UIState;
 
+#[allow(match_same_arms)]
 pub fn get_button_texture_name(state: UIState, id: u32) -> &'static str {
     match state {
         UIState::MainMenu => {

@@ -26,14 +26,7 @@ pub fn update_player_state(game: &mut GameState, graphics: &mut GraphicsState, w
         graphics.update_camera(player.coords.clone(), direction);
 
         casts = update_player(player_entity,
-                              &mut player.dead,
-                              player.move_forward,
-                              player.move_left,
-                              player.move_right,
-                              player.move_backward,
-                              &player.mouse,
-                              &mut player.direction,
-                              &mut player.coords);
+                              player);
     }
 
     if casts[0] { game.player.ability_0(&mut game.entities); }

@@ -33,8 +33,6 @@ pub fn run_gui(event: Option<Event>,
             },
             Event::KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::Escape)) => {
                 match ui.state {
-                    UIState::ShopMenu => {
-                    },
                     UIState::EscapeMenu => {
                         *loop_type = LoopType::Game;
                         set_cursor_state(window, CursorState::Hide);
@@ -46,7 +44,7 @@ pub fn run_gui(event: Option<Event>,
                     UIState::MainMenu => {
                         graphics.should_close = true;
                     },
-                    UIState::LoadingScreen => {},
+                    _ => {},
                 }
             },
             Event::Closed => graphics.should_close = true,

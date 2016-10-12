@@ -5,9 +5,8 @@ use gui::UIObject;
 use hsgraphics::GraphicsState;
 
 pub fn mouse_pos_as_point(state: &GraphicsState, pos: (i32, i32)) -> Option<Point2<f32>> {
-    if pos.0 < 0 || pos.0 > state.window_size.0 as i32 {
-        return None;
-    } else if pos.1 < 0 || pos.1 > state.window_size.1 as i32 {
+    if (pos.0 < 0 || pos.0 > state.window_size.0 as i32) ||
+       (pos.1 < 0 || pos.1 > state.window_size.1 as i32) {
         return None;
     }
 

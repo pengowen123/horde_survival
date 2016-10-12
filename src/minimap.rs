@@ -34,7 +34,7 @@ impl MinimapEntity {
                                      "Failed to load texture: {}", name);
 
         MinimapEntity::new([coords.x as f32, coords.z as f32],
-                           entity.direction.clone(),
+                           entity.direction,
                            texture.clone())
     }
 }

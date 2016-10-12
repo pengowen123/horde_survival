@@ -55,7 +55,7 @@ pub fn square(position: [f32; 2], size: f32, rotation: f32, scales: (f32, f32)) 
 
     rotate_shape(&mut square, center, rotation);
 
-    for vertex in square.iter_mut() {
+    for vertex in &mut square {
         let pos = &mut vertex.pos;
         pos[0] += position[0];
         pos[0] *= scale_x;

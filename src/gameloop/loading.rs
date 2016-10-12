@@ -38,7 +38,7 @@ pub fn loading_screen(ui: &mut UI,
 
     graphics.assets.add_texture_assets(&names);
 
-    for &(name, path) in names.iter() {
+    for &(name, path) in &names {
         info!("Loading texture '{}' ({})", name, path);
         if let Err(e) = graphics.assets.load_texture(name, &mut graphics.factory) {
             crash!(format!("Failed to load texture {}: {}", name, e));

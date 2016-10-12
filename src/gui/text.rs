@@ -6,7 +6,7 @@ use rusttype::{PositionedGlyph, point, vector};
 use hsgraphics::*;
 use gamestate::GameState;
 use gameloop::LoopType;
-use consts::text::BUTTON_TEXT_HEIGHT;
+use consts::text::*;
 use gui::*;
 
 pub struct Text {
@@ -90,13 +90,13 @@ impl UIObject for Text {
                 [max.x, max.y], [uv_max.x, uv_max.y]
             );
 
-            vertex_data.extend(vertices.iter());
-            index_data.extend([i + 0,
-                               i + 1,
-                               i + 2,
-                               i + 0,
-                               i + 2,
-                               i + 3].iter());
+            vertex_data.extend_from_slice(&vertices);
+            index_data.extend_from_slice(&[i,
+                                           i + 1,
+                                           i + 2,
+                                           i,
+                                           i + 2,
+                                           i + 3]);
 
             i += 4;
         }
@@ -126,7 +126,7 @@ impl TextInfo {
         TextInfo {
             x: x,
             y: y,
-            size: size,
+            size: size * TEXT_HEIGHT,
         }
     }
 }

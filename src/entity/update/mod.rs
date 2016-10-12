@@ -41,7 +41,7 @@ pub fn update_entity(entities: &mut Vec<Entity>, index: usize, map: &Map, player
         update_modifiers(&mut entity.damage_taken_mods);
         update_modifiers(&mut entity.movespeed_mods);
         update_lifetime(&mut entity.lifetime);
-        update_gravity(&map, entity);
+        update_gravity(map, entity);
 
         if !entity.is_dummy() {
             entity.animations.update();

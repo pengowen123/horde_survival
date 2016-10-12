@@ -22,11 +22,8 @@ pub fn handle_event(event: Event, game: &mut GameState, graphics: &mut GraphicsS
                                   player);
         },
         Event::MouseInput(state, button) => {
-            match button {
-                glutin::MouseButton::Left => {
+            if let glutin::MouseButton::Left = button {
                     game.player.left_click = state == glutin::ElementState::Pressed;
-                },
-                _ => {},
             }
         },
         Event::Closed => graphics.should_close = true,

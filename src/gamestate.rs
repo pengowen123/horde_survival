@@ -40,6 +40,7 @@ impl GameState {
         *self = GameState::new();
         // TODO: Delete this
         self.entities[0].armor[0] = balance::items::armor::HEAL;
+        self.entities[0].current_weapon = balance::items::weapon::TEST_BOW;
     }
 }
 
@@ -69,8 +70,8 @@ impl GameState {
 
     pub fn round_finished(&self) -> bool {
         self.entities.iter()
-            .filter(|e| e.is_monster() && e.team == Team::Monsters)
-            .next().is_none()
+            .find(|e| e.is_monster() && e.team == Team::Monsters)
+            .is_none()
     }
 }
 

@@ -7,21 +7,13 @@ use world::Coords;
 
 pub fn filter_entities(entities: &mut Vec<Entity>) {
     *entities = entities.iter().cloned().filter(|e| {
-        let result;
-
-        if e.entity_type == EntityType::Player || e.is_dummy() {
-            result = true;
+        let result = if e.entity_type == EntityType::Player || e.is_dummy() {
+            true
         } else {
-            result = !e.is_dead();
-        }
+            !e.is_dead()
+        };
 
-        let keep = result && !(e.lifetime == 1);
-
-        if !keep && !e.is_dummy() {
-            debug!("Entity removed by filter: ID {}: {:?}", e.id, e.entity_type);
-        }
-
-        keep
+        result && !(e.lifetime == 1)
     }).collect();
 }
 
@@ -32,7 +24,7 @@ pub fn get_closest_entity(index: usize, entities: &[Entity]) -> Option<(usize, f
     let mut closest_distance = None;
 
     for (i, e) in entities.iter().enumerate() {
-        if e.is_dummy() || !e.is_enemy_of(&entity) {
+        if e.is_dummy() || !e.is_enemy_of(entity) {
             continue;
         }
 
@@ -63,7 +55,7 @@ pub fn get_collided_entity(projectile_index: usize, entities: &[Entity], old_pos
     let entity = &entities[projectile_index];
 
     for (i, e) in entities.iter().enumerate() {
-        if e.is_dummy() || !e.is_enemy_of(&entity) {
+        if e.is_dummy() || !e.is_enemy_of(entity) {
             continue;
         }
 

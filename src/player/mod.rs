@@ -1,10 +1,12 @@
 pub mod class;
+pub mod input;
 mod abilities;
 mod inventory;
 
 pub use self::class::Class;
 
 use player::abilities::*;
+use player::input::Input;
 use world::Coords;
 use items::*;
 use entity::*;
@@ -27,13 +29,10 @@ pub struct Player {
     pub current_cooldowns: [usize; 4],
     pub cooldown_mods: Vec<Modifier>,
 
-    // Controls
+    // Input
+    pub input: Input,
     pub left_click: bool,
     pub mouse: (i32, i32),
-    pub move_forward: bool,
-    pub move_left: bool,
-    pub move_backward: bool,
-    pub move_right: bool,
 
     // Used for camera control
     pub direction: (f64, f64),
@@ -54,10 +53,7 @@ impl Player {
             dead: false,
             left_click: false,
             mouse: (0, 0),
-            move_forward: false,
-            move_left: false,
-            move_backward: false,
-            move_right: false,
+            input: Input::new(),
             direction: START_CAMERA_ANGLE,
             coords: coords,
         }
@@ -87,10 +83,7 @@ impl Player {
     }
 
     pub fn reset_controls(&mut self) {
-        self.move_left = false;
-        self.move_right = false;
-        self.move_forward = false;
-        self.move_backward = false;
+        self.input = Input::new();
         self.left_click = false;
     }
 }

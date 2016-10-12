@@ -26,6 +26,7 @@ pub fn warrior_ability_2(player: &mut Player, entities: &mut Vec<Entity>) {
     player_entity.damage_mods.push(WARRIOR_RAGE_DAMAGE);
 }
 
+#[allow(needless_borrow)]
 pub fn warrior_ability_3(player: &mut Player, entities: &mut Vec<Entity>) {
     let coords;
     let player_index;

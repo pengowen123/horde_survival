@@ -27,7 +27,7 @@ impl Button {
         let object = Object2d::from_slice(&mut graphics.factory, &object_rect, texture.clone());
 
         let button = Button {
-            rect: rect.clone(),
+            rect: rect,
             id: id,
             object: object,
         };

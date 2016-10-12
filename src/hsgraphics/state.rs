@@ -113,7 +113,7 @@ impl GraphicsState {
             let (scale_x, scale_y) = (CROSSHAIR_SIZE / self.window_size.0 as f32,
                                       CROSSHAIR_SIZE / self.window_size.1 as f32);
 
-            for v in vertices.iter_mut() {
+            for v in &mut vertices {
                 v.pos[0] *= scale_x;
                 v.pos[1] *= scale_y;
             }

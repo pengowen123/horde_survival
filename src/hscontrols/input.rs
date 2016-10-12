@@ -21,10 +21,10 @@ pub fn handle_keyboard_input(key: Option<VirtualKeyCode>,
         ElementState::Pressed => {
             match key {
                 // Movement
-                VirtualKeyCode::W => player.move_forward = true,
-                VirtualKeyCode::A => player.move_left = true,
-                VirtualKeyCode::S => player.move_backward = true,
-                VirtualKeyCode::D => player.move_right = true,
+                VirtualKeyCode::W => player.input.forward = true,
+                VirtualKeyCode::A => player.input.left = true,
+                VirtualKeyCode::S => player.input.back = true,
+                VirtualKeyCode::D => player.input.right = true,
                 // Abilities
                 VirtualKeyCode::Key1 => {
                     if player.dead {
@@ -59,10 +59,10 @@ pub fn handle_keyboard_input(key: Option<VirtualKeyCode>,
         },
         ElementState::Released => {
             match key {
-                VirtualKeyCode::W => player.move_forward = false,
-                VirtualKeyCode::A => player.move_left = false,
-                VirtualKeyCode::S => player.move_backward = false,
-                VirtualKeyCode::D => player.move_right = false,
+                VirtualKeyCode::W => player.input.forward = false,
+                VirtualKeyCode::A => player.input.left = false,
+                VirtualKeyCode::S => player.input.back = false,
+                VirtualKeyCode::D => player.input.right = false,
                 _ => {},
             }
         },

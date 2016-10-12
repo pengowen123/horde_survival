@@ -80,6 +80,7 @@ pub struct Entity {
 
 // Constructor
 impl Entity {
+    #[allow(too_many_arguments)]
     pub fn new(id: usize,
                health: f64,
                max_hp: f64,
@@ -254,3 +255,4 @@ impl Entity {
         self.has_gravity == HasGravity::True
     }
 }
+

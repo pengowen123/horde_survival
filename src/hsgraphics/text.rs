@@ -3,7 +3,6 @@ use rusttype::*;
 use collision::Aabb;
 
 use hsgraphics::*;
-use consts::text::TEXT_HEIGHT;
 use gui::{TextInfo, Align, rect};
 
 impl GraphicsState {
@@ -13,74 +12,43 @@ impl GraphicsState {
         let v_metrics = font.v_metrics(scale);
         let mut last_glyph_id = None;
 
-        let (glyphs, mut text_rect) = {
-            let mut glyphs = Vec::new();
-            let mut width = 0.0;
-            let mut height = 0.0;
+        let glyphs: Vec<_> = text.nfc().filter_map(|c| font.glyph(c).map(|g| g.scaled(scale))).collect();
 
-            for c in text.nfc() {
-                let glyph = match font.glyph(c) {
-                    Some(g) => g,
-                    None => continue,
-                };
-
-                let scaled = glyph.scaled(scale);
-
-                // TODO: Fix text width calculations, ask for help on reddit
-                let h_metrics = scaled.h_metrics();
-                width += h_metrics.left_side_bearing + h_metrics.advance_width;
-
-                if let Some(b) = scaled.exact_bounding_box() {
-                    let box_height = b.height();
-
-                    if box_height > height {
-                        height = box_height;
-                    }
-                }
-
-                glyphs.push(scaled.into_unscaled());
-            }
-
-            let rect = rect((0.0, 0.0), (width / self.window_size.0 as f32,
-                                         height / self.window_size.1 as f32));
-
-            (glyphs, rect)
-        };
-        
         if let Some(a) = align {
-            a.apply(&mut text_rect);
+            let width = self.get_text_width(&glyphs);
 
-            //println!("{:?}", text_rect.dim());
+            let mut rect = rect((0.0, 0.0), (width / self.window_size.0 as f32,
+                                             info.size / self.window_size.1 as f32));
 
-            let caret = text_rect.min();
+            a.apply(&mut rect);
 
-            info.x = caret.x;
-            info.y = caret.y;
+            let min = rect.min();
+
+            info.x = min.x;
+            info.y = min.y;
 
             to_rusttype_coords(&mut info, self.window_size);
         }
 
         let mut caret = point(info.x, info.y + v_metrics.ascent);
 
-        let mut result = Vec::new();
+        glyphs.into_iter().map(|g| {
+            let glyph_id = g.id();
 
-        for glyph in glyphs {
-            let base_id = glyph.id();
-
-            if let Some(id) = last_glyph_id.take() {
-                caret.x += font.pair_kerning(scale, id, base_id);
+            if let Some(last_id) = last_glyph_id {
+                caret.x += font.pair_kerning(scale, last_id, glyph_id);
             }
 
-            let glyph = glyph.scaled(scale).positioned(caret);
-
+            let glyph = g.positioned(caret);
             caret.x += glyph.unpositioned().h_metrics().advance_width;
+            last_glyph_id = Some(glyph_id);
 
-            result.push(glyph.standalone());
+            glyph.standalone()
+        }).collect()
+    }
 
-            last_glyph_id = Some(base_id);
-        }
-
-        result
+    pub fn get_text_width(&self, glyphs: &[ScaledGlyph]) -> f32 {
+        0.0
     }
 }
 

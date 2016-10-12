@@ -6,9 +6,9 @@ impl Player {
     pub fn equip_from_inventory(&mut self, id: usize, entity: &mut Entity) {
         match self.inventory.get(&id) {
             Some(item) => {
-                match item {
-                    &Item::Weapon(ref weapon) => entity.current_weapon = weapon.clone(),
-                    &Item::Armor(ref armor) => entity.armor[armor.slot as i32 as usize] = armor.clone(),
+                match *item {
+                    Item::Weapon(ref weapon) => entity.current_weapon = weapon.clone(),
+                    Item::Armor(ref armor) => entity.armor[armor.slot as i32 as usize] = *armor,
                 }
             },
             None => crash!("Item not found: {}", id),

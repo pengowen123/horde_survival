@@ -22,6 +22,13 @@ pub fn get_main_menu_objects(objects: &mut HashMap<u32, Box<UIObject>>, graphics
                                        UIState::MainMenu,
                                        Align::bottom_left());
 
+    let (button3, _) = Button::new(322,
+                                   rect((0.0, 0.0), (0.01, 1.0)),
+                                   graphics,
+                                   UIState::MainMenu,
+                                   Align::top());
+    objects.insert(322, uiobject(button3));
+
     let texture = unwrap_or_log!(graphics.assets.get_or_load_texture("pepe", &mut graphics.factory),
                                  "Failed to load texture: pepe").clone();
 
@@ -32,7 +39,7 @@ pub fn get_main_menu_objects(objects: &mut HashMap<u32, Box<UIObject>>, graphics
     objects.insert(4, uiobject(Text::new_on_button("New game", &rect0, graphics)));
     objects.insert(5, uiobject(Text::new_on_button("Options", &rect1, graphics)));
     objects.insert(6, uiobject(Text::new_on_button("Quit", &rect2, graphics)));
-    objects.insert(7, uiobject(Text::new_aligned("Horde Survival", 0.1, Align::top(), graphics)));
+    objects.insert(7, uiobject(Text::new_aligned("<<<<<<<<<<<|>>>>>>>>>>>", 0.1, Align::top(), graphics)));
 
     objects.insert(3, uiobject(Picture::new(rect((-1.0, -1.0), (1.0, 1.0)),
                                             graphics,
