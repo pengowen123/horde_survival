@@ -1,14 +1,3 @@
-13:43:34 [INFO] horde_survival: Initializing game...
-13:43:35 [INFO] horde_survival: Done
-13:43:36 [INFO] horde_survival::gameloop::loading: Loading texture 'pepe' (test_assets/pepe.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'player' (test_assets/player.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'zombie' (test_assets/zombie.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'blue' (test_assets/blue.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'red' (test_assets/red.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'black' (test_assets/black.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'green' (test_assets/green.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'crosshair' (test_assets/crosshair.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_linear' (test_assets/ball_linear.png)
-13:43:38 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_arc' (test_assets/ball_arc.png)
-13:43:43 [ERROR] horde_survival::gui::button: Button not found: 322
-13:43:43 [ERROR] log_panics: thread 'main' panicked at 'Horde Survival has crashed': gui\button.rs:75
+21:05:49 [INFO] horde_survival: Initializing game...
+21:05:50 [ERROR] horde_survival::hsgraphics::init: Failed to create 2d PSO: Unable to create PSO descriptor due to mismatched formats: Pixel target mismatch: (0, None)
+21:05:50 [ERROR] log_panics: thread 'main' panicked at 'Horde Survival has crashed': hsgraphics\init.rs:50

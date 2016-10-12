@@ -11,6 +11,7 @@ use assets::AssetLoader;
 use gamestate::GameState;
 use minimap::Minimap;
 use hslog::CanUnwrap;
+use platform::*;
 
 impl GraphicsState {
     pub fn new(options: GraphicsOptions, game: &GameState) -> (GraphicsState, Window) {
@@ -42,8 +43,8 @@ impl GraphicsState {
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
         let pso2d = match factory.create_pipeline_simple(
-            include_bytes!("../include/vertex.glsl"),
-            include_bytes!("../include/fragment.glsl"),
+            VERTEX_SHADER,
+            FRAGMENT_SHADER,
             gfx2d::pipe::new()) {
                 Ok(p) => p,
                 Err(e) => crash!("Failed to create 2d PSO: {}", e),

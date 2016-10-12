@@ -15,7 +15,7 @@ impl GraphicsState {
         let glyphs: Vec<_> = text.nfc().filter_map(|c| font.glyph(c).map(|g| g.scaled(scale))).collect();
 
         if let Some(a) = align {
-            let width = self.get_text_width(&glyphs);
+            let width = self.get_text_width(font, &scale, &glyphs);
 
             let mut rect = rect((0.0, 0.0), (width / self.window_size.0 as f32,
                                              info.size / self.window_size.1 as f32));
@@ -47,8 +47,16 @@ impl GraphicsState {
         }).collect()
     }
 
-    pub fn get_text_width(&self, glyphs: &[ScaledGlyph]) -> f32 {
-        0.0
+    pub fn get_text_width(&self, font: &Font, scale: &Scale, glyphs: &[ScaledGlyph]) -> f32 {
+        // FIXME: This is very inaccurate
+        let mut last_glyph_id = None;
+
+        glyphs.iter().fold(0.0, |acc, g| {
+            let width = g.exact_bounding_box().map(|b| b.width()).unwrap_or(0.0);
+            let kerning = last_glyph_id.map(|id| font.pair_kerning(*scale, id, g.id())).unwrap_or(0.0);
+            last_glyph_id = Some(g.id());
+            acc + width + kerning
+        })
     }
 }
 

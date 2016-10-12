@@ -20,4 +20,12 @@ random_choice = "0.3.2"
 rusttype = "0.2.1"
 unicode-normalization = "0.1.2"
 
-image_utils = { path = "image_utils" }
+[dependencies.image_utils]
+path = "image_utils"
+
+[dependencies.clippy]
+version = "*"
+optional = true
+
+[features]
+default = ["clippy"]

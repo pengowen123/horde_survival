@@ -46,6 +46,7 @@ mod gameloop;
 mod gui;
 mod tps;
 mod assets;
+mod platform;
 
 fn main() {
     // Initialize logger
