@@ -28,6 +28,10 @@ impl Ticks {
         }
     }
 
+    pub fn set_expected_elapsed(&mut self, duration: Duration) {
+        self.expected_elapsed = duration;
+    }
+
     pub fn begin_tick(&mut self) {
         self.time_0 = Instant::now();
     }

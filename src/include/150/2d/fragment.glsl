@@ -3,6 +3,7 @@
 uniform sampler2D t_Color;
 
 in vec2 v_Uv;
+
 out vec4 f_Output;
 
 void main() {

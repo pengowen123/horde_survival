@@ -1,19 +1,25 @@
-// Windows
 #[cfg(target_os="windows")]
-pub const VERTEX_SHADER: &'static [u8] = include_bytes!("./include/vertex.glsl");
-#[cfg(target_os="windows")]
-pub const FRAGMENT_SHADER: &'static [u8] = include_bytes!("./include/fragment.glsl");
-
-#[cfg(target_os="windows")]
-pub const NEWLINE: &'static str = "\r\n";
-
-// Linux
-// FIXME: `out` is not available in GLSL 1.1, but using gl_FragColor leads to gfx not registering
-//         the output of the fragment shader
-#[cfg(target_os="linux")]
-pub const VERTEX_SHADER: &'static [u8] = include_bytes!("./include/vertex_110.glsl");
-#[cfg(target_os="linux")]
-pub const FRAGMENT_SHADER: &'static [u8] = include_bytes!("./include/fragment_110.glsl");
+pub mod shaders {
+    pub const VERTEX_SHADER_2D: &'static [u8] = include_bytes!("./include/150/2d/vertex.glsl");
+    pub const FRAGMENT_SHADER_2D: &'static [u8] = include_bytes!("./include/150/2d/fragment.glsl");
+    pub const VERTEX_SHADER_3D: &'static [u8] = include_bytes!("./include/150/3d/vertex.glsl");
+    pub const FRAGMENT_SHADER_3D: &'static [u8] = include_bytes!("./include/150/3d/fragment.glsl");
+}
 
 #[cfg(target_os="linux")]
-pub const NEWLINE: &'static str = "\n";
+pub mod shaders {
+    pub const VERTEX_SHADER_2D: &'static [u8] = include_bytes!("./include/120/2d/vertex.glsl");
+    pub const FRAGMENT_SHADER_2D: &'static [u8] = include_bytes!("./include/120/2d/fragment.glsl");
+    pub const VERTEX_SHADER_3D: &'static [u8] = include_bytes!("./include/120/3d/vertex.glsl");
+    pub const FRAGMENT_SHADER_3D: &'static [u8] = include_bytes!("./include/120/3d/fragment.glsl");
+}
+
+#[cfg(target_os="windows")]
+pub mod misc {
+    pub const NEWLINE: &'static str = "\r\n";
+}
+
+#[cfg(target_os="linux")]
+pub mod misc {
+    pub const NEWLINE: &'static str = "\n";
+}

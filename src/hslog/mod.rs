@@ -6,7 +6,7 @@ pub use self::log_utils::*;
 use log::*;
 use time;
 
-use platform::NEWLINE;
+use platform::misc::NEWLINE;
 use consts::log_str::*;
 
 use std::fs::File;

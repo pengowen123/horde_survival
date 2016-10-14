@@ -1,7 +1,7 @@
 use glutin::{self, Window, GlRequest};
 use gfx::{self, tex, Factory};
 use gfx::traits::FactoryExt;
-use rusttype::gpu_cache::Cache;
+use conrod::text::GlyphCache;
 use gfx_window_glutin;
 
 use consts::*;
@@ -11,7 +11,7 @@ use assets::AssetLoader;
 use gamestate::GameState;
 use minimap::Minimap;
 use hslog::CanUnwrap;
-use platform::*;
+use platform::shaders;
 
 impl GraphicsState {
     pub fn new(options: GraphicsOptions, game: &GameState) -> (GraphicsState, Window) {
@@ -43,16 +43,16 @@ impl GraphicsState {
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
         let pso2d = match factory.create_pipeline_simple(
-            VERTEX_SHADER,
-            FRAGMENT_SHADER,
+            shaders::VERTEX_SHADER_2D,
+            shaders::FRAGMENT_SHADER_2D,
             gfx2d::pipe::new()) {
                 Ok(p) => p,
                 Err(e) => crash!("Failed to create 2d PSO: {}", e),
             };
 
         let pso3d = match factory.create_pipeline_simple(
-            include_bytes!("../include/cube/shader/cube_150.glslv"),
-            include_bytes!("../include/cube/shader/cube_150.glslf"),
+            shaders::VERTEX_SHADER_3D,
+            shaders::FRAGMENT_SHADER_3D,
             gfx3d::pipe::new()) {
                 Ok(p) => p,
                 Err(e) => crash!("Failed to create 3d PSO: {}", e),
@@ -88,10 +88,10 @@ impl GraphicsState {
         let (window_width, window_height) = window.get_inner_size_pixels().unwrap();
         let (cache_width, cache_height) = (window_width * dpi, window_height * dpi);
 
-        let cache = Cache::new(cache_width, cache_height, 0.1, 0.1);
+        let cache = GlyphCache::new(cache_width, cache_height, 0.1, 0.1);
         let (cache_tex, cache_tex_view) = texture::create_cache_texture(&mut factory, window_width, window_height);
 
-        let mut state = GraphicsState {
+        let state = GraphicsState {
             factory: factory,
             encoder: encoder,
             options: options,
@@ -100,7 +100,7 @@ impl GraphicsState {
             window_size: (width, height),
             window_center: center,
             should_close: false,
-            cache: GlyphCache::new(cache, cache_tex, cache_tex_view),
+            cache: TextCache::new(cache, cache_tex, cache_tex_view),
             pso2d: pso2d,
             pso3d: pso3d,
             data: data,
@@ -108,25 +108,12 @@ impl GraphicsState {
             minimap: Minimap::new(MINIMAP_SCALE),
             aspect_ratio: aspect_ratio,
             camera: camera,
-            assets: AssetLoader::new("test_assets/Arial Unicode.ttf"),
+            assets: AssetLoader::new(),
             device: device,
             last_cursor_pos: center,
             pixel_size: (1.0 / width as f32, 1.0 / height as f32),
             dpi: dpi_factor,
         };
-
-        state.assets.add_texture_assets(&[("floor", "test_assets/floor.png")]);
-
-        if let Err(e) = state.assets.load_font(&mut state.factory) {
-            crash!("Failed to load font: {}", e);
-        }
-
-        let texture = unwrap_or_log!(state.assets.get_or_load_texture("floor", &mut state.factory),
-                                     "Failed to find texture: floor").clone();
-        let (v, i) = shapes3d::plane(FLOOR_HEIGHT, 1000.0);
-        let floor_object = Object3d::from_slice(&mut state.factory, &v, &i, texture);
-
-        state.add_object3d(floor_object, 0);
 
         (state, window)
     }

@@ -1,8 +1,10 @@
 use glutin::Window;
 
-use consts::graphics::GUI_CLEAR_COLOR;
-use hsgraphics::GraphicsState;
+use consts::graphics::*;
+use hsgraphics::{GraphicsState, shapes3d};
+use hsgraphics::object3d::Object3d;
 use gameloop::LoopType;
+use hslog::CanUnwrap;
 use gui::{UI, UIState};
 
 pub fn loading_screen(ui: &mut UI,
@@ -17,13 +19,12 @@ pub fn loading_screen(ui: &mut UI,
         crash!(format!("Failed to load texture {}: {}", name, e));
     }
 
-    ui.set_state(UIState::LoadingScreen, graphics);
-
     graphics.encoder.clear(&graphics.data.out_color, GUI_CLEAR_COLOR);
-    ui.draw(graphics);
+
     graphics.draw_gui(window);
 
     let names = [
+        ("floor", "test_assets/floor.png"),
         ("pepe", "test_assets/pepe.png"),
         ("player", "test_assets/player.png"),
         ("zombie", "test_assets/zombie.png"),
@@ -45,7 +46,12 @@ pub fn loading_screen(ui: &mut UI,
         }
     }
 
-    ui.set_state(UIState::MainMenu, graphics);
+    // Create floor object, will be removed when maps are added
+    let texture = unwrap_or_log!(graphics.assets.get_or_load_texture("floor", &mut graphics.factory),
+                                 "Failed to find texture: floor").clone();
+    let (v, i) = shapes3d::plane(FLOOR_HEIGHT, 1000.0);
+    let floor_object = Object3d::from_slice(&mut graphics.factory, &v, &i, texture);
+    graphics.add_object3d(floor_object, 0);
 
-    *loop_type = LoopType::GUI;
+    *loop_type = LoopType::Game;
 }

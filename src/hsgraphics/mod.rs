@@ -12,7 +12,6 @@ mod minimap;
 mod entity;
 mod utils;
 mod init;
-mod text;
 
 pub use self::state::*;
 pub use self::object::*;
@@ -22,7 +21,6 @@ pub use self::texture::*;
 pub use self::camera::*;
 pub use self::options::*;
 pub use self::cache::*;
-pub use self::text::to_rusttype_coords;
 
 use gfx::format;
 

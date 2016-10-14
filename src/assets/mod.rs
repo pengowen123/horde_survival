@@ -7,7 +7,6 @@ pub use self::load::*;
 pub use self::single::*;
 
 use gfx_device_gl::Factory;
-use rusttype::Font;
 
 use hsgraphics::texture::Texture;
 
@@ -16,20 +15,14 @@ use std::collections::HashMap;
 use std::io::{self, Error, ErrorKind};
 
 pub struct AssetLoader<P: AsRef<Path>> {
-    pub font: Asset<Font<'static>, P>,
     textures: HashMap<&'static str, Asset<Texture, P>>,
 }
 
 impl<P: AsRef<Path>> AssetLoader<P> {
-    pub fn new<S: Into<P>>(font_path: S) -> Self {
+    pub fn new() -> Self {
         AssetLoader {
             textures: HashMap::new(),
-            font: Asset::new(font_path.into()),
         }
-    }
-
-    pub fn load_font(&mut self, factory: &mut Factory) -> io::Result<()> {
-        self.font.load(factory)
     }
 }
 

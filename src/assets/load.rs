@@ -1,7 +1,6 @@
 use gfx_device_gl::Factory;
 
 use hsgraphics::texture::*;
-use rusttype::{Font, FontCollection};
 
 use std::io::{self, Read};
 use std::fs::File;
@@ -25,16 +24,5 @@ impl LoadAsset for Texture {
         let bytes = try!(load_bytes(path));
 
         Ok(load_texture(factory, &bytes))
-    }
-}
-
-impl LoadAsset for Font<'static> {
-    fn load_asset<P: AsRef<Path>>(_: &mut Factory, path: P) -> io::Result<Self> {
-        let bytes = try!(load_bytes(&path));
-
-        match FontCollection::from_bytes(bytes).into_font() {
-            Some(f) => Ok(f),
-            None => crash!("Failed to create font from {}", path.as_ref().to_str().unwrap()),
-        }
     }
 }

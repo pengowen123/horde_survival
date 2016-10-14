@@ -21,7 +21,7 @@ pub fn gametick(event: Option<Event>,
     if let Some(e) = event {
         if let Event::KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::Escape)) = e {
             *loop_type = LoopType::GUI;
-            ui.set_state(UIState::EscapeMenu, graphics);
+            ui.state = UIState::EscapeMenu;
             set_cursor_state(window, CursorState::Normal);
             game.player.reset_controls();
             return;
@@ -50,7 +50,6 @@ pub fn gametick(event: Option<Event>,
     if game.round_finished() {
         *loop_type = LoopType::GUI;
         *ticks = Ticks::new();
-        ui.set_state(UIState::ShopMenu, graphics);
         game.end_round(graphics);
 
         set_cursor_state(window, CursorState::Normal);

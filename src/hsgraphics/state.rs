@@ -37,7 +37,7 @@ pub struct GraphicsState {
     pub data2d: gfx2d::pipe::Data<gfx_device_gl::Resources>,
 
     // Glyph cache
-    pub cache: GlyphCache,
+    pub cache: TextCache,
 
     // Assets
     pub assets: AssetLoader<String>,

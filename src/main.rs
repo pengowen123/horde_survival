@@ -10,7 +10,7 @@ extern crate gfx_device_gl;
 extern crate glutin;
 extern crate cgmath;
 extern crate image;
-extern crate rusttype;
+extern crate conrod;
 
 // Logging
 #[macro_use]
@@ -23,7 +23,6 @@ extern crate time;
 extern crate random_choice;
 extern crate image_utils;
 extern crate collision;
-extern crate unicode_normalization;
 
 #[macro_use]
 mod hslog;
@@ -69,6 +68,11 @@ fn main() {
     let mut loop_type = gameloop::LoopType::Loading;
     let mut ticks = tps::Ticks::new();
     let mut ui = gui::UI::new();
+
+    utils::set_cursor_state(&window, glutin::CursorState::Hide);
+    game.new_game();
+    game.end_round(&mut graphics);
+    game.next_round();
 
     info!("Done");
 

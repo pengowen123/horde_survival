@@ -1,12 +1,10 @@
-#version 150 core
+#version 120
 
-in vec4 a_Pos;
-in vec2 a_TexCoord;
-out vec2 v_TexCoord;
+uniform mat4 u_Transform;
 
-uniform Locals {
-	mat4 u_Transform;
-};
+attribute vec4 a_Pos;
+attribute vec2 a_TexCoord;
+varying vec2 v_TexCoord;
 
 void main() {
     v_TexCoord = a_TexCoord;
