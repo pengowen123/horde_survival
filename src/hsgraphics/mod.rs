@@ -8,7 +8,7 @@ pub mod texture;
 pub mod camera;
 pub mod options;
 pub mod cache;
-mod minimap;
+mod shaders;
 mod entity;
 mod utils;
 mod init;

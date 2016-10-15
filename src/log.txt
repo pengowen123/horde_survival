@@ -1,16 +1,32 @@
-21:35:53 [INFO] horde_survival: Initializing game...
-21:35:54 [INFO] horde_survival::gamestate: Started new game
-21:35:54 [INFO] horde_survival::gamestate: Starting wave 1
-21:35:54 [INFO] horde_survival: Done
-21:35:54 [INFO] horde_survival::gameloop::loading: Loading texture 'floor' (test_assets/floor.png)
-21:35:54 [INFO] horde_survival::gameloop::loading: Loading texture 'pepe' (test_assets/pepe.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'player' (test_assets/player.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'zombie' (test_assets/zombie.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'blue' (test_assets/blue.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'red' (test_assets/red.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'black' (test_assets/black.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'green' (test_assets/green.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'crosshair' (test_assets/crosshair.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_linear' (test_assets/ball_linear.png)
-21:35:56 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_arc' (test_assets/ball_arc.png)
-21:36:04 [INFO] horde_survival: Closed Horde Survival
+12:33:52 [INFO] horde_survival: Initializing game...
+12:33:53 [INFO] horde_survival: Done
+12:33:54 [INFO] horde_survival::gameloop::loading: Loading texture 'floor' (test_assets/floor.png)
+12:33:54 [INFO] horde_survival::gameloop::loading: Loading texture 'pepe' (test_assets/pepe.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'player' (test_assets/player.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'zombie' (test_assets/zombie.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'blue' (test_assets/blue.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'red' (test_assets/red.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'black' (test_assets/black.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'green' (test_assets/green.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'crosshair' (test_assets/crosshair.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_linear' (test_assets/ball_linear.png)
+12:33:56 [INFO] horde_survival::gameloop::loading: Loading texture 'ball_arc' (test_assets/ball_arc.png)
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Other"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:56 [WARN] horde_survival::gui::draw: Drawing unknown primitive: "Rectangle"
+12:33:58 [INFO] horde_survival: Closed Horde Survival

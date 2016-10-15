@@ -1,18 +1,4 @@
-pub trait CanUnwrap {
-    fn can_unwrap(&self) -> bool;
-}
-
-impl<T> CanUnwrap for Option<T> {
-    fn can_unwrap(&self) -> bool {
-        self.is_some()
-    }
-}
-
-impl<T, E> CanUnwrap for Result<T, E> {
-    fn can_unwrap(&self) -> bool {
-        self.is_ok()
-    }
-}
+use std::error::Error;
 
 macro_rules! unwrap_or_log {
     ($val:expr, $msg:tt) => {
@@ -36,4 +22,29 @@ macro_rules! crash {
         error!("{}", $msg);
         panic!($crate::consts::misc::CRASH_MESSAGE);
     }};
+}
+
+macro_rules! unwrap_pretty {
+    ($val:expr) => {{
+        match $val {
+            Ok(val) => val,
+            Err(e) => crash!("{}", e),
+        }
+    }}
+}
+
+pub trait CanUnwrap {
+    fn can_unwrap(&self) -> bool;
+}
+
+impl<T> CanUnwrap for Option<T> {
+    fn can_unwrap(&self) -> bool {
+        self.is_some()
+    }
+}
+
+impl<T, E> CanUnwrap for Result<T, E> {
+    fn can_unwrap(&self) -> bool {
+        self.is_ok()
+    }
 }

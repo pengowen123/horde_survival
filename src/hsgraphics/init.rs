@@ -1,17 +1,15 @@
 use glutin::{self, Window, GlRequest};
-use gfx::{self, tex, Factory};
+use gfx::{self, Factory, Primitive, tex};
 use gfx::traits::FactoryExt;
 use conrod::text::GlyphCache;
 use gfx_window_glutin;
 
 use consts::*;
 use hsgraphics::*;
-use hsgraphics::object3d::*;
+use hsgraphics::shaders::{load_pso2d, load_pso3d};
 use assets::AssetLoader;
 use gamestate::GameState;
-use minimap::Minimap;
-use hslog::CanUnwrap;
-use platform::shaders;
+use platform::shaders::*;
 
 impl GraphicsState {
     pub fn new(options: GraphicsOptions, game: &GameState) -> (GraphicsState, Window) {
@@ -42,21 +40,8 @@ impl GraphicsState {
             gfx_window_glutin::init::<ColorFormat, gfx3d::DepthFormat>(builder);
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
-        let pso2d = match factory.create_pipeline_simple(
-            shaders::VERTEX_SHADER_2D,
-            shaders::FRAGMENT_SHADER_2D,
-            gfx2d::pipe::new()) {
-                Ok(p) => p,
-                Err(e) => crash!("Failed to create 2d PSO: {}", e),
-            };
-
-        let pso3d = match factory.create_pipeline_simple(
-            shaders::VERTEX_SHADER_3D,
-            shaders::FRAGMENT_SHADER_3D,
-            gfx3d::pipe::new()) {
-                Ok(p) => p,
-                Err(e) => crash!("Failed to create 3d PSO: {}", e),
-            };
+        let pso2d = unwrap_pretty!(load_pso2d(&mut factory, VS_2D_PATH, FS_2D_PATH, Primitive::TriangleList));
+        let pso3d = unwrap_pretty!(load_pso3d(&mut factory, VS_3D_PATH, FS_3D_PATH, Primitive::TriangleList));
 
         let sampler_info = tex::SamplerInfo::new(tex::FilterMethod::Bilinear, tex::WrapMode::Clamp);
         let sampler = factory.create_sampler(sampler_info);
@@ -105,7 +90,6 @@ impl GraphicsState {
             pso3d: pso3d,
             data: data,
             data2d: data2d,
-            minimap: Minimap::new(MINIMAP_SCALE),
             aspect_ratio: aspect_ratio,
             camera: camera,
             assets: AssetLoader::new(),

@@ -8,6 +8,7 @@ gfx_defines! {
     vertex Vertex {
         pos: [f32; 2] = "a_Pos",
         uv: [f32; 2] = "a_Uv",
+        color: [f32; 4] = "a_Color",
     }
 
     pipeline pipe {
@@ -22,6 +23,15 @@ impl Vertex {
         Vertex {
             pos: pos,
             uv: uv,
+            color: [1.0; 4],
+        }
+    }
+
+    pub fn new_colored(pos: [f32; 2], uv: [f32; 2], color: [f32; 4]) -> Vertex {
+        Vertex {
+            pos: pos,
+            uv: uv,
+            color: color,
         }
     }
 }

@@ -53,5 +53,5 @@ pub fn loading_screen(ui: &mut UI,
     let floor_object = Object3d::from_slice(&mut graphics.factory, &v, &i, texture);
     graphics.add_object3d(floor_object, 0);
 
-    *loop_type = LoopType::Game;
+    *loop_type = LoopType::GUI;
 }

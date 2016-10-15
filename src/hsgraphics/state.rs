@@ -8,7 +8,6 @@ use hsgraphics::object3d::*;
 use hsgraphics::*;
 use gamestate::GameState;
 use assets::AssetLoader;
-use minimap::Minimap;
 use world::Coords;
 use hslog::CanUnwrap;
 use consts::*;
@@ -42,9 +41,6 @@ pub struct GraphicsState {
     // Assets
     pub assets: AssetLoader<String>,
 
-    // Minimap
-    pub minimap: Minimap,
-
     // Controls
     pub last_cursor_pos: (i32, i32),
     pub camera: Matrix4<f32>,
@@ -72,8 +68,6 @@ impl GraphicsState {
 
     pub fn update(&mut self, game: &GameState) {
         self.update_crosshair();
-        self.update_minimap(&game.entities);
-        self.update_minimap_objects();
         self.update_entity_objects(&game.entities, game.player.entity_id);
     }
 
@@ -164,11 +158,6 @@ impl GraphicsState {
 
 // Misc
 impl GraphicsState {
-    pub fn get_scales(&self, d: f32) -> (f32, f32) {
-        (d * MINIMAP_SCALE / self.window_size.0 as f32,
-         d * MINIMAP_SCALE / self.window_size.1 as f32)
-    }
-
     pub fn reset_cursor(&mut self, window: &Window) {
         // NOTE: This doesn't do anything useful right now, maybe I will fix it in the future
         self.last_cursor_pos = self.window_center;
