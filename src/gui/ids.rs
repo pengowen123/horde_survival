@@ -1,6 +1,8 @@
 widget_ids! {
     pub struct Ids {
-        canvas,
-        text,
+        background,
+        main_menu_image,
+        button,
+        button2,
     }
 }

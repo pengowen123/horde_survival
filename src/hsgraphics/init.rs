@@ -6,7 +6,7 @@ use gfx_window_glutin;
 
 use consts::*;
 use hsgraphics::*;
-use hsgraphics::shaders::{load_pso2d, load_pso3d};
+use hsgraphics::shaders::*;
 use assets::AssetLoader;
 use gamestate::GameState;
 use platform::shaders::*;
@@ -40,8 +40,9 @@ impl GraphicsState {
             gfx_window_glutin::init::<ColorFormat, gfx3d::DepthFormat>(builder);
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
-        let pso2d = unwrap_pretty!(load_pso2d(&mut factory, VS_2D_PATH, FS_2D_PATH, Primitive::TriangleList));
-        let pso3d = unwrap_pretty!(load_pso3d(&mut factory, VS_3D_PATH, FS_3D_PATH, Primitive::TriangleList));
+        let pso2d = unwrap_pretty!(load_pso(&mut factory, VS_2D_PATH, FS_2D_PATH, Primitive::TriangleList, gfx2d::pipe::new()));
+        let pso3d = unwrap_pretty!(load_pso(&mut factory, VS_3D_PATH, FS_3D_PATH, Primitive::TriangleList, gfx3d::pipe::new()));
+        let pso_gui = unwrap_pretty!(load_pso(&mut factory, VS_GUI_PATH, FS_GUI_PATH, Primitive::TriangleList, gfx_gui::pipe::new()));
 
         let sampler_info = tex::SamplerInfo::new(tex::FilterMethod::Bilinear, tex::WrapMode::Clamp);
         let sampler = factory.create_sampler(sampler_info);
@@ -49,6 +50,8 @@ impl GraphicsState {
         let camera = get_camera(game.map.player_spawn.clone(), START_CAMERA_ANGLE, aspect_ratio);
 
         let vbuf = factory.create_vertex_buffer(&[]);
+        let vbuf2d = factory.create_vertex_buffer(&[]);
+        let vbuf_gui = factory.create_vertex_buffer(&[]);
         let texture = load_texture_raw(&mut factory, [2, 2], &[0; 4]);
         
         let data = gfx3d::pipe::Data {
@@ -60,11 +63,14 @@ impl GraphicsState {
             out_depth: main_depth,
         };
 
-        let vbuf2d = factory.create_vertex_buffer(&[]);
-
         let data2d = gfx2d::pipe::Data {
             vbuf: vbuf2d,
             color: (texture, sampler),
+            out: main_color.clone(),
+        };
+
+        let data_gui = gfx_gui::pipe::Data {
+            vbuf: vbuf_gui,
             out: main_color,
         };
 
@@ -75,6 +81,8 @@ impl GraphicsState {
 
         let cache = GlyphCache::new(cache_width, cache_height, 0.1, 0.1);
         let (cache_tex, cache_tex_view) = texture::create_cache_texture(&mut factory, window_width, window_height);
+
+        let assets = AssetLoader::new(&mut factory);
 
         let state = GraphicsState {
             factory: factory,
@@ -88,11 +96,13 @@ impl GraphicsState {
             cache: TextCache::new(cache, cache_tex, cache_tex_view),
             pso2d: pso2d,
             pso3d: pso3d,
+            pso_gui: pso_gui,
             data: data,
             data2d: data2d,
+            data_gui: data_gui,
             aspect_ratio: aspect_ratio,
             camera: camera,
-            assets: AssetLoader::new(),
+            assets: assets,
             device: device,
             last_cursor_pos: center,
             pixel_size: (1.0 / width as f32, 1.0 / height as f32),

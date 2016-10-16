@@ -32,8 +32,10 @@ pub struct GraphicsState {
     // gfx things
     pub pso2d: object2d::ObjectPSO,
     pub pso3d: object3d::ObjectPSO,
+    pub pso_gui: gfx_gui::Pso,
     pub data: gfx3d::pipe::Data<gfx_device_gl::Resources>,
     pub data2d: gfx2d::pipe::Data<gfx_device_gl::Resources>,
+    pub data_gui: gfx_gui::pipe::Data<gfx_device_gl::Resources>,
 
     // Glyph cache
     pub cache: TextCache,

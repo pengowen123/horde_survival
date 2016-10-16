@@ -57,7 +57,7 @@ fn main() {
     // Initialize states
     let mut game = gamestate::GameState::new();
     let options = hsgraphics::GraphicsOptions::new()
-        .window_size(1200, 900)
+        .window_size(800, 600)
         .minimap_enabled(false)
         .display_debug(true)
         .crosshair(true)

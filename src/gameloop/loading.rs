@@ -19,7 +19,9 @@ pub fn loading_screen(ui: &mut UI,
         crash!(format!("Failed to load texture {}: {}", name, e));
     }
 
-    graphics.encoder.clear(&graphics.data.out_color, GUI_CLEAR_COLOR);
+    graphics.encoder.clear(&graphics.data.out_color, LOADING_CLEAR_COLOR);
+
+    // TODO: Add loading screen image here
 
     graphics.draw_gui(window);
 
@@ -28,10 +30,6 @@ pub fn loading_screen(ui: &mut UI,
         ("pepe", "test_assets/pepe.png"),
         ("player", "test_assets/player.png"),
         ("zombie", "test_assets/zombie.png"),
-        ("blue", "test_assets/blue.png"),
-        ("red", "test_assets/red.png"),
-        ("black", "test_assets/black.png"),
-        ("green", "test_assets/green.png"),
         ("crosshair", "test_assets/crosshair.png"),
         ("ball_linear", "test_assets/ball_linear.png"),
         ("ball_arc", "test_assets/ball_arc.png"),
@@ -45,6 +43,10 @@ pub fn loading_screen(ui: &mut UI,
             crash!(format!("Failed to load texture {}: {}", name, e));
         }
     }
+
+    ui.image_map = image_map! {
+        (ui.ids.main_menu_image, graphics.assets.get_texture("pepe").unwrap().clone()),
+    };
 
     // Create floor object, will be removed when maps are added
     let texture = unwrap_or_log!(graphics.assets.get_or_load_texture("floor", &mut graphics.factory),

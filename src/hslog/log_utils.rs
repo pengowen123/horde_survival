@@ -1,5 +1,3 @@
-use std::error::Error;
-
 macro_rules! unwrap_or_log {
     ($val:expr, $msg:tt) => {
         unwrap_or_log!($val, $msg,)

@@ -9,6 +9,7 @@ pub use self::single::*;
 use gfx_device_gl::Factory;
 
 use hsgraphics::texture::Texture;
+use image_utils::load_texture_raw;
 
 use std::path::Path;
 use std::collections::HashMap;
@@ -19,7 +20,7 @@ pub struct AssetLoader<P: AsRef<Path>> {
 }
 
 impl<P: AsRef<Path>> AssetLoader<P> {
-    pub fn new() -> Self {
+    pub fn new(factory: &mut Factory) -> Self {
         AssetLoader {
             textures: HashMap::new(),
         }
@@ -27,5 +28,5 @@ impl<P: AsRef<Path>> AssetLoader<P> {
 }
 
 impl_asset_methods!(AssetLoader, Texture,
-                    textures, load_texture, get_or_load_texture, add_texture_assets,
+                    textures, get_texture, load_texture, get_or_load_texture, add_texture_assets,
                     "Texture");

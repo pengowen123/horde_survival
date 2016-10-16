@@ -2,8 +2,9 @@
 pub mod shapes;
 pub mod state;
 pub mod gfx3d;
-pub mod object;
 pub mod gfx2d;
+pub mod gfx_gui;
+pub mod object;
 pub mod texture;
 pub mod camera;
 pub mod options;
