@@ -1,4 +1,4 @@
-use gfx;
+pub use gfx;
 
 pub use hsgraphics::ColorFormat;
 

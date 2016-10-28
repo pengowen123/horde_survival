@@ -5,7 +5,7 @@ use hsgraphics::{GraphicsState, shapes3d};
 use hsgraphics::object3d::Object3d;
 use gameloop::LoopType;
 use hslog::CanUnwrap;
-use gui::{UI, UIState};
+use gui::UI;
 
 pub fn loading_screen(ui: &mut UI,
                       graphics: &mut GraphicsState,
@@ -16,7 +16,7 @@ pub fn loading_screen(ui: &mut UI,
     graphics.assets.add_texture_assets(&[(name, "test_assets/loading_screen.png")]);
 
     if let Err(e) = graphics.assets.load_texture(name, &mut graphics.factory) {
-        crash!(format!("Failed to load texture {}: {}", name, e));
+        crash!("{}", format!("Failed to load texture {}: {}", name, e));
     }
 
     graphics.encoder.clear(&graphics.data.out_color, LOADING_CLEAR_COLOR);
@@ -40,7 +40,7 @@ pub fn loading_screen(ui: &mut UI,
     for &(name, path) in &names {
         info!("Loading texture '{}' ({})", name, path);
         if let Err(e) = graphics.assets.load_texture(name, &mut graphics.factory) {
-            crash!(format!("Failed to load texture {}: {}", name, e));
+            crash!("{}", format!("Failed to load texture {}: {}", name, e));
         }
     }
 

@@ -2,5 +2,5 @@ target
 *.swp
 *.vi
 *.tdl
-.local.vimrc
-src/test_assets
+todo
+test_assets/

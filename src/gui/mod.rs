@@ -3,9 +3,9 @@ pub mod draw;
 pub mod menus;
 mod utils;
 
-use conrod::{self, Ui, UiBuilder, Theme, Color, color};
+use conrod::{self, Ui, UiBuilder, Theme, color};
+use glutin::Window;
 
-use hsgraphics::gfx2d::Vertex;
 use hsgraphics::GraphicsState;
 use hsgraphics::texture::Texture;
 use gamestate::GameState;
@@ -20,17 +20,19 @@ pub struct UI {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UIState {
-    MainMenu,
-    EscapeMenu,
-    OptionsMenu,
-    ShopMenu,
-    LoadingScreen,
+    Main,
+    Pause,
+    Options,
+    Shop,
+    NewGame,
+    GameOver,
 }
 
 impl UI {
     pub fn new() -> UI {
         let theme = Theme {
             background_color: color::BLUE,
+            border_color: color::TRANSPARENT,
             .. Theme::default()
         };
 
@@ -45,7 +47,7 @@ impl UI {
         UI {
             ui: ui,
             ids: ids,
-            state: UIState::MainMenu,
+            state: UIState::Main,
             image_map: conrod::image::Map::new(),
         }
     }
@@ -53,20 +55,22 @@ impl UI {
     pub fn set_widgets(&mut self,
                        game: &mut GameState,
                        graphics: &mut GraphicsState,
-                       loop_type: &mut LoopType) {
+                       loop_type: &mut LoopType,
+                       window: &Window) {
 
         let cell = &mut self.ui.set_widgets();
         let ids = &self.ids;
         let ui_state = &mut self.state;
         
         match self.state {
-            UIState::MainMenu => self::menus::main_menu_widgets(cell,
-                                                                ids,
-                                                                &self.image_map,
-                                                                game,
-                                                                graphics,
-                                                                ui_state,
-                                                                loop_type),
+            UIState::Main => menus::main::set_widgets(cell,
+                                                          ids,
+                                                          game,
+                                                          graphics,
+                                                          ui_state,
+                                                          loop_type,
+                                                          window),
+            UIState::Pause => return,
             _ => {},
         }
     }

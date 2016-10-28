@@ -10,6 +10,7 @@ use hsgraphics::object2d::Object2d;
 use hslog::CanUnwrap;
 use gui::utils::*;
 
+#[allow(unused_variables)]
 pub fn draw_primitives<'a>(mut primitives: render::Primitives<'a>,
                            (w, h): (u32, u32),
                            graphics: &mut GraphicsState,
@@ -139,7 +140,7 @@ fn primitive_image(id: conrod::widget::Id,
                    graphics: &mut GraphicsState,
                    image_map: &conrod::image::Map<Texture>) {
 
-    let uv_rect = uv_rect.unwrap_or(conrod::Rect::from_xy_dim([0.5; 2], [1.0; 2]));
+    let uv_rect = uv_rect.unwrap_or_else(|| conrod::Rect::from_xy_dim([0.5; 2], [1.0; 2]));
     let color = color.unwrap_or(conrod::Color::Rgba(0.0, 0.0, 0.0, 1.0)).to_fsa();
     let v = |p: conrod::Point, uv: conrod::Point| {
         Vertex::new_colored([p[0] as f32, p[1] as f32], [uv[0] as f32, uv[1] as f32], color)

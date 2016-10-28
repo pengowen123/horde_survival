@@ -1,8 +1,9 @@
 macro_rules! unwrap_or_log {
-    ($val:expr, $msg:tt) => {
+    ($val:expr, $msg:tt) => {{
         unwrap_or_log!($val, $msg,)
-    };
-    ($val:expr, $msg:expr, $($arg:expr),*) => {{
+    }};
+
+    ($val:expr, $msg:tt, $($arg:expr),*) => {{
         if $val.can_unwrap() {
             $val.unwrap()
         } else {
@@ -12,12 +13,8 @@ macro_rules! unwrap_or_log {
 }
 
 macro_rules! crash {
-    ($msg:expr, $($arg:expr),*) => {{
+    ($msg:tt, $($arg:expr),*) => {{
         error!($msg, $($arg)*);
-        panic!($crate::consts::misc::CRASH_MESSAGE);
-    }};
-    ($msg:expr) => {{
-        error!("{}", $msg);
         panic!($crate::consts::misc::CRASH_MESSAGE);
     }};
 }

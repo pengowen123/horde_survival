@@ -9,7 +9,6 @@ use hsgraphics::*;
 use hsgraphics::shaders::*;
 use assets::AssetLoader;
 use gamestate::GameState;
-use platform::shaders::*;
 
 impl GraphicsState {
     pub fn new(options: GraphicsOptions, game: &GameState) -> (GraphicsState, Window) {
@@ -40,9 +39,24 @@ impl GraphicsState {
             gfx_window_glutin::init::<ColorFormat, gfx3d::DepthFormat>(builder);
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
-        let pso2d = unwrap_pretty!(load_pso(&mut factory, VS_2D_PATH, FS_2D_PATH, Primitive::TriangleList, gfx2d::pipe::new()));
-        let pso3d = unwrap_pretty!(load_pso(&mut factory, VS_3D_PATH, FS_3D_PATH, Primitive::TriangleList, gfx3d::pipe::new()));
-        let pso_gui = unwrap_pretty!(load_pso(&mut factory, VS_GUI_PATH, FS_GUI_PATH, Primitive::TriangleList, gfx_gui::pipe::new()));
+        info!("Platform name: {:?}", device.get_info().platform_name);
+        info!("GL version: {:?}", device.get_info().version);
+        info!("GLSL version: {:?}", device.get_info().shading_language);
+
+        let shader_assets_path = "test_assets/shaders";
+        let vs_2d_path = get_shader_version_path(&device, shader_assets_path, VS_2D_PATH);
+        let vs_3d_path = get_shader_version_path(&device, shader_assets_path, VS_3D_PATH);
+        let vs_gui_path = get_shader_version_path(&device, shader_assets_path, VS_GUI_PATH);
+        let fs_2d_path = get_shader_version_path(&device, shader_assets_path, FS_2D_PATH);
+        let fs_3d_path = get_shader_version_path(&device, shader_assets_path, FS_3D_PATH);
+        let fs_gui_path = get_shader_version_path(&device, shader_assets_path, FS_GUI_PATH);
+
+        info!("Creating PSO: 2d (VS {}, FS {})", vs_2d_path, fs_2d_path);
+        let pso2d = unwrap_pretty!(load_pso(&mut factory, vs_2d_path, fs_2d_path, Primitive::TriangleList, gfx2d::pipe::new()));
+        info!("Creating PSO: 3d (VS {}, FS {})", vs_3d_path, fs_3d_path);
+        let pso3d = unwrap_pretty!(load_pso(&mut factory, vs_3d_path, fs_3d_path, Primitive::TriangleList, gfx3d::pipe::new()));
+        info!("Creating PSO: gui (VS {}, FS {})", vs_gui_path, fs_gui_path);
+        let pso_gui = unwrap_pretty!(load_pso(&mut factory, vs_gui_path, fs_gui_path, Primitive::TriangleList, gfx_gui::pipe::new()));
 
         let sampler_info = tex::SamplerInfo::new(tex::FilterMethod::Bilinear, tex::WrapMode::Clamp);
         let sampler = factory.create_sampler(sampler_info);
@@ -82,8 +96,6 @@ impl GraphicsState {
         let cache = GlyphCache::new(cache_width, cache_height, 0.1, 0.1);
         let (cache_tex, cache_tex_view) = texture::create_cache_texture(&mut factory, window_width, window_height);
 
-        let assets = AssetLoader::new(&mut factory);
-
         let state = GraphicsState {
             factory: factory,
             encoder: encoder,
@@ -102,7 +114,7 @@ impl GraphicsState {
             data_gui: data_gui,
             aspect_ratio: aspect_ratio,
             camera: camera,
-            assets: assets,
+            assets: AssetLoader::new(),
             device: device,
             last_cursor_pos: center,
             pixel_size: (1.0 / width as f32, 1.0 / height as f32),

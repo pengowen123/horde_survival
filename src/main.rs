@@ -3,7 +3,7 @@
 
 // Graphics
 #[macro_use]
-extern crate gfx;
+pub extern crate gfx;
 extern crate gfx_core;
 extern crate gfx_window_glutin;
 extern crate gfx_device_gl;
@@ -24,6 +24,7 @@ extern crate time;
 extern crate random_choice;
 extern crate image_utils;
 extern crate collision;
+extern crate shader_version;
 
 #[macro_use]
 mod hslog;

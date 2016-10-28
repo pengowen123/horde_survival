@@ -1,11 +1,12 @@
 use glutin::*;
 
+use consts::misc::TPS;
 use entity::*;
 use gameloop::{self, LoopType};
 use gamestate::GameState;
 use hsgraphics::GraphicsState;
 use utils::*;
-use tps::Ticks;
+use tps::{Ticks, tps_to_time};
 use gui::{UI, UIState};
 
 pub fn gametick(event: Option<Event>,
@@ -16,12 +17,15 @@ pub fn gametick(event: Option<Event>,
                 ticks: &mut Ticks,
                 loop_type: &mut LoopType) {
 
+    // Set max TPS of game
     ticks.begin_tick();
+    let expected_elapsed = tps_to_time(TPS);
+    ticks.set_expected_elapsed(expected_elapsed);
 
     if let Some(e) = event {
         if let Event::KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::Escape)) = e {
             *loop_type = LoopType::GUI;
-            ui.state = UIState::EscapeMenu;
+            ui.state = UIState::Pause;
             set_cursor_state(window, CursorState::Normal);
             game.player.reset_controls();
             return;
@@ -50,6 +54,7 @@ pub fn gametick(event: Option<Event>,
     if game.round_finished() {
         *loop_type = LoopType::GUI;
         *ticks = Ticks::new();
+        ui.state = UIState::Shop;
         game.end_round(graphics);
 
         set_cursor_state(window, CursorState::Normal);

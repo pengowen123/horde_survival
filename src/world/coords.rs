@@ -96,12 +96,6 @@ impl Coords {
         coords
     }
 
-    pub fn scaled(&self, factor: f64) -> Coords {
-        let mut coords = self.clone();
-        coords.scale(factor);
-        coords
-    }
-
     pub fn as_vector(&self) -> Vector3<f64> {
         Vector3::new(self.x, self.y, self.z)
     }

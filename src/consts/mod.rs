@@ -6,8 +6,8 @@ pub mod graphics;
 pub mod physics;
 pub mod log_str;
 pub mod scale;
-pub mod text;
 pub mod defaults;
+pub mod shader;
 
 pub use self::balance::*;
 pub use self::controls::*;
@@ -15,6 +15,7 @@ pub use self::graphics::*;
 pub use self::misc::*;
 pub use self::physics::*;
 pub use self::scale::*;
+pub use self::shader::*;
 
 // NOTE: Delete this when spawn points can be loaded from map files
 use world::Coords;

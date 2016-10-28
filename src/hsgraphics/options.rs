@@ -42,7 +42,6 @@ impl GraphicsOptions {
         self
     }
 
-    // FIXME: Fullscreen breaks the GUI
     pub fn fullscreen(&mut self, value: bool) -> &mut Self {
         self.fullscreen = value;
         self

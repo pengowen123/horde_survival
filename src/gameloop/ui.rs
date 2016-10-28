@@ -1,17 +1,14 @@
-use gfx::traits::FactoryExt;
 use glutin::*;
-use conrod::{self, render};
+use conrod;
 
 use gamestate::GameState;
 use hsgraphics::GraphicsState;
 use gameloop::LoopType;
 use gui::{UI, UIState, draw};
-use tps::Ticks;
+use tps::{Ticks, tps_to_time};
 use consts::misc::GUI_MAX_FPS;
 use consts::graphics::GUI_CLEAR_COLOR;
 use utils::*;
-
-use std::time::Duration;
 
 pub fn run_gui(event: Option<Event>,
                ui: &mut UI,
@@ -23,7 +20,7 @@ pub fn run_gui(event: Option<Event>,
 
     // Set max fps of gui
     ticks.begin_tick();
-    let expected_elapsed = Duration::from_millis(1_000_000_000 / GUI_MAX_FPS / 1_000_000);
+    let expected_elapsed = tps_to_time(GUI_MAX_FPS);
     ticks.set_expected_elapsed(expected_elapsed);
 
     // Get size of window and update dpi
@@ -58,18 +55,17 @@ pub fn run_gui(event: Option<Event>,
             Event::MouseMoved(x, y) => {
                 graphics.last_cursor_pos = (x, y);
             },
-            Event::MouseInput(ElementState::Pressed, MouseButton::Left) => {
-            },
             Event::KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::Escape)) => {
                 match ui.state {
-                    UIState::EscapeMenu => {
+                    UIState::Pause => {
                         *loop_type = LoopType::Game;
                         set_cursor_state(window, CursorState::Hide);
                         graphics.reset_cursor(window);
                     },
-                    UIState::OptionsMenu => {
+                    UIState::Options => {
+                        ui.state = UIState::Main;
                     },
-                    UIState::MainMenu => {
+                    UIState::Main => {
                         graphics.should_close = true;
                     },
                     _ => {},
@@ -98,7 +94,7 @@ pub fn run_gui(event: Option<Event>,
     }
 
     // Make the list of widgets to use
-    ui.set_widgets(game, graphics, loop_type);
+    ui.set_widgets(game, graphics, loop_type, window);
 
     ticks.measure_frame_1();
 

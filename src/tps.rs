@@ -3,7 +3,7 @@ use consts::misc::TPS;
 use std::time::{Instant, Duration};
 
 pub struct Ticks {
-    expected_elapsed: Duration,
+    pub expected_elapsed: Duration,
     sleeping_until: Instant,
     time_0: Instant,
     time_1: Instant,
@@ -66,4 +66,8 @@ impl Ticks {
             self.sleeping_until = current + (self.expected_elapsed - elapsed);
         }
     }
+}
+
+pub fn tps_to_time(tps: u64) -> Duration {
+    Duration::from_millis(1000 / tps)
 }
