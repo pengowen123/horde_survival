@@ -1,4 +1,4 @@
-use gfx::Slice;
+use gfx::{self, Slice};
 use gfx::traits::FactoryExt;
 use gfx_device_gl::{Factory, Resources};
 

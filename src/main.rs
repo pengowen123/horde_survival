@@ -1,10 +1,10 @@
+#![cfg_attr(not(feature="clippy"), allow(unknown_lints))]
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
 // Graphics
 #[macro_use]
 pub extern crate gfx;
-extern crate gfx_core;
 extern crate gfx_window_glutin;
 extern crate gfx_device_gl;
 extern crate glutin;
@@ -27,6 +27,8 @@ extern crate collision;
 extern crate shader_version;
 
 #[macro_use]
+mod utils;
+#[macro_use]
 mod hslog;
 #[macro_use]
 mod entity;
@@ -36,7 +38,6 @@ mod items;
 mod hsgraphics;
 #[macro_use]
 mod world;
-mod utils;
 mod player;
 mod consts;
 mod hscontrols;

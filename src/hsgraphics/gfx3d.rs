@@ -1,5 +1,4 @@
-pub use gfx;
-
+use gfx;
 pub use hsgraphics::ColorFormat;
 
 pub type DepthFormat = gfx::format::DepthStencil;
@@ -15,13 +14,13 @@ gfx_defines!{
     }
 
     pipeline pipe {
-        vbuf: gfx::VertexBuffer<Vertex> = (),
-        transform: gfx::Global<[[f32; 4]; 4]> = "u_Transform",
-        locals: gfx::ConstantBuffer<Locals> = "Locals",
-        color: gfx::TextureSampler<[f32; 4]> = "t_Color",
-        out_color: gfx::RenderTarget<ColorFormat> = "Target0",
-        out_depth: gfx::DepthTarget<DepthFormat> =
-            gfx::preset::depth::LESS_EQUAL_WRITE,
+        vbuf: ::gfx::VertexBuffer<Vertex> = (),
+        transform: ::gfx::Global<[[f32; 4]; 4]> = "u_Transform",
+        locals: ::gfx::ConstantBuffer<Locals> = "Locals",
+        color: ::gfx::TextureSampler<[f32; 4]> = "t_Color",
+        out_color: ::gfx::RenderTarget<ColorFormat> = "Target0",
+        out_depth: ::gfx::DepthTarget<DepthFormat> =
+            ::gfx::preset::depth::LESS_EQUAL_WRITE,
     }
 }
 

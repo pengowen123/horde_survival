@@ -1,4 +1,4 @@
-pub use gfx::{self, Slice};
+use gfx::{self, Slice};
 use gfx::traits::FactoryExt;
 use gfx_device_gl::{Factory, Resources};
 
@@ -15,8 +15,8 @@ gfx_defines! {
     }
 
     pipeline pipe {
-        vbuf: gfx::VertexBuffer<Vertex> = (),
-        out: gfx::BlendTarget<ColorFormat> = ("Target0", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
+        vbuf: ::gfx::VertexBuffer<Vertex> = (),
+        out: ::gfx::BlendTarget<ColorFormat> = ("Target0", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
     }
 }
 

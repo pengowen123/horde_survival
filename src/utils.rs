@@ -14,3 +14,9 @@ pub fn set_cursor_state(window: &Window, cursor_state: CursorState) {
         warn!("Failed to set cursor state to {:?}", cursor_state);
     }
 }
+
+macro_rules! log_create_pso {
+    ($name:expr, $vs_path:expr, $fs_path:expr) => {{
+        info!("Creating PSO: {} (vertex: {}, fragment: {})", $name, $vs_path, $fs_path);
+    }};
+}

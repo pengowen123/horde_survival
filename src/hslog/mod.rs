@@ -43,14 +43,24 @@ impl Log for HSLogger {
             let mut file = self.file.lock().expect("Failed to acquire lock on log file");
             let time = time::now();
 
-            let result = write!(file, "{:02}:{:02}:{:02} [{}] {}: {}{}",
-                                time.tm_hour,
-                                time.tm_min,
-                                time.tm_sec,
-                                record.level(),
-                                record.target(),
-                                record.args(),
-                                NEWLINE);
+            let result = if cfg!(debug_assertions) {
+                write!(file, "{:02}:{:02}:{:02} [{}] {}: {}{}",
+                       time.tm_hour,
+                       time.tm_min,
+                       time.tm_sec,
+                       record.level(),
+                       record.target(),
+                       record.args(),
+                       NEWLINE)
+            } else {
+                write!(file, "{:02}:{:02}:{:02} [{}]: {}{}",
+                       time.tm_hour,
+                       time.tm_min,
+                       time.tm_sec,
+                       record.level(),
+                       record.args(),
+                       NEWLINE)
+            };
 
             if let Err(e) = result {
                 panic!("Failed to write to log file: {}", e);

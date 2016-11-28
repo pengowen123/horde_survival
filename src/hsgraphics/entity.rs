@@ -20,7 +20,7 @@ impl GraphicsState {
 
             let name = get_texture_name(&entity.entity_type);
             let texture = unwrap_or_log!(self.assets.get_or_load_texture(name, &mut self.factory),
-                                         "Failed to load texture for {:?}", entity.entity_type);
+                                         "{}", format!("Failed to load texture for entity type: {:?} ({})", entity.entity_type, name));
 
             let size = get_entity_box_size(&entity.entity_type);
             let coords = get_unscaled_cube_coords(&entity.coords);

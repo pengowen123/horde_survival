@@ -3,4 +3,5 @@ target
 *.vi
 *.tdl
 todo
+log.txt
 test_assets/
