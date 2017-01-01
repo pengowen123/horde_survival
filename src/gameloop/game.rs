@@ -1,15 +1,15 @@
 use glutin::*;
 
 use consts::misc::TPS;
-use entity::*;
 use gameloop::{self, LoopType};
 use gamestate::GameState;
 use hsgraphics::GraphicsState;
-use utils::*;
 use tps::{Ticks, tps_to_time};
 use gui::{UI, UIState};
+use entity::*;
+use utils::*;
 
-pub fn gametick(event: Option<Event>,
+pub fn gametick(events: Vec<Event>,
                 ui: &mut UI,
                 game: &mut GameState,
                 graphics: &mut GraphicsState,
@@ -22,17 +22,44 @@ pub fn gametick(event: Option<Event>,
     let expected_elapsed = tps_to_time(TPS);
     ticks.set_expected_elapsed(expected_elapsed);
 
-    if let Some(e) = event {
-        if let Event::KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::Escape)) = e {
-            *loop_type = LoopType::GUI;
-            ui.state = UIState::Pause;
-            set_cursor_state(window, CursorState::Normal);
-            game.player.reset_controls();
-            return;
-        }
+    let mut pressed_escape = false;
 
+    let mut last_mouse_move = None;
+    let mut other_events = Vec::new();
+
+    // Filters mouse events out, and gets the most recent one
+    for event in events {
+        if is_mouse_moved_event(&event) {
+            last_mouse_move = Some(event);
+        } else {
+            // Detect whether Escape was pressed
+            if let Event::KeyboardInput(ElementState::Pressed, _, Some(VirtualKeyCode::Escape)) =
+                event {
+                pressed_escape = true;
+            }
+            other_events.push(event);
+        }
+    }
+
+    // Only process the last mouse movement
+    if let Some(e) = last_mouse_move {
+        other_events.push(e.clone());
+    }
+
+    if pressed_escape {
+        *loop_type = LoopType::GUI;
+        ui.state = UIState::Pause;
+        set_cursor_state(window, CursorState::Normal);
+        game.player.reset_controls();
+
+        return;
+    }
+
+    for e in other_events {
         gameloop::handle_event(e, game, graphics, window);
     }
+
+    gameloop::update_player_non_tps_bound(game, graphics, window);
 
     graphics.draw(window);
 
@@ -42,13 +69,17 @@ pub fn gametick(event: Option<Event>,
         return;
     }
 
-    gameloop::update_player_state(game, graphics, window);
+    gameloop::update_player_state(game, graphics);
 
     for i in 0..game.entities.len() {
-        update_entity(&mut game.entities, i, &game.map, &mut game.player, &mut game.next_entity_id);
+        update_entity(&mut game.entities,
+                      i,
+                      &game.map,
+                      &mut game.player,
+                      &mut game.next_entity_id);
     }
 
-    //update_clumped_entities(&mut game.entities);
+    //::entity::update_clumped_entities(&mut game.entities);
     filter_entities(&mut game.entities);
 
     if game.round_finished() {
@@ -70,11 +101,15 @@ pub fn gametick(event: Option<Event>,
     if graphics.options.display_debug {
         let info = ticks.get_debug_info();
 
+
         let frame = millis(info[0]);
         let update = millis(info[1]);
         let total = millis(info[2]);
 
-        let string = format!("Horde Survival - frame {} ms | updates {} ms | total {} ms", frame, update, total);
+        let string = format!("Horde Survival - frame {} ms | updates {} ms | total {} ms",
+                             frame,
+                             update,
+                             total);
 
         window.set_title(&string);
     }

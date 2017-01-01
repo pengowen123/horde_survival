@@ -2,6 +2,7 @@ use glutin::Window;
 
 use hsgraphics::GraphicsState;
 
+// Moved the cursor to the center of the window
 pub fn center_mouse(state: &mut GraphicsState, mouse: &mut (i32, i32), window: &Window) {
     let (x, y) = state.window_center;
 
