@@ -30,7 +30,9 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>) {
                 }
 
                 entity.ai_target_id = target_id;
-                entity.direction.0 = correct_for_error(entity.current_weapon.range, entity.direction.0, entity.ai_projectile_error);
+                entity.direction.0 = correct_for_error(entity.current_weapon.range,
+                                                       entity.direction.0,
+                                                       entity.ai_projectile_error);
             }
         }
 

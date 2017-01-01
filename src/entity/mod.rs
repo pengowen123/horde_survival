@@ -35,7 +35,7 @@ pub struct Entity {
 
     // Type of entity
     pub entity_type: EntityType,
-    
+
     // World info
     pub coords: Coords,
     pub direction: (f64, f64),
@@ -51,7 +51,7 @@ pub struct Entity {
     pub has_gravity: HasGravity,
     pub on_ground: bool,
     pub hitbox: Hitbox,
-    
+
     // Flags
     pub has_ai: HasAI,
     pub team: Team,
@@ -93,7 +93,8 @@ impl Entity {
                bounty: usize,
                has_gravity: HasGravity,
                has_ai: HasAI,
-               spawned_by: Option<usize>) -> Entity {
+               spawned_by: Option<usize>)
+               -> Entity {
 
         let hitbox = get_hitbox(&entity_type, &coords);
 
@@ -159,7 +160,8 @@ impl Entity {
                    coords: Coords,
                    entity_id: usize,
                    team: Team,
-                   bounty: usize) -> Entity {
+                   bounty: usize)
+                   -> Entity {
 
         let health = get_monster_health(&entity_type);
 
@@ -190,7 +192,13 @@ impl Entity {
         }
     }
 
-    pub fn damage(&mut self, mut damage: f64, self_index: usize, hit_by: usize, entities: &mut Vec<Entity>, player: &mut Player) -> bool {
+    pub fn damage(&mut self,
+                  mut damage: f64,
+                  self_index: usize,
+                  hit_by: usize,
+                  entities: &mut Vec<Entity>,
+                  player: &mut Player)
+                  -> bool {
         for armor in &mut self.armor {
             if let Some(f) = armor.when_hit {
                 f(self_index, hit_by, entities, player);
@@ -255,4 +263,3 @@ impl Entity {
         self.has_gravity == HasGravity::True
     }
 }
-

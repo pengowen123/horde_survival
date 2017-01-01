@@ -13,7 +13,8 @@ pub struct TextCache {
 impl TextCache {
     pub fn new(cache: GlyphCache,
                texture: handle::Texture<gfx_device_gl::Resources, SurfaceFormat>,
-               texture_view: Texture) -> TextCache {
+               texture_view: Texture)
+               -> TextCache {
 
         TextCache {
             cache: cache,

@@ -5,7 +5,7 @@ pub mod ai;
 pub use self::flying_ball::*;
 pub use self::player::*;
 
-//use rand::{thread_rng, Rng};
+// use rand::{thread_rng, Rng};
 
 use consts::*;
 use player::*;
@@ -16,7 +16,11 @@ use map::*;
 use self::ai::*;
 use entity::try_attack;
 
-pub fn update_entity(entities: &mut Vec<Entity>, index: usize, map: &Map, player: &mut Player, next_id: &mut usize) {
+pub fn update_entity(entities: &mut Vec<Entity>,
+                     index: usize,
+                     map: &Map,
+                     player: &mut Player,
+                     next_id: &mut usize) {
     let entity_type;
     let is_casting;
     let id;
@@ -65,11 +69,11 @@ pub fn update_entity(entities: &mut Vec<Entity>, index: usize, map: &Map, player
     match entity_type {
         EntityType::FlyingBallLinear => {
             update_flying_ball_linear(index, entities, player);
-        },
+        }
         EntityType::FlyingBallArc => {
             update_flying_ball_arc(index, entities, player, map);
-        },
-        _ => {},
+        }
+        _ => {}
     }
 
     let entity = &mut entities[index];
@@ -109,58 +113,71 @@ pub fn update_gravity(map: &Map, entity: &mut Entity) {
 }
 
 // TODO: Fix this
-//pub fn update_clumped_entities(entities: &mut [Entity]) {
-    //let distance = UNCLUMP_RADIUS / 5.0;
-    //let mut angles = Vec::new();
-    //let mut rng = thread_rng();
+#[allow(dead_code)]
+pub fn update_clumped_entities(entities: &mut [Entity]) {
+    // Move these two lines when the function is fixed
+    use rand::Rng;
+    const UNCLUMP_RADIUS: f64 = 0.2;
 
-    //for entity in entities.iter() {
-        //if entity.is_dummy() {
-            //angles.push(None);
-            //continue;
-        //}
+    let distance = UNCLUMP_RADIUS / 5.0;
+    let mut angles = Vec::new();
+    let mut rng = ::rand::thread_rng();
 
-        //let mut angle = None;
+    for entity in entities.iter() {
+        if entity.is_dummy() {
+            angles.push(None);
+            continue;
+        }
 
-        //for other in entities.iter().filter(|e| !e.is_dummy()) {
-            //if other.is_dummy() {
-                //continue;
-            //}
 
-            //let new_angle;
+        let mut angle = None;
 
-            //if entity.coords.distance(&other.coords) <= UNCLUMP_RADIUS {
-                //let dx = entity.coords.x - other.coords.x;
-                //let dy = entity.coords.y - other.coords.y;
-                //new_angle = get_angle2(dx, dy);
-            //} else {
-                //new_angle = 0.0;
-            //}
+        for other in entities.iter().filter(|e| !e.is_dummy()) {
+            if other.is_dummy() {
+                continue;
+            }
 
-            //if let Some(ref mut a) = angle {
-                //*a += new_angle;
-            //} else {
-                //angle = Some(new_angle);
-            //}
-        //}
 
-        //if let Some(ref mut a) = angle {
-            //*a /= entities.len() as f64;
-            //*a += rng.gen::<f64>() * 10.0;
+            let new_angle;
 
-            //if rng.gen() {
-                //*a += 180.0;
-            //}
+            if entity.coords.distance(&other.coords) <= UNCLUMP_RADIUS {
+                let dx = entity.coords.x - other.coords.x;
+                let dy = entity.coords.y - other.coords.y;
+                new_angle = get_angle2(dx, dy);
+            } else {
+                new_angle = 0.0;
+            }
 
-            //angles.push(Some(*a));
-        //} else {
-            //angles.push(None);
-        //}
-    //}
 
-    //for (i, entity) in entities.iter_mut().enumerate() {
-        //if let Some(angle) = angles[i] {
-            //entity.coords.move_forward(Direction(angle).wrap().0, distance);
-        //}
-    //}
-//}
+
+            if let Some(ref mut a) = angle {
+                *a += new_angle;
+            } else {
+                angle = Some(new_angle);
+            }
+        }
+
+
+
+        if let Some(ref mut a) = angle {
+            *a /= entities.len() as f64;
+            *a += rng.gen::<f64>() * 10.0;
+
+            if rng.gen() {
+                *a += 180.0;
+
+
+                angles.push(Some(*a));
+            } else {
+                angles.push(None);
+            }
+        }
+    }
+
+
+    for (i, entity) in entities.iter_mut().enumerate() {
+        if let Some(angle) = angles[i] {
+            entity.coords.move_forward(Direction(angle).wrap().0, distance);
+        }
+    }
+}

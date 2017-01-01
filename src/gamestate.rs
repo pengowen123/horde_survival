@@ -21,8 +21,13 @@ pub struct GameState {
 impl GameState {
     pub fn new() -> GameState {
         let player_entity_id = 0;
-        let map = Map::new(0.0, Coords::origin(), (TEST_SPAWN_POINTS.0.to_vec(), TEST_SPAWN_POINTS.1.to_vec()));
-        let player = Player::new(player_entity_id, 0, Class::Warrior, map.player_spawn.clone());
+        let map = Map::new(0.0,
+                           Coords::origin(),
+                           (TEST_SPAWN_POINTS.0.to_vec(), TEST_SPAWN_POINTS.1.to_vec()));
+        let player = Player::new(player_entity_id,
+                                 0,
+                                 Class::Warrior,
+                                 map.player_spawn.clone());
         let player_coords = map.player_spawn.clone();
 
         GameState {
@@ -47,11 +52,17 @@ impl GameState {
 // Rounds
 impl GameState {
     pub fn end_round(&mut self, graphics: &mut GraphicsState) {
-        let mut player = self.entities.iter().find(|e| e.id == self.player.entity_id).expect("Player entity disappeared").clone();
+        let mut player = self.entities
+            .iter()
+            .find(|e| e.id == self.player.entity_id)
+            .expect("Player entity disappeared")
+            .clone();
 
         player.health = player.max_hp;
         player.coords = self.map.player_spawn.clone();
-        graphics.camera = get_camera(self.map.player_spawn.clone(), self.player.direction, graphics.aspect_ratio);
+        graphics.camera = get_camera(self.map.player_spawn.clone(),
+                                     self.player.direction,
+                                     graphics.aspect_ratio);
         self.player.coords = self.map.player_spawn.clone();
         self.player.current_cooldowns = [0; 4];
 
@@ -69,7 +80,8 @@ impl GameState {
     }
 
     pub fn round_finished(&self) -> bool {
-        self.entities.iter()
+        self.entities
+            .iter()
             .find(|e| e.is_monster() && e.team == Team::Monsters)
             .is_none()
     }
@@ -95,7 +107,8 @@ impl GameState {
                                           0.0,
                                           (rng.gen::<f64>() - 0.5) * MONSTER_SPAWN_RADIUS));
 
-            let mut entity = Entity::monster(EntityType::Zombie, coords, 0, Team::Monsters, self.bounty);
+            let mut entity =
+                Entity::monster(EntityType::Zombie, coords, 0, Team::Monsters, self.bounty);
 
             let weapon = get_random_monster_weapon(self.wave);
 

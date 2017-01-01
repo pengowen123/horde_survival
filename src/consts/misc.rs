@@ -8,13 +8,11 @@ pub const TPS: u64 = 30;
 pub const TPS_FLOAT: f64 = TPS as f64;
 pub const GUI_MAX_FPS: u64 = 30;
 
-pub const BASE_INVENTORY: [Item; 5] = [
-    Item::Armor(HEAD_NONE),
-    Item::Armor(BODY_NONE),
-    Item::Armor(LEGS_NONE),
-    Item::Armor(FEET_NONE),
-    Item::Weapon(UNARMED)
-];
+pub const BASE_INVENTORY: [Item; 5] = [Item::Armor(HEAD_NONE),
+                                       Item::Armor(BODY_NONE),
+                                       Item::Armor(LEGS_NONE),
+                                       Item::Armor(FEET_NONE),
+                                       Item::Weapon(UNARMED)];
 
 pub fn base_inventory() -> HashMap<usize, Item> {
     let mut inventory = HashMap::new();

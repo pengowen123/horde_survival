@@ -6,7 +6,10 @@ use consts::balance::*;
 use hslog::*;
 
 #[allow(needless_borrow)]
-pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> usize {
+pub fn attack_melee_area(target_index: usize,
+                         entities: &mut Vec<Entity>,
+                         player: &mut Player)
+                         -> usize {
     let raw_entities = unsafe { &mut *(entities as *mut _) };
     let mut bounty = 0;
     let point;
@@ -20,15 +23,17 @@ pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player
         let entity = &entities[target_index];
         range = entity.current_weapon.range;
         team = entity.team.clone();
-        point = unwrap_or_log!(entity.coords.ray(entity.current_weapon.range, entity.direction.clone()).nth(1),
+        point = unwrap_or_log!(entity.coords
+                                   .ray(entity.current_weapon.range, entity.direction.clone())
+                                   .nth(1),
                                "Ray was deleted");
         multiplier = entity.get_damage();
         weapon = entity.current_weapon.clone();
     }
 
-    let affected = entities.iter_mut().enumerate().filter(|&(_, ref e)| {
-        e.coords.in_radius(&point, range) && e.team != team && !e.is_dummy()
-    });
+    let affected = entities.iter_mut()
+        .enumerate()
+        .filter(|&(_, ref e)| e.coords.in_radius(&point, range) && e.team != team && !e.is_dummy());
 
     for (i, e) in affected {
         e.damage(multiplier, i, target_index, raw_entities, player);
@@ -45,7 +50,10 @@ pub fn attack_melee_area(target_index: usize, entities: &mut Vec<Entity>, player
     bounty
 }
 
-pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) -> usize {
+pub fn attack_melee_line(target_index: usize,
+                         entities: &mut Vec<Entity>,
+                         player: &mut Player)
+                         -> usize {
     let mut bounty = 0;
     let raw_entities = unsafe { &mut *(entities as *mut _) };
     let multiplier;
@@ -84,7 +92,10 @@ pub fn attack_melee_line(target_index: usize, entities: &mut Vec<Entity>, player
     bounty
 }
 
-pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut usize) -> usize {
+pub fn attack_ranged_linear(target_index: usize,
+                            entities: &mut Vec<Entity>,
+                            next_id: &mut usize)
+                            -> usize {
     let mut dummy;
 
     // Scoped for push call
@@ -114,7 +125,10 @@ pub fn attack_ranged_linear(target_index: usize, entities: &mut Vec<Entity>, nex
     0
 }
 
-pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>, next_id: &mut usize) -> usize {
+pub fn attack_ranged_projectile(target_index: usize,
+                                entities: &mut Vec<Entity>,
+                                next_id: &mut usize)
+                                -> usize {
     let mut dummy;
 
     // Scoped for push call
@@ -147,12 +161,18 @@ pub fn attack_ranged_projectile(target_index: usize, entities: &mut Vec<Entity>,
 }
 
 // NOTE: Do not call this function directly, instead set the entities `attack` field to true
-pub fn try_attack(id: usize, entities: &mut Vec<Entity>, next_id: &mut usize, player: &mut Player) -> usize {
+pub fn try_attack(id: usize,
+                  entities: &mut Vec<Entity>,
+                  next_id: &mut usize,
+                  player: &mut Player)
+                  -> usize {
     let index = unwrap_or_log!(entities.iter().enumerate().find(|&(_, e)| e.id == id),
-                               "Entity not found: {}", id).0;
+                               "Entity not found: {}",
+                               id)
+        .0;
     let weapon_type;
     let is_casting;
-    
+
     // Scoped for attack function calls
     {
         let entity = &mut entities[index];

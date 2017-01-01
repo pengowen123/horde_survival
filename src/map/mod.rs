@@ -13,7 +13,10 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new(floor_height: f64, player_spawn: Coords, spawn_points: (Vec<Coords>, Vec<f64>)) -> Map {
+    pub fn new(floor_height: f64,
+               player_spawn: Coords,
+               spawn_points: (Vec<Coords>, Vec<f64>))
+               -> Map {
         Map {
             floor_height: floor_height,
             spawn_points: spawn_points,

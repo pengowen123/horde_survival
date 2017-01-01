@@ -30,7 +30,9 @@ impl Weapon {
         match self.weapon_type {
             WeaponType::MeleeLine => self.range * MELEE_LINE_INTERVAL * MELEE_LINE_RADIUS * 2.0,
             WeaponType::MeleeArea => self.range * 2.0,
-            WeaponType::RangedLinear => ((self.range + 1.0) * RANGED_INTERVAL * RANGED_LINEAR_LIFETIME as f64).powf(0.75),
+            WeaponType::RangedLinear => {
+                ((self.range + 1.0) * RANGED_INTERVAL * RANGED_LINEAR_LIFETIME as f64).powf(0.75)
+            }
             WeaponType::RangedProjectile => (self.range * (0.1 / GRAVITY)).powf(0.4),
         }
     }
@@ -47,7 +49,7 @@ pub fn get_random_monster_weapon(wave: usize) -> Weapon {
     let weights = [1.0, 1.0, 1.0, 1.0, 1.0];
     let mut rng = random_choice();
     // NOTE: using inf causes the compiler to panic, so for now use a high number such as 100
-    //let inf = usize::MAX as i32 as f64 as i32 as usize;
+    // let inf = usize::MAX as i32 as f64 as i32 as usize;
 
     let range = match wave {
         9...11 => ..4,

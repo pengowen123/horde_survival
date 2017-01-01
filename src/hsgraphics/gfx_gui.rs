@@ -16,7 +16,7 @@ gfx_defines! {
 
     pipeline pipe {
         vbuf: ::gfx::VertexBuffer<Vertex> = (),
-        out: ::gfx::BlendTarget<ColorFormat> = ("Target0", gfx::state::MASK_ALL, gfx::preset::blend::ALPHA),
+        out: ::gfx::BlendTarget<ColorFormat> = ("Target0", ::gfx::state::MASK_ALL, ::gfx::preset::blend::ALPHA),
     }
 }
 
@@ -44,7 +44,10 @@ impl GUIObject {
         }
     }
 
-    pub fn encode(&self, encoder: &mut ObjectEncoder, pso: &Pso, data: &mut pipe::Data<Resources>) {
+    pub fn encode(&self,
+                  encoder: &mut ObjectEncoder,
+                  pso: &Pso,
+                  data: &mut pipe::Data<Resources>) {
         data.vbuf = self.vbuf.clone();
         encoder.draw(&self.slice, pso, data);
     }

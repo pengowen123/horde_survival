@@ -6,7 +6,9 @@ use world::*;
 use map::*;
 use hslog::CanUnwrap;
 
-pub fn update_flying_ball_linear(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player) {
+pub fn update_flying_ball_linear(target_index: usize,
+                                 entities: &mut Vec<Entity>,
+                                 player: &mut Player) {
     let speed;
 
     // Scoped for update_flying_ball call
@@ -41,14 +43,17 @@ pub fn update_flying_ball_linear(target_index: usize, entities: &mut Vec<Entity>
     update_flying_ball(target_index, entities, old, new, player);
 }
 
-pub fn update_flying_ball_arc(target_index: usize, entities: &mut Vec<Entity>, player: &mut Player, map: &Map) {
+pub fn update_flying_ball_arc(target_index: usize,
+                              entities: &mut Vec<Entity>,
+                              player: &mut Player,
+                              map: &Map) {
     if entities[target_index].on_ground {
         let mut found_target = true;
         let spawned_by;
         let projectile_coords;
         let id;
         let target_coords;
-        
+
         // Scoped for iter_mut call
         {
             let entity = &entities[target_index];
@@ -63,7 +68,7 @@ pub fn update_flying_ball_arc(target_index: usize, entities: &mut Vec<Entity>, p
                 None => {
                     found_target = false;
                     target_coords = Coords::origin();
-                },
+                }
             }
         }
 
@@ -73,7 +78,9 @@ pub fn update_flying_ball_arc(target_index: usize, entities: &mut Vec<Entity>, p
 
             if let Some(e) = source {
                 if e.has_ai() {
-                    let mut new_error = PROJECTILE_LEARNING_RATE * calculate_error(&e.coords, &projectile_coords, &target_coords);
+                    let mut new_error =
+                        PROJECTILE_LEARNING_RATE *
+                        calculate_error(&e.coords, &projectile_coords, &target_coords);
                     new_error *= (0.5 / PROJECTILE_LEARNING_RATE).powi(4);
 
                     let increase = if e.ai_projectile_error > 0.0 {
@@ -114,7 +121,9 @@ pub fn update_flying_ball_arc(target_index: usize, entities: &mut Vec<Entity>, p
             if !entity.on_ground {
                 let mut coords = entity.coords.clone();
 
-                coords.translate(&Coords::new(0.0, entity.velocity.component_y * RANGED_ARC_SPEED, 0.0));
+                coords.translate(&Coords::new(0.0,
+                                              entity.velocity.component_y * RANGED_ARC_SPEED,
+                                              0.0));
                 let height = entity.get_height();
 
                 if map.test_collision(&coords, height) {
@@ -146,7 +155,8 @@ pub fn update_flying_ball(target_index: usize,
                           entities: &mut Vec<Entity>,
                           old_pos: Coords,
                           new_pos: Coords,
-                          player: &mut Player) -> bool {
+                          player: &mut Player)
+                          -> bool {
 
     // NOTE: Hopefully this doesn't cause problems
     let raw_entities = unsafe { &mut *(entities as *mut Vec<Entity>) };
@@ -165,7 +175,9 @@ pub fn update_flying_ball(target_index: usize,
             {
                 // NOTE: If this fails, it means that the spawned_by field was None. This is
                 //       different from the source entity not being found
-                id = unwrap_or_log!(entities[target_index].spawned_by, "Flying ball ID {} has no source", entities[target_index].id);
+                id = unwrap_or_log!(entities[target_index].spawned_by,
+                                    "Flying ball ID {} has no source",
+                                    entities[target_index].id);
                 let result = entities.iter().enumerate().find(|e| e.1.id == id);
 
                 if let Some(r) = result {
@@ -190,12 +202,12 @@ pub fn update_flying_ball(target_index: usize,
             if let Some(f) = weapon.on_hit {
                 f(e, e, raw_entities, player);
             }
-        },
+        }
         None => {
             hit = false;
-        },
+        }
     }
-    
+
     if hit {
         entities[target_index].lifetime = 1;
     }

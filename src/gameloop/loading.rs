@@ -21,19 +21,17 @@ pub fn loading_screen(ui: &mut UI,
 
     graphics.encoder.clear(&graphics.data.out_color, LOADING_CLEAR_COLOR);
 
-    // TODO: Add loading screen image here
+    // TODO: Draw loading screen image here
 
     graphics.draw_gui(window);
 
-    let names = [
-        ("floor", "test_assets/floor.png"),
-        ("pepe", "test_assets/pepe.png"),
-        ("player", "test_assets/player.png"),
-        ("zombie", "test_assets/zombie.png"),
-        ("crosshair", "test_assets/crosshair.png"),
-        ("ball_linear", "test_assets/ball_linear.png"),
-        ("ball_arc", "test_assets/ball_arc.png"),
-    ];
+    let names = [("floor", "test_assets/floor.png"),
+                 ("pepe", "test_assets/pepe.png"),
+                 ("player", "test_assets/player.png"),
+                 ("zombie", "test_assets/zombie.png"),
+                 ("crosshair", "test_assets/crosshair.png"),
+                 ("ball_linear", "test_assets/ball_linear.png"),
+                 ("ball_arc", "test_assets/ball_arc.png")];
 
     graphics.assets.add_texture_assets(&names);
 
@@ -49,8 +47,10 @@ pub fn loading_screen(ui: &mut UI,
     };
 
     // Create floor object, will be removed when maps are added
-    let texture = unwrap_or_log!(graphics.assets.get_or_load_texture("floor", &mut graphics.factory),
-                                 "Failed to find texture: floor").clone();
+    let texture = unwrap_or_log!(graphics.assets
+                                     .get_or_load_texture("floor", &mut graphics.factory),
+                                 "Failed to find texture: floor")
+        .clone();
     let (v, i) = shapes3d::plane(FLOOR_HEIGHT, 1000.0);
     let floor_object = Object3d::from_slice(&mut graphics.factory, &v, &i, texture);
     graphics.add_object3d(floor_object, 0);

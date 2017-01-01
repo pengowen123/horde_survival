@@ -20,12 +20,15 @@ pub struct AssetLoader<P: AsRef<Path>> {
 
 impl<P: AsRef<Path>> AssetLoader<P> {
     pub fn new() -> Self {
-        AssetLoader {
-            textures: HashMap::new(),
-        }
+        AssetLoader { textures: HashMap::new() }
     }
 }
 
-impl_asset_methods!(AssetLoader, Texture,
-                    textures, get_texture, load_texture, get_or_load_texture, add_texture_assets,
+impl_asset_methods!(AssetLoader,
+                    Texture,
+                    textures,
+                    get_texture,
+                    load_texture,
+                    get_or_load_texture,
+                    add_texture_assets,
                     "Texture");

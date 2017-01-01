@@ -37,7 +37,7 @@ impl Animation {
                     self.state = AnimationState::Post;
                     self.casting = true;
                 }
-            },
+            }
             AnimationState::Post => {
                 if self.timer == 0 {
                     self.state = AnimationState::Pre;
@@ -70,9 +70,7 @@ impl Animation {
 
 impl AnimationList {
     pub fn new() -> AnimationList {
-        AnimationList {
-            list: [Animation::new(); 5],
-        }
+        AnimationList { list: [Animation::new(); 5] }
     }
 
     pub fn update(&mut self) {

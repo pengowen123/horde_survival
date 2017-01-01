@@ -14,18 +14,29 @@ pub fn load_pso<P, I>(factory: &mut Factory,
                       vs_path: P,
                       fs_path: P,
                       primitive: Primitive,
-                      pipe: I) -> Result<PipelineState<Resources, I::Meta>, PipelineStateError>
-
-    where I: PipelineInit, P: AsRef<Path> + Clone
+                      pipe: I)
+                      -> Result<PipelineState<Resources, I::Meta>, PipelineStateError>
+    where I: PipelineInit,
+          P: AsRef<Path> + Clone
 {
     let vs = match load_bytes(vs_path.clone()) {
         Ok(b) => b,
-        Err(e) => crash!("{}", format!("Failed to load vertex shader source ({}): {}", vs_path.as_ref().to_str().unwrap(), e)),
+        Err(e) => {
+            crash!("{}",
+                   format!("Failed to load vertex shader source ({}): {}",
+                           vs_path.as_ref().to_str().unwrap(),
+                           e))
+        }
     };
 
     let fs = match load_bytes(fs_path.clone()) {
         Ok(b) => b,
-        Err(e) => crash!("{}", format!("Failed to load fragment shader source ({}): {}", fs_path.as_ref().to_str().unwrap(), e)),
+        Err(e) => {
+            crash!("{}",
+                   format!("Failed to load fragment shader source ({}): {}",
+                           fs_path.as_ref().to_str().unwrap(),
+                           e))
+        }
     };
 
     let set = try!(factory.create_shader_set(&vs, &fs));
@@ -54,9 +65,10 @@ pub fn get_shader_version_path(device: &Device, shader_assets_path: &str, suffix
     let mut shaders = Shaders::new();
 
     shaders.set(GLSL::V1_20, "120")
-           .set(GLSL::V1_50, "150");
+        .set(GLSL::V1_50, "150");
 
-    let version = glsl_version.pick_shader(&shaders).expect(&format!("Failed to pick shader (GLSL {:?}", dev_glsl_version));
+    let version = glsl_version.pick_shader(&shaders)
+        .expect(&format!("Failed to pick shader (GLSL {:?}", dev_glsl_version));
 
     format!("{}/{}/{}", shader_assets_path, version, suffix)
 }

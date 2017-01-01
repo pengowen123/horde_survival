@@ -97,14 +97,18 @@ impl GraphicsState {
         self.remove_objects2d(CROSSHAIR_OBJECT_ID);
 
         if self.options.crosshair {
-            let mut vertices = shape!(
-                [1.0, 0.0], [1.0, 0.0],
-                [0.0, 1.0], [0.0, 1.0],
-                [-1.0, 0.0], [1.0, 1.0],
-                [1.0, 0.0], [1.0, 0.0],
-                [-1.0, 0.0], [1.0, 1.0],
-                [0.0, -1.0], [0.0, 0.0]
-            );
+            let mut vertices = shape!([1.0, 0.0],
+                                      [1.0, 0.0],
+                                      [0.0, 1.0],
+                                      [0.0, 1.0],
+                                      [-1.0, 0.0],
+                                      [1.0, 1.0],
+                                      [1.0, 0.0],
+                                      [1.0, 0.0],
+                                      [-1.0, 0.0],
+                                      [1.0, 1.0],
+                                      [0.0, -1.0],
+                                      [0.0, 0.0]);
 
             let (scale_x, scale_y) = (CROSSHAIR_SIZE / self.window_size.0 as f32,
                                       CROSSHAIR_SIZE / self.window_size.1 as f32);
@@ -113,9 +117,11 @@ impl GraphicsState {
                 v.pos[0] *= scale_x;
                 v.pos[1] *= scale_y;
             }
-   
-            let texture = unwrap_or_log!(self.assets.get_or_load_texture("crosshair", &mut self.factory),
-                                         "Failed to get texture: crosshair").clone();
+
+            let texture = unwrap_or_log!(self.assets
+                                             .get_or_load_texture("crosshair", &mut self.factory),
+                                         "Failed to get texture: crosshair")
+                .clone();
             let object = Object2d::from_slice(&mut self.factory, &vertices, texture);
             self.add_object2d(object, CROSSHAIR_OBJECT_ID);
         }

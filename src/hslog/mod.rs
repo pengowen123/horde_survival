@@ -44,19 +44,23 @@ impl Log for HSLogger {
             let time = time::now();
 
             let result = if cfg!(debug_assertions) {
-                write!(file, "{:02}:{:02}:{:02} [{}] {}: {}{}",
+                write!(file,
+                       "{:02}:{:02}:{:02}.{:03} [{}] {}: {}{}",
                        time.tm_hour,
                        time.tm_min,
                        time.tm_sec,
+                       time.tm_nsec / 1_000_000,
                        record.level(),
                        record.target(),
                        record.args(),
                        NEWLINE)
             } else {
-                write!(file, "{:02}:{:02}:{:02} [{}]: {}{}",
+                write!(file,
+                       "{:02}:{:02}:{:02}.{:03} [{}]: {}{}",
                        time.tm_hour,
                        time.tm_min,
                        time.tm_sec,
+                       time.tm_nsec / 1_000_000,
                        record.level(),
                        record.args(),
                        NEWLINE)

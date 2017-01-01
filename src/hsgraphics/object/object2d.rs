@@ -33,14 +33,21 @@ impl Object2d {
         Object2d::new(vertex_buffer, slice, texture)
     }
 
-    pub fn from_slice_indices(factory: &mut Factory, slice: &[Vertex], indices: &[u16], texture: Texture) -> Object2d {
+    pub fn from_slice_indices(factory: &mut Factory,
+                              slice: &[Vertex],
+                              indices: &[u16],
+                              texture: Texture)
+                              -> Object2d {
         let (vertex_buffer, slice) = factory.create_vertex_buffer_with_slice(slice, indices);
         Object2d::new(vertex_buffer, slice, texture)
     }
 }
 
 impl Object2d {
-    pub fn encode(&self, encoder: &mut ObjectEncoder, pso: &ObjectPSO, data: &mut pipe::Data<Resources>) {
+    pub fn encode(&self,
+                  encoder: &mut ObjectEncoder,
+                  pso: &ObjectPSO,
+                  data: &mut pipe::Data<Resources>) {
         data.vbuf = self.vbuf.clone();
         data.color.0 = self.texture.clone();
         encoder.draw(&self.slice, pso, data);

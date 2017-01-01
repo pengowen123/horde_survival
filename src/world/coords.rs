@@ -10,13 +10,9 @@ pub struct Coords {
 
 impl Coords {
     pub fn new(x: f64, y: f64, z: f64) -> Coords {
-        Coords {
-            x: x,
-            y: y,
-            z: z,
-        }
+        Coords { x: x, y: y, z: z }
     }
-    
+
     pub fn origin() -> Coords {
         Coords::new(0.0, 0.0, 0.0)
     }
@@ -24,9 +20,10 @@ impl Coords {
 
 impl Coords {
     pub fn distance(&self, other: &Coords) -> f64 {
-        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2) + (self.z - other.z).powi(2)).sqrt()
+        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2) + (self.z - other.z).powi(2))
+            .sqrt()
     }
-    
+
     pub fn in_radius(&self, other: &Coords, radius: f64) -> bool {
         self.distance(other) <= radius
     }

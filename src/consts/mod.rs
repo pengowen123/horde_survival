@@ -20,7 +20,5 @@ pub use self::shader::*;
 // NOTE: Delete this when spawn points can be loaded from map files
 use world::Coords;
 
-pub const TEST_SPAWN_POINTS: ([Coords; 2], [f64; 2]) = (
-    [coords!(5.0, 0.0, 5.0), coords!(-5.0, 0.0, -5.0)],
-    [1.0, 1.0]
-);
+pub const TEST_SPAWN_POINTS: ([Coords; 2], [f64; 2]) =
+    ([coords!(5.0, 0.0, 5.0), coords!(-5.0, 0.0, -5.0)], [1.0, 1.0]);

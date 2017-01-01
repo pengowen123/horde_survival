@@ -1,14 +1,5 @@
 use glutin::{Window, CursorState};
-use conrod::{
-    self,
-    Widget,
-    Colorable,
-    Positionable,
-    Sizeable,
-    Labelable,
-    widget,
-    color,
-};
+use conrod::{self, Widget, Colorable, Positionable, Sizeable, Labelable, widget, color};
 
 use gui::ids::Ids;
 use gui::UIState;
@@ -44,12 +35,12 @@ pub fn set_widgets(ui: &mut conrod::UiCell,
         .depth(-2.0)
         .set(ids.button_new_game, ui)
         .was_clicked() {
-            game.new_game();
-            game.next_round();
-            set_cursor_state(window, CursorState::Hide);
-            graphics.reset_cursor(window);
-            *loop_type = LoopType::Game;
-        }
+        game.new_game();
+        game.next_round();
+        set_cursor_state(window, CursorState::Hide);
+        graphics.reset_cursor(window);
+        *loop_type = LoopType::Game;
+    }
 
     // Go to options menu
     if widget::Button::new()
@@ -62,8 +53,8 @@ pub fn set_widgets(ui: &mut conrod::UiCell,
         .depth(-2.0)
         .set(ids.button_options, ui)
         .was_clicked() {
-            *ui_state = UIState::Options;
-        }
+        *ui_state = UIState::Options;
+    }
 
     // Exit game
     if widget::Button::new()
@@ -76,8 +67,8 @@ pub fn set_widgets(ui: &mut conrod::UiCell,
         .depth(-2.0)
         .set(ids.button_quit, ui)
         .was_clicked() {
-            graphics.should_close = true;
-        }
+        graphics.should_close = true;
+    }
 
     widget::Image::new()
         .wh_of(ids.background)

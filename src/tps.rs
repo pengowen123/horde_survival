@@ -57,7 +57,7 @@ impl Ticks {
     pub fn get_debug_info(&self) -> [Duration; 3] {
         [self.frame_time, self.update_time, self.frame_time + self.update_time]
     }
-   
+
     pub fn end_tick(&mut self) {
         let current = Instant::now();
         let elapsed = current - self.time_0;

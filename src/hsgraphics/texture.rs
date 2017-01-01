@@ -15,21 +15,27 @@ pub fn update_cache_texture(encoder: &mut ObjectEncoder,
                             data: &[[u8; 4]]) {
 
     let info = tex::ImageInfoCommon {
-            xoffset: offset[0],
-            yoffset: offset[1],
-            zoffset: 0,
-            width: size[0],
-            height: size[1],
-            depth: 0,
-            format: (),
-            mipmap: 0,
+        xoffset: offset[0],
+        yoffset: offset[1],
+        zoffset: 0,
+        width: size[0],
+        height: size[1],
+        depth: 0,
+        format: (),
+        mipmap: 0,
     };
 
-    encoder.update_texture::<SurfaceFormat, FullFormat>(texture, None, info, data).expect("Failed to update texture");
+    encoder.update_texture::<SurfaceFormat, FullFormat>(texture, None, info, data)
+        .expect("Failed to update texture");
 }
 
-pub fn create_cache_texture<F, R>(factory: &mut F, width: u32, height: u32) -> (handle::Texture<R, SurfaceFormat>, ShaderResourceView<R, [f32; 4]>)
-    where F: Factory<R>, R: Resources
+pub fn create_cache_texture<F, R>
+    (factory: &mut F,
+     width: u32,
+     height: u32)
+     -> (handle::Texture<R, SurfaceFormat>, ShaderResourceView<R, [f32; 4]>)
+    where F: Factory<R>,
+          R: Resources
 {
     let data = vec![0; (width * height * 4) as usize];
 

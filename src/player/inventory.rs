@@ -10,7 +10,7 @@ impl Player {
                     Item::Weapon(ref weapon) => entity.current_weapon = weapon.clone(),
                     Item::Armor(ref armor) => entity.armor[armor.slot as i32 as usize] = *armor,
                 }
-            },
+            }
             None => crash!("Item not found: {}", id),
         }
     }

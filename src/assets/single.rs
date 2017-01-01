@@ -36,7 +36,7 @@ impl<T: LoadAsset, P: AsRef<Path>> Asset<T, P> {
             AssetData::Unloaded => {
                 try!(self.load(factory));
                 Ok(self.get().unwrap())
-            },
+            }
         }
     }
 

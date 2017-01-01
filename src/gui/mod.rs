@@ -33,7 +33,7 @@ impl UI {
         let theme = Theme {
             background_color: color::BLUE,
             border_color: color::TRANSPARENT,
-            .. Theme::default()
+            ..Theme::default()
         };
 
         let mut ui = UiBuilder::new()
@@ -61,17 +61,13 @@ impl UI {
         let cell = &mut self.ui.set_widgets();
         let ids = &self.ids;
         let ui_state = &mut self.state;
-        
+
         match self.state {
-            UIState::Main => menus::main::set_widgets(cell,
-                                                          ids,
-                                                          game,
-                                                          graphics,
-                                                          ui_state,
-                                                          loop_type,
-                                                          window),
+            UIState::Main => {
+                menus::main::set_widgets(cell, ids, game, graphics, ui_state, loop_type, window)
+            }
             UIState::Pause => return,
-            _ => {},
+            _ => {}
         }
     }
 }

@@ -5,7 +5,7 @@ pub mod loading;
 pub mod ui;
 
 pub use self::event::handle_event;
-pub use self::player::update_player_state;
+pub use self::player::{update_player_state, update_player_non_tps_bound};
 pub use self::game::gametick;
 pub use self::ui::run_gui;
 pub use self::loading::loading_screen;

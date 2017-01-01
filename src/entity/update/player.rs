@@ -18,7 +18,7 @@ pub fn update_player(entity: &mut Entity, player: &mut Player) -> [bool; 4] {
     }
 
     player.coords.y = entity.coords.y;
-    
+
     let x = &mut entity.direction.0;
     let y = &mut entity.direction.1;
 
@@ -27,7 +27,6 @@ pub fn update_player(entity: &mut Entity, player: &mut Player) -> [bool; 4] {
 
     player.direction.0 += move_x;
     player.direction.1 += move_y * -1.0;
-
     player.direction.1 = Direction(player.direction.1).wrap().0;
 
     if player.direction.0 < 1.0 {
@@ -36,7 +35,9 @@ pub fn update_player(entity: &mut Entity, player: &mut Player) -> [bool; 4] {
         player.direction.0 = 179.0
     }
 
-    // TODO: Investigate why this is necessary
+    // FIXME: Investigate why this is necessary
+    //        If weapon type is RangedProjectile, the vertical controls get inversed. This is to
+    //        counteract that.
     if let WeaponType::RangedProjectile = entity.current_weapon.weapon_type {
         move_x *= -1.0;
     }
@@ -45,12 +46,14 @@ pub fn update_player(entity: &mut Entity, player: &mut Player) -> [bool; 4] {
     *y += move_y * -1.0;
 
     *y = Direction(*y).wrap().0;
-    if *x < 1.0 { *x = 1.0; } else if *x > 179.0 { *x = 179.0; }
+    if *x < 1.0 {
+        *x = 1.0;
+    } else if *x > 179.0 {
+        *x = 179.0;
+    }
 
-    [
-        entity.animations.is_casting(1),
-        entity.animations.is_casting(2),
-        entity.animations.is_casting(3),
-        entity.animations.is_casting(4),
-    ]
+    [entity.animations.is_casting(1),
+     entity.animations.is_casting(2),
+     entity.animations.is_casting(3),
+     entity.animations.is_casting(4)]
 }

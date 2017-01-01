@@ -94,7 +94,9 @@ impl Player {
         let mut is_casting = false;
 
         if self.current_cooldowns[0] == 0 {
-            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+            let player_entity = entities.iter_mut()
+                .find(|e| e.id == self.entity_id)
+                .expect("Player entity not found");
 
             is_casting = player_entity.animations.is_casting(1);
 
@@ -109,7 +111,7 @@ impl Player {
             match self.class {
                 Class::Warrior => {
                     warrior_ability_0(self, entities);
-                },
+                }
             }
         }
     }
@@ -118,7 +120,9 @@ impl Player {
         let mut is_casting = false;
 
         if self.current_cooldowns[1] == 0 {
-            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+            let player_entity = entities.iter_mut()
+                .find(|e| e.id == self.entity_id)
+                .expect("Player entity not found");
 
             is_casting = player_entity.animations.is_casting(2);
 
@@ -133,7 +137,7 @@ impl Player {
             match self.class {
                 Class::Warrior => {
                     warrior_ability_1(self, entities);
-                },
+                }
             }
         }
     }
@@ -142,7 +146,9 @@ impl Player {
         let mut is_casting = false;
 
         if self.current_cooldowns[2] == 0 {
-            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+            let player_entity = entities.iter_mut()
+                .find(|e| e.id == self.entity_id)
+                .expect("Player entity not found");
 
             is_casting = player_entity.animations.is_casting(3);
 
@@ -157,7 +163,7 @@ impl Player {
             match self.class {
                 Class::Warrior => {
                     warrior_ability_2(self, entities);
-                },
+                }
             }
         }
     }
@@ -166,7 +172,9 @@ impl Player {
         let mut is_casting = false;
 
         if self.current_cooldowns[3] == 0 {
-            let player_entity = entities.iter_mut().find(|e| e.id == self.entity_id).expect("Player entity not found");
+            let player_entity = entities.iter_mut()
+                .find(|e| e.id == self.entity_id)
+                .expect("Player entity not found");
 
             is_casting = player_entity.animations.is_casting(4);
 
@@ -181,7 +189,7 @@ impl Player {
             match self.class {
                 Class::Warrior => {
                     warrior_ability_3(self, entities);
-                },
+                }
             }
         }
     }

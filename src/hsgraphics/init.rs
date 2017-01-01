@@ -16,14 +16,12 @@ impl GraphicsState {
         let height = options.window_size.1;
         let center = (width as i32 / 2, height as i32 / 2);
 
-        let mut builder = glutin::WindowBuilder::new()
-            .with_title(WINDOW_NAME);
+        let mut builder = glutin::WindowBuilder::new().with_title(WINDOW_NAME);
 
         if options.fullscreen {
             let monitor = glutin::get_primary_monitor();
             let (width, height) = monitor.get_dimensions();
-            builder = builder
-                .with_fullscreen(monitor)
+            builder = builder.with_fullscreen(monitor)
                 .with_dimensions(width, height);
         } else {
             builder = builder.with_dimensions(width, height);
@@ -33,9 +31,15 @@ impl GraphicsState {
             gfx_window_glutin::init::<ColorFormat, gfx3d::DepthFormat>(builder);
         let encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
 
-        info!("Platform name: {:?}", device.get_info().platform_name);
-        info!("GL version: {:?}", device.get_info().version);
-        info!("GLSL version: {:?}", device.get_info().shading_language);
+        // Scoped because device is moved, and get_info borrows it
+        {
+            let info = device.get_info();
+
+            info!("Vendor: {}", info.platform_name.vendor);
+            info!("Renderer: {}", info.platform_name.renderer);
+            info!("GL version: {:?}", info.version);
+            info!("GLSL version: {:?}", info.shading_language);
+        }
 
         let shader_assets_path = "test_assets/shaders";
         let vs_2d_path = get_shader_version_path(&device, shader_assets_path, VS_2D_PATH);
@@ -45,25 +49,39 @@ impl GraphicsState {
         let fs_3d_path = get_shader_version_path(&device, shader_assets_path, FS_3D_PATH);
         let fs_gui_path = get_shader_version_path(&device, shader_assets_path, FS_GUI_PATH);
 
-        log_create_pso!("2d", VS_2D_PATH, FS_2D_PATH);
-        let pso2d = unwrap_pretty!(load_pso(&mut factory, vs_2d_path, fs_2d_path, Primitive::TriangleList, gfx2d::pipe::new()));
+        log_create_pso!("2d", vs_2d_path, fs_2d_path);
+        let pso2d = unwrap_pretty!(load_pso(&mut factory,
+                                            vs_2d_path,
+                                            fs_2d_path,
+                                            Primitive::TriangleList,
+                                            gfx2d::pipe::new()));
 
-        log_create_pso!("3d", VS_3D_PATH, FS_3D_PATH);
-        let pso3d = unwrap_pretty!(load_pso(&mut factory, vs_3d_path, fs_3d_path, Primitive::TriangleList, gfx3d::pipe::new()));
+        log_create_pso!("3d", vs_3d_path, fs_3d_path);
+        let pso3d = unwrap_pretty!(load_pso(&mut factory,
+                                            vs_3d_path,
+                                            fs_3d_path,
+                                            Primitive::TriangleList,
+                                            gfx3d::pipe::new()));
 
-        log_create_pso!("gui", VS_GUI_PATH, FS_GUI_PATH);
-        let pso_gui = unwrap_pretty!(load_pso(&mut factory, vs_gui_path, fs_gui_path, Primitive::TriangleList, gfx_gui::pipe::new()));
+        log_create_pso!("gui", vs_gui_path, fs_gui_path);
+        let pso_gui = unwrap_pretty!(load_pso(&mut factory,
+                                              vs_gui_path,
+                                              fs_gui_path,
+                                              Primitive::TriangleList,
+                                              gfx_gui::pipe::new()));
 
         let sampler_info = tex::SamplerInfo::new(tex::FilterMethod::Bilinear, tex::WrapMode::Clamp);
         let sampler = factory.create_sampler(sampler_info);
         let aspect_ratio = width as f32 / height as f32;
-        let camera = get_camera(game.map.player_spawn.clone(), START_CAMERA_ANGLE, aspect_ratio);
+        let camera = get_camera(game.map.player_spawn.clone(),
+                                START_CAMERA_ANGLE,
+                                aspect_ratio);
 
         let vbuf = factory.create_vertex_buffer(&[]);
         let vbuf2d = factory.create_vertex_buffer(&[]);
         let vbuf_gui = factory.create_vertex_buffer(&[]);
         let texture = load_texture_raw(&mut factory, [2, 2], &[0; 4]);
-        
+
         let data = gfx3d::pipe::Data {
             vbuf: vbuf,
             transform: [[0.0; 4]; 4],
@@ -90,11 +108,8 @@ impl GraphicsState {
         let (cache_width, cache_height) = (window_width * dpi, window_height * dpi);
 
         let cache = GlyphCache::new(cache_width, cache_height, 0.1, 0.1);
-        let (cache_tex, cache_tex_view) = texture::create_cache_texture(
-            &mut factory,
-            window_width,
-            window_height
-        );
+        let (cache_tex, cache_tex_view) =
+            texture::create_cache_texture(&mut factory, window_width, window_height);
 
         let state = GraphicsState {
             factory: factory,

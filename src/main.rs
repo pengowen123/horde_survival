@@ -73,16 +73,31 @@ fn main() {
 
     info!("Done");
 
-    // Event loop
-    let mut events = window.poll_events();
-
     loop {
-        let event = events.next();
+        let events = window.poll_events().collect();
 
         match loop_type {
-            gameloop::LoopType::Loading => gameloop::loading_screen(&mut ui, &mut graphics, &window, &mut loop_type),
-            gameloop::LoopType::Game => gameloop::gametick(event, &mut ui, &mut game, &mut graphics, &window, &mut ticks, &mut loop_type),
-            gameloop::LoopType::GUI => gameloop::run_gui(event, &mut ui, &mut game, &mut graphics, &window, &mut ticks, &mut loop_type),
+            gameloop::LoopType::Loading => {
+                gameloop::loading_screen(&mut ui, &mut graphics, &window, &mut loop_type)
+            }
+            gameloop::LoopType::Game => {
+                gameloop::gametick(events,
+                                   &mut ui,
+                                   &mut game,
+                                   &mut graphics,
+                                   &window,
+                                   &mut ticks,
+                                   &mut loop_type)
+            }
+            gameloop::LoopType::GUI => {
+                gameloop::run_gui(events,
+                                  &mut ui,
+                                  &mut game,
+                                  &mut graphics,
+                                  &window,
+                                  &mut ticks,
+                                  &mut loop_type)
+            }
         }
 
         if graphics.should_close {
