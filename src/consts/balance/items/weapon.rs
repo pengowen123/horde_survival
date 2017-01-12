@@ -1,3 +1,5 @@
+//! All weapon items, represented as constants
+
 use items::*;
 
 weapons!(
@@ -9,5 +11,5 @@ weapons!(
 
     UNARMED, SHOP_UNARMED, 0, weapon!("Unarmed", 60.0, 0.4, 1.0, WeaponType::MeleeLine, time!(0.3), time!(0.15), None);
 
-    LIGHTNING_SWORD_2, SHOP_LIGHTNING_SWORD_2, 2500, weapon!("Lightning Sword 2", 0.0, 6.0, 1.0, WeaponType::MeleeLine, time!(0.4), time!(0.3), Some(&weapon_effect_instant_kill_10))
+    LIGHTNING_SWORD_1, SHOP_LIGHTNING_SWORD_1, 2500, weapon!("Lightning Sword 2", 0.0, 6.0, 1.0, WeaponType::MeleeLine, time!(0.4), time!(0.3), Some(&weapon_effect_instant_kill_1))
 );

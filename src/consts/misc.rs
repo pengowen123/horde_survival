@@ -1,3 +1,5 @@
+//! Misc. constants
+
 use items::Item;
 use consts::items::armor::*;
 use consts::items::weapon::*;
@@ -15,17 +17,14 @@ pub const BASE_INVENTORY: [Item; 5] = [Item::Armor(HEAD_NONE),
                                        Item::Weapon(UNARMED)];
 
 pub fn base_inventory() -> HashMap<usize, Item> {
-    let mut inventory = HashMap::new();
-
-    for (i, item) in BASE_INVENTORY.iter().cloned().enumerate() {
-        inventory.insert(i, item);
-    }
-
-    inventory
+    BASE_INVENTORY.iter().cloned().enumerate().collect()
 }
 
 pub const CRASH_MESSAGE: &'static str = "Horde Survival has crashed";
 
+/// Returns a time (in ticks) accounting for TPS
 macro_rules! time {
-    ($seconds:expr) => { ($seconds * $crate::consts::TPS_FLOAT) as usize}
+    ($seconds:expr) => {{
+        ($seconds * $crate::consts::TPS_FLOAT) as usize
+    }}
 }

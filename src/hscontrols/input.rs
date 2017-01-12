@@ -3,21 +3,22 @@ use glutin::*;
 use player::*;
 use entity::Entity;
 
+/// Handles keyboard input
 pub fn handle_keyboard_input(key: Option<VirtualKeyCode>,
                              state: ElementState,
                              scan_code: ScanCode,
                              entities: &mut Vec<Entity>,
                              player: &mut Player) {
 
-    let key = match key {
-        Some(key) => key,
-        None => {
-            warn!("VirtualKeyCode not found for key: {:?}", scan_code);
-            return;
-        }
+    let key = if let Some(key) = key {
+        key
+    } else {
+        warn!("VirtualKeyCode not found for key: {:?}", scan_code);
+        return;
     };
 
     match state {
+        // TODO: Allow for customization of these keys
         ElementState::Pressed => {
             match key {
                 // Movement
@@ -30,33 +31,34 @@ pub fn handle_keyboard_input(key: Option<VirtualKeyCode>,
                     if player.dead {
                         info!("Ability 0: dead");
                     } else {
-                        player.ability_0(entities);
+                        player.cast_ability(entities, AbilityID::A);
                     }
                 }
                 VirtualKeyCode::Key2 => {
                     if player.dead {
                         info!("Ability 1: dead");
                     } else {
-                        player.ability_1(entities);
+                        player.cast_ability(entities, AbilityID::B);
                     }
                 }
                 VirtualKeyCode::Key3 => {
                     if player.dead {
                         info!("Ability 2: dead");
                     } else {
-                        player.ability_2(entities);
+                        player.cast_ability(entities, AbilityID::C);
                     }
                 }
                 VirtualKeyCode::Key4 => {
                     if player.dead {
                         info!("Ability 3: dead");
                     } else {
-                        player.ability_3(entities);
+                        player.cast_ability(entities, AbilityID::D);
                     }
                 }
                 _ => {}
             }
         }
+        // If movement keys are released, stop moving
         ElementState::Released => {
             match key {
                 VirtualKeyCode::W => player.input.forward = false,

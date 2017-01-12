@@ -3,10 +3,12 @@ pub use hsgraphics::ColorFormat;
 
 pub type DepthFormat = gfx::format::DepthStencil;
 
+/// Types used for gfx
+/// 3d vertices contain a position and a texture coordinate
 gfx_defines!{
     vertex Vertex {
         pos: [f32; 4] = "a_Pos",
-        tex_coord: [f32; 2] = "a_TexCoord",
+        uv: [f32; 2] = "a_Uv",
     }
 
     constant Locals {
@@ -25,10 +27,10 @@ gfx_defines!{
 }
 
 impl Vertex {
-    pub fn new(pos: [f32; 3], tex_coord: [f32; 2]) -> Vertex {
+    pub fn new(pos: [f32; 3], uv: [f32; 2]) -> Vertex {
         Vertex {
             pos: [pos[0], pos[1], pos[2], 1.0],
-            tex_coord: tex_coord,
+            uv: uv,
         }
     }
 }

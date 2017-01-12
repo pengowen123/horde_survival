@@ -5,12 +5,14 @@ use assets::LoadAsset;
 use std::path::Path;
 use std::io;
 
-pub struct Asset<T: LoadAsset, P: AsRef<Path>> {
+/// A single asset
+pub struct Asset<T, P> {
     path: P,
     data: AssetData<T>,
 }
 
-pub enum AssetData<T: LoadAsset> {
+/// Optional data for an asset
+pub enum AssetData<T> {
     Loaded(T),
     Unloaded,
 }
@@ -23,6 +25,7 @@ impl<T: LoadAsset, P: AsRef<Path>> Asset<T, P> {
         }
     }
 
+    /// Returns the data of the asset, if it is loaded
     pub fn get(&self) -> Option<&T> {
         match self.data {
             AssetData::Loaded(ref a) => Some(a),
@@ -30,6 +33,7 @@ impl<T: LoadAsset, P: AsRef<Path>> Asset<T, P> {
         }
     }
 
+    /// Like `Asset::get`, but loads the asset if it isn't loaded
     pub fn get_or_load(&mut self, factory: &mut Factory) -> io::Result<&T> {
         match self.data {
             AssetData::Loaded(ref a) => Ok(a),
@@ -40,6 +44,7 @@ impl<T: LoadAsset, P: AsRef<Path>> Asset<T, P> {
         }
     }
 
+    /// Load the asset
     pub fn load(&mut self, factory: &mut Factory) -> io::Result<()> {
         let asset = try!(T::load_asset(factory, &self.path));
 

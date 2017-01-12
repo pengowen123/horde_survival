@@ -1,3 +1,5 @@
+//! Everything related to drawing the game
+
 #[macro_use]
 pub mod shapes;
 pub mod state;

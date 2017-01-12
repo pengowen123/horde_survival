@@ -1,3 +1,5 @@
+//! Constants involving physics
+
 use consts::misc::TPS;
 
 // NOTE: Be careful when changing this, as the AI's ranged weapon control reacts to changes

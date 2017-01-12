@@ -1,4 +1,5 @@
 widget_ids! {
+    /// A struct for unique widget ids
     pub struct Ids {
         // Common background
         background,

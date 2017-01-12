@@ -13,21 +13,6 @@ pub struct Ticks {
 }
 
 impl Ticks {
-    pub fn new() -> Ticks {
-        let now = Instant::now();
-        let zero = Duration::from_millis(0);
-
-        Ticks {
-            expected_elapsed: Duration::from_millis(1_000_000_000 / TPS / 1_000_000),
-            sleeping_until: now,
-            time_0: now,
-            time_1: now,
-            time_2: now,
-            frame_time: zero,
-            update_time: zero,
-        }
-    }
-
     pub fn set_expected_elapsed(&mut self, duration: Duration) {
         self.expected_elapsed = duration;
     }
@@ -64,6 +49,27 @@ impl Ticks {
 
         if elapsed < self.expected_elapsed {
             self.sleeping_until = current + (self.expected_elapsed - elapsed);
+        }
+    }
+
+    pub fn reset(&mut self) {
+        *self = Default::default();
+    }
+}
+
+impl Default for Ticks {
+    fn default() -> Self {
+        let now = Instant::now();
+        let zero = Duration::from_millis(0);
+
+        Ticks {
+            expected_elapsed: Duration::from_millis(1_000_000_000 / TPS / 1_000_000),
+            sleeping_until: now,
+            time_0: now,
+            time_1: now,
+            time_2: now,
+            frame_time: zero,
+            update_time: zero,
         }
     }
 }

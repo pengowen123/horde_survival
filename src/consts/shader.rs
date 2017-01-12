@@ -1,3 +1,5 @@
+//! Constants involving shaders
+
 pub const VS_2D_PATH: &'static str = "v_2d.glsl";
 pub const FS_2D_PATH: &'static str = "f_2d.glsl";
 pub const VS_3D_PATH: &'static str = "v_3d.glsl";

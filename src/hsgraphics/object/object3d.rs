@@ -6,9 +6,12 @@ use hsgraphics::*;
 
 pub type Object3dColor = gfx::handle::RenderTargetView<Resources, ColorFormat>;
 pub type Object3dDepth = gfx::handle::DepthStencilView<Resources, ObjectDepth>;
+/// PSO for Object3d
 pub type ObjectPSO = gfx::PipelineState<Resources, gfx3d::pipe::Meta>;
+/// Vertex buffer of 3d vertices
 pub type VBuffer = gfx::handle::Buffer<Resources, gfx3d::Vertex>;
 
+/// A 3d object
 #[derive(Clone)]
 pub struct Object3d {
     pub id: usize,
@@ -27,6 +30,7 @@ impl Object3d {
         }
     }
 
+    /// Creates an Object3d from a list of vertices, a texture, an index buffer
     pub fn from_slice(factory: &mut Factory,
                       slice: &[gfx3d::Vertex],
                       index_data: &[u16],
@@ -38,6 +42,7 @@ impl Object3d {
 }
 
 impl Object3d {
+    /// Draws the object
     pub fn encode(&self,
                   encoder: &mut ObjectEncoder,
                   pso: &ObjectPSO,

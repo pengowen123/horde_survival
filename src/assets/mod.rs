@@ -1,3 +1,7 @@
+//! Asset management, loads and stores assets
+
+// TODO: Replace this module with something from crates.io
+
 pub mod load;
 pub mod single;
 #[macro_use]
@@ -14,12 +18,13 @@ use std::path::Path;
 use std::collections::HashMap;
 use std::io::{self, Error, ErrorKind};
 
+/// Manages all assets
 pub struct AssetLoader<P: AsRef<Path>> {
     textures: HashMap<&'static str, Asset<Texture, P>>,
 }
 
-impl<P: AsRef<Path>> AssetLoader<P> {
-    pub fn new() -> Self {
+impl<P: AsRef<Path>> Default for AssetLoader<P> {
+    fn default() -> Self {
         AssetLoader { textures: HashMap::new() }
     }
 }

@@ -1,3 +1,5 @@
+//! Constants involved in game balance
+
 pub mod items;
 pub mod gold;
 pub mod entity;

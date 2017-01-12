@@ -1,3 +1,5 @@
+//! Constants involving graphics
+
 pub mod window;
 pub mod crosshair;
 mod camera;
@@ -6,6 +8,7 @@ pub use self::window::*;
 pub use self::camera::*;
 pub use self::crosshair::*;
 
+// Misc graphics constants
 pub const FLOOR_HEIGHT: f32 = 0.4;
 pub const UPDATE_THRESHOLD: f64 = 0.05;
 pub const ENTITY_OBJECT_ID: usize = 1;

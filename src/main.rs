@@ -1,3 +1,5 @@
+//! Horde Survival is a first person wave based game
+
 #![cfg_attr(not(feature="clippy"), allow(unknown_lints))]
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
@@ -26,6 +28,7 @@ extern crate image_utils;
 extern crate collision;
 extern crate shader_version;
 
+// The ordering of these declarations is important because of macros
 #[macro_use]
 mod utils;
 #[macro_use]
@@ -39,10 +42,11 @@ mod hsgraphics;
 #[macro_use]
 mod world;
 mod player;
+#[macro_use]
+mod map;
 mod consts;
 mod hscontrols;
 mod gamestate;
-mod map;
 mod gameloop;
 mod gui;
 mod tps;
@@ -60,7 +64,6 @@ fn main() {
     let mut game = gamestate::GameState::new();
     let options = hsgraphics::GraphicsOptions::new()
         .window_size(800, 600)
-        .minimap_enabled(false)
         .display_debug(true)
         .crosshair(true)
         .fullscreen(false)
@@ -68,7 +71,7 @@ fn main() {
 
     let (mut graphics, window) = hsgraphics::GraphicsState::new(options, &game);
     let mut loop_type = gameloop::LoopType::Loading;
-    let mut ticks = tps::Ticks::new();
+    let mut ticks = Default::default();
     let mut ui = gui::UI::new();
 
     info!("Done");

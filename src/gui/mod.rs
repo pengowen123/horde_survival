@@ -1,3 +1,5 @@
+//! Code for drawing and storing the GUI
+
 pub mod ids;
 pub mod draw;
 pub mod menus;
@@ -11,6 +13,7 @@ use hsgraphics::texture::Texture;
 use gamestate::GameState;
 use gameloop::LoopType;
 
+/// A wrapper around a conrod Ui that also contains related data
 pub struct UI {
     pub ui: Ui,
     pub ids: ids::Ids,
@@ -18,6 +21,7 @@ pub struct UI {
     pub image_map: conrod::image::Map<Texture>,
 }
 
+/// Represents which menu to display
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UIState {
     Main,
@@ -42,6 +46,8 @@ impl UI {
 
         let ids = ids::Ids::new(ui.widget_id_generator());
 
+        // Load the font used by horde survival
+        // TODO: License stuff for fonts
         ui.fonts.insert_from_file("test_assets/Arial Unicode.ttf").unwrap();
 
         UI {
@@ -52,6 +58,7 @@ impl UI {
         }
     }
 
+    /// Sets the widgets to use in the GUI
     pub fn set_widgets(&mut self,
                        game: &mut GameState,
                        graphics: &mut GraphicsState,
@@ -66,7 +73,7 @@ impl UI {
             UIState::Main => {
                 menus::main::set_widgets(cell, ids, game, graphics, ui_state, loop_type, window)
             }
-            UIState::Pause => return,
+            UIState::Pause => return, // not implemented
             _ => {}
         }
     }

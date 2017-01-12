@@ -10,9 +10,8 @@ pub fn millis(duration: Duration) -> u64 {
 }
 
 pub fn set_cursor_state(window: &Window, cursor_state: CursorState) {
-    if let Err(_) = window.set_cursor_state(cursor_state) {
-        warn!("Failed to set cursor state to {:?}", cursor_state);
-    }
+    window.set_cursor_state(cursor_state)
+        .unwrap_or_else(|e| warn!("Failed to set cursor state to {:?} ({})", cursor_state, e))
 }
 
 pub fn is_mouse_moved_event(event: &Event) -> bool {
@@ -20,6 +19,16 @@ pub fn is_mouse_moved_event(event: &Event) -> bool {
         true
     } else {
         false
+    }
+}
+
+pub fn clamp<T: PartialOrd>(t: T, lower: T, upper: T) -> T {
+    if t < lower {
+        lower
+    } else if t > upper {
+        upper
+    } else {
+        t
     }
 }
 

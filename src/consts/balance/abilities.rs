@@ -1,16 +1,15 @@
+//! Constants involving abilities
+
 use entity::modifiers::*;
 
 // Warrior
 pub const WARRIOR_COOLDOWNS: [usize; 4] = [time!(4.0), time!(4.0), time!(4.0), time!(0.0)];
 
-pub const WARRIOR_PRE_0: usize = time!(1.0);
-pub const WARRIOR_PRE_1: usize = time!(1.0);
-pub const WARRIOR_PRE_2: usize = time!(1.0);
-pub const WARRIOR_PRE_3: usize = time!(0.0);
-pub const WARRIOR_POST_0: usize = time!(1.0);
-pub const WARRIOR_POST_1: usize = time!(1.0);
-pub const WARRIOR_POST_2: usize = time!(1.0);
-pub const WARRIOR_POST_3: usize = time!(0.0);
+// The pre and post animation for abilities
+pub const WARRIOR_ANIM_0: (usize, usize) = (time!(1.0), time!(1.0));
+pub const WARRIOR_ANIM_1: (usize, usize) = (time!(1.0), time!(1.0));
+pub const WARRIOR_ANIM_2: (usize, usize) = (time!(1.0), time!(1.0));
+pub const WARRIOR_ANIM_3: (usize, usize) = (time!(0.0), time!(0.0));
 
 pub const WARRIOR_FORTIFY: Modifier = modifier!(multiplicative, 0.5, time!(3.0));
 

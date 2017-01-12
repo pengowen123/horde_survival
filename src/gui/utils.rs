@@ -3,6 +3,7 @@ use conrod::{Rect, Range};
 
 use hsgraphics::gfx2d::Vertex;
 
+/// Converts a RustType point to a GL point
 pub fn rt_to_gl_pos(rt_pos: rt::Point<i32>,
                     origin: &rt::Point<f32>,
                     (screen_width, screen_height): (f32, f32))
@@ -13,6 +14,7 @@ pub fn rt_to_gl_pos(rt_pos: rt::Point<i32>,
                1.0 - rt_pos.y as f32 / screen_height - 0.5) * 2.0
 }
 
+/// Converts a conrod point to a GL point
 pub fn conrod_to_gl_rect(rect: Rect, (screen_width, screen_height): (f32, f32)) -> Rect {
     let (screen_width, screen_height) = (screen_width as f64, screen_height as f64);
 
@@ -25,6 +27,7 @@ pub fn conrod_to_gl_rect(rect: Rect, (screen_width, screen_height): (f32, f32)) 
     }
 }
 
+/// Returns a colored vertex given coordinates, texture coordinates, and a color
 pub fn vertex(pos: [f32; 2], uv: [f32; 2], color: [f32; 4]) -> Vertex {
     Vertex::new_colored(pos, uv, color)
 }

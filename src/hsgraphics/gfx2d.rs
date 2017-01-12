@@ -1,9 +1,14 @@
 pub use hsgraphics::ColorFormat;
 
+/// A color
 pub type Color = [f32; 3];
 
-pub const CLEAR_COLOR: [f32; 4] = [0.0, 0.35, 0.5, 1.0];
+/// The color used when clearing the screen
+pub const CLEAR_COLOR: [f32; 4] = [1.0; 4];
 
+/// Types used for gfx
+/// 2d vertices contain a position, a texture coordinate, and a color
+/// Used for certain parts of the GUI
 gfx_defines! {
     vertex Vertex {
         pos: [f32; 2] = "a_Pos",
@@ -27,6 +32,7 @@ impl Vertex {
         }
     }
 
+    /// A constructor for colored vertices
     pub fn new_colored(pos: [f32; 2], uv: [f32; 2], color: [f32; 4]) -> Vertex {
         Vertex {
             pos: pos,

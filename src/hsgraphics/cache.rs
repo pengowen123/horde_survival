@@ -4,6 +4,7 @@ use gfx_device_gl;
 
 use hsgraphics::{Texture, SurfaceFormat};
 
+/// A wrapper around a RustType glyph cache
 pub struct TextCache {
     pub cache: GlyphCache,
     pub texture: handle::Texture<gfx_device_gl::Resources, SurfaceFormat>,

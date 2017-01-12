@@ -1,3 +1,5 @@
+//! Constants of many kinds
+
 #[macro_use]
 pub mod misc;
 pub mod balance;
@@ -18,7 +20,6 @@ pub use self::scale::*;
 pub use self::shader::*;
 
 // NOTE: Delete this when spawn points can be loaded from map files
-use world::Coords;
-
-pub const TEST_SPAWN_POINTS: ([Coords; 2], [f64; 2]) =
-    ([coords!(5.0, 0.0, 5.0), coords!(-5.0, 0.0, -5.0)], [1.0, 1.0]);
+use map::SpawnPoint;
+pub const TEST_SPAWN_POINTS: [SpawnPoint; 2] = [spawnpoint!(coords!(5.0, 0.0, 5.0), 1.0),
+                                                spawnpoint!(coords!(-5.0, 0.0, -5.0), 1.0)];

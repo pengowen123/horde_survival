@@ -1,6 +1,7 @@
 use std::iter::Iterator;
 use world::Coords;
 
+/// A ray that can be iterated on to get points on the ray, separated by its interval
 pub struct Ray {
     pub coords: Coords,
     pub interval: f64,

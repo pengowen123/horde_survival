@@ -1,13 +1,8 @@
-use gfx::{self, Slice};
-use gfx::traits::FactoryExt;
-use gfx_device_gl::{Factory, Resources};
-
 pub use hsgraphics::ColorFormat;
-use hsgraphics::object::ObjectEncoder;
 
-pub type Pso = gfx::PipelineState<Resources, pipe::Meta>;
-pub type VBufferGUI = gfx::handle::Buffer<Resources, Vertex>;
-
+/// Types used for gfx
+/// GUI vertices contain a position and a color
+/// Used for certain parts of the GUI
 gfx_defines! {
     vertex Vertex {
         pos: [f32; 2] = "a_Pos",
@@ -26,29 +21,5 @@ impl Vertex {
             pos: pos,
             color: color,
         }
-    }
-}
-
-pub struct GUIObject {
-    pub vbuf: VBufferGUI,
-    pub slice: Slice<Resources>,
-}
-
-impl GUIObject {
-    pub fn new(factory: &mut Factory, vertices: &[Vertex], indices: &[u16]) -> GUIObject {
-        let (vbuf, slice) = factory.create_vertex_buffer_with_slice(vertices, indices);
-
-        GUIObject {
-            vbuf: vbuf,
-            slice: slice,
-        }
-    }
-
-    pub fn encode(&self,
-                  encoder: &mut ObjectEncoder,
-                  pso: &Pso,
-                  data: &mut pipe::Data<Resources>) {
-        data.vbuf = self.vbuf.clone();
-        encoder.draw(&self.slice, pso, data);
     }
 }

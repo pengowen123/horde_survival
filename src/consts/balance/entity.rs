@@ -1,7 +1,9 @@
+//! Constants involving entities
+
 use entity::EntityType;
 
 // Special values
-pub const DEAD_ENTITY_HEALTH: f64 = -1_000_000.0;
+pub const DEAD_ENTITY_HEALTH: f64 = -1e10;
 pub const INFINITE_LIFETIME: usize = 0;
 
 // Base entity consts

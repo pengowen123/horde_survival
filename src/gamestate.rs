@@ -6,7 +6,7 @@ use entity::flags::Team;
 use map::Map;
 use world::Coords;
 use items::weapon::get_random_monster_weapon;
-use hsgraphics::{GraphicsState, get_camera};
+use hsgraphics::{GraphicsState, initial_camera};
 
 pub struct GameState {
     pub entities: Vec<Entity>,
@@ -21,9 +21,11 @@ pub struct GameState {
 impl GameState {
     pub fn new() -> GameState {
         let player_entity_id = 0;
-        let map = Map::new(0.0,
-                           Coords::origin(),
-                           (TEST_SPAWN_POINTS.0.to_vec(), TEST_SPAWN_POINTS.1.to_vec()));
+
+        // NOTE: This is a test map, remove this when real maps are implemented
+        let map = Map::new(0.0, Default::default(), TEST_SPAWN_POINTS.to_vec());
+
+        // Create the player
         let player = Player::new(player_entity_id,
                                  0,
                                  Class::Warrior,
@@ -40,10 +42,12 @@ impl GameState {
         }
     }
 
+    /// Resets the game to its default state
     pub fn new_game(&mut self) {
         info!("Started new game");
         *self = GameState::new();
-        // TODO: Delete this
+
+        // NOTE: Delete this
         self.entities[0].armor[0] = balance::items::armor::HEAL;
         self.entities[0].current_weapon = balance::items::weapon::TEST_BOW;
     }
@@ -51,6 +55,7 @@ impl GameState {
 
 // Rounds
 impl GameState {
+    /// Used when a round ends, runs cleanup code
     pub fn end_round(&mut self, graphics: &mut GraphicsState) {
         let mut player = self.entities
             .iter()
@@ -60,10 +65,8 @@ impl GameState {
 
         player.health = player.max_hp;
         player.coords = self.map.player_spawn.clone();
-        graphics.camera = get_camera(self.map.player_spawn.clone(),
-                                     self.player.direction,
-                                     graphics.aspect_ratio);
-        self.player.coords = self.map.player_spawn.clone();
+        graphics.camera = initial_camera(self.map.player_spawn.clone(), graphics.aspect_ratio);
+        self.player.camera.coords = self.map.player_spawn.clone();
         self.player.current_cooldowns = [0; 4];
 
         self.entities.clear();
@@ -71,6 +74,7 @@ impl GameState {
         self.player.reset_controls();
     }
 
+    /// Used when a round starts, updates game counters like wave number, and starts the round
     pub fn next_round(&mut self) {
         self.wave += 1;
         self.bounty = BASE_BOUNTY + (BOUNTY_GROWTH * self.wave as f64) as usize;
@@ -79,7 +83,8 @@ impl GameState {
         info!("Starting wave {}", self.wave);
     }
 
-    pub fn round_finished(&self) -> bool {
+    /// Returns whether the found has finished
+    pub fn is_round_finished(&self) -> bool {
         self.entities
             .iter()
             .find(|e| e.is_monster() && e.team == Team::Monsters)
@@ -89,19 +94,22 @@ impl GameState {
 
 // Entities
 impl GameState {
+    /// Spawns an entity
     pub fn spawn_entity(&mut self, mut entity: Entity) {
         entity.id = self.next_entity_id;
         self.next_entity_id += 1;
         self.entities.push(entity);
     }
 
+    /// Spawns enemies, used when the wave starts
     pub fn populate(&mut self) {
         let count = BASE_WAVE_SIZE + (WAVE_SIZE_GROWTH * self.wave);
         let mut rng = thread_rng();
 
         for _ in 0..count {
+            // TODO: Use a real spawn location algorithm
             let mut coords = self.map.choose_random_spawn_point();
-            // NOTE: Spawn different monster types in the future
+            // TODO: Spawn different monster types in the future
 
             coords.translate(&Coords::new((rng.gen::<f64>() - 0.5) * MONSTER_SPAWN_RADIUS,
                                           0.0,

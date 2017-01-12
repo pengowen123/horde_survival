@@ -1,3 +1,5 @@
+//! All armor items, represented as constants
+
 use items::*;
 
 armors!(

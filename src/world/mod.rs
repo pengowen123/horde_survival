@@ -1,3 +1,7 @@
+//! Types and functions for dealing with 3d spaces
+
+// TODO: Replace this module with a small wrapper for a third party library
+
 #[macro_use]
 pub mod coords;
 pub mod direction;

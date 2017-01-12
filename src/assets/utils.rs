@@ -1,3 +1,4 @@
+/// A helper macro to implement methods common to every asset type
 macro_rules! impl_asset_methods {
     ($typ:ident, $asset_type:ident, $field:ident,
      $name1:ident, $name2:ident, $name3:ident, $name4:ident,

@@ -1,3 +1,4 @@
+/// A modifier to a value
 // NOTE: modifiers expire when their timer reaches 1
 //       modifier are permanent if their timer is set to 0
 #[derive(Clone, Debug)]
@@ -7,6 +8,7 @@ pub struct Modifier {
     pub kind: ModifierKind,
 }
 
+/// Represents how a modifier should be applied
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ModifierKind {
     // Adds to the base value, calculated first
@@ -29,6 +31,7 @@ impl Modifier {
     }
 }
 
+/// Applies a list of modifiers to a value
 pub fn apply(mods: &[Modifier], mut base: f64) -> f64 {
     let mut multiplier = 1.0;
 
@@ -47,6 +50,7 @@ pub fn apply(mods: &[Modifier], mut base: f64) -> f64 {
     base * multiplier
 }
 
+/// Creates a modifier
 macro_rules! modifier {
     (multiplicative, $value:expr, $timer:expr) => {{
         modifier!($value, $timer, $crate::entity::modifiers::ModifierKind::Multiplicative)

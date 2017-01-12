@@ -1,8 +1,11 @@
+//! Everything related to entities
+
 #[macro_use]
 pub mod modifiers;
 pub mod entity_type;
 pub mod attack;
 pub mod update;
+#[macro_use]
 pub mod filter;
 pub mod flags;
 pub mod animation;
@@ -22,9 +25,14 @@ use items::*;
 use world::*;
 use player::Player;
 
+/// The hitbox of an entity
 pub type Hitbox = Aabb3<f64>;
 
+/// An entity
 #[derive(Clone)]
+// TODO: Add a gold field, and make everything use that instead to avoid having to return gold
+//       gained
+//       Set player.gold to the player entity's gold value each tick
 pub struct Entity {
     // Unique ID number
     pub id: usize,
@@ -65,6 +73,9 @@ pub struct Entity {
     pub animations: AnimationList,
 
     // Misc
+    // NOTE: To kill an entity without first checking entity type, set the entity's health to a
+    //       negative value rather than settings its lifetime to 1, as the latter may kill the
+    //       player entity
     pub lifetime: usize,
     pub spawned_by: Option<usize>,
     pub bounty: usize,
@@ -75,6 +86,7 @@ pub struct Entity {
     // TODO: Move these fields to an AI field of type AIData
     pub ai_projectile_error: f64,
     pub ai_target_id: usize,
+    // Counter for how many times the AI's projectile error has increased
     pub ai_consecutive_error_increases: usize,
 }
 
@@ -96,14 +108,12 @@ impl Entity {
                spawned_by: Option<usize>)
                -> Entity {
 
+        /// Get the hitbox of the entity's type
         let hitbox = get_hitbox(&entity_type, &coords);
 
+        /// Multiply the base entity movespeed by the entity's type's base movespeed
         let mut movespeed_mods = Vec::new();
-        let movespeed = get_movespeed(&entity_type);
-
-        if let Some(m) = movespeed {
-            movespeed_mods.push(modifier!(multiplicative, m, 0));
-        }
+        get_movespeed(&entity_type).map(|m| movespeed_mods.push(modifier!(multiplicative, m, 0)));
 
         Entity {
             id: id,
@@ -113,7 +123,7 @@ impl Entity {
             direction: direction,
             health: health,
             max_hp: max_hp,
-            animations: AnimationList::new(),
+            animations: Default::default(),
             damage_mods: Vec::new(),
             as_mods: Vec::new(),
             damage_taken_mods: Vec::new(),
@@ -121,7 +131,7 @@ impl Entity {
             team: team,
             is_dummy: is_dummy,
             lifetime: lifetime,
-            velocity: Velocity::zero(),
+            velocity: Default::default(),
             has_gravity: has_gravity,
             on_ground: false,
             has_ai: has_ai,
@@ -140,6 +150,7 @@ impl Entity {
 
 // Other constructors
 impl Entity {
+    /// Convenience constructor for creating player entities
     pub fn player(coords: Coords, entity_id: usize, team: Team) -> Entity {
         Entity::new(entity_id,
                     PLAYER_HEALTH,
@@ -156,6 +167,7 @@ impl Entity {
                     None)
     }
 
+    /// Convenience constructor for creating monsters such as zombies
     pub fn monster(entity_type: EntityType,
                    coords: Coords,
                    entity_id: usize,
@@ -183,6 +195,7 @@ impl Entity {
 
 // Misc
 impl Entity {
+    /// Heals the entity by the given amount, up to its maximum health
     #[allow(dead_code)]
     pub fn heal(&mut self, amount: f64) {
         self.health += amount;
@@ -192,6 +205,8 @@ impl Entity {
         }
     }
 
+    /// Damages the entity, with damage received modifiers applied
+    /// Returns whether the entity has died due to the damage
     pub fn damage(&mut self,
                   mut damage: f64,
                   self_index: usize,
@@ -201,7 +216,7 @@ impl Entity {
                   -> bool {
         for armor in &mut self.armor {
             if let Some(f) = armor.when_hit {
-                f(self_index, hit_by, entities, player);
+                f(hit_by, self_index, entities, player);
                 damage *= armor.multiplier;
             }
         }
@@ -210,30 +225,38 @@ impl Entity {
         self.is_dead()
     }
 
+    /// Returns the damage of the entity's weapon, with damage modifiers applied
     pub fn get_damage(&self) -> f64 {
         apply(&self.damage_mods, self.current_weapon.damage)
     }
 
+    /// Moves the entity forward, in it's direction plus the given offset angle
+    /// For example, if an entity's direction is 90, and the offset is 50, it moves in the
+    /// direction 140
     pub fn move_forward(&mut self, movement_offset: f64) {
         let speed = apply(&self.movespeed_mods, BASE_MOVESPEED);
 
         self.coords.move_forward(self.direction.1 + movement_offset, speed);
     }
 
+    /// Kills the entity
     pub fn kill(&mut self) {
         self.health = DEAD_ENTITY_HEALTH;
     }
 
+    /// Updates the entity's hitbox to its current position
     pub fn update_hitbox(&mut self) {
         self.hitbox = get_hitbox(&self.entity_type, &self.coords);
     }
 
+    /// Returns the height of the entity's hitbox
     pub fn get_height(&self) -> f64 {
         self.hitbox.max.y - self.hitbox.min.y
     }
 
+    /// Returns whether the entity is of a monster type (e.g. a Zombie)
     pub fn is_monster(&self) -> bool {
-        // NOTE: Update this when new entity types are added
+        // TODO: Update this when new entity types are added
         match self.entity_type {
             EntityType::Zombie => true,
             _ => false,
@@ -243,22 +266,27 @@ impl Entity {
 
 // Flag test methods
 impl Entity {
+    /// Returns whether the entity is dead
     pub fn is_dead(&self) -> bool {
         self.health <= 0.0
     }
 
+    /// Returns whether the given entity is an enemy of this one
     pub fn is_enemy_of(&self, other: &Entity) -> bool {
         self.team != other.team
     }
 
+    /// Returns whether the entity is a dummy
     pub fn is_dummy(&self) -> bool {
         self.is_dummy == IsDummy::True
     }
 
+    /// Returns whether the entity is AI controlled
     pub fn has_ai(&self) -> bool {
         self.has_ai == HasAI::True
     }
 
+    /// Returns whether the entity is affected by gravity
     pub fn has_gravity(&self) -> bool {
         self.has_gravity == HasGravity::True
     }

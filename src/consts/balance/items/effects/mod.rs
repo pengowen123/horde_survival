@@ -1,3 +1,5 @@
+//! Constants involving special effects from items
+
 #![allow(dead_code)]
 
 pub mod armor;

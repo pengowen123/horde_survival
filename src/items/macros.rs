@@ -1,3 +1,4 @@
+/// Creates a Weapon and a ShopItem for each set of values
 macro_rules! weapons {
     ($($name:ident, $shop_name:ident, $price:expr, $item:expr);*) => {
         $(
@@ -9,6 +10,7 @@ macro_rules! weapons {
     }
 }
 
+/// Creates an Armor and a ShopItem for each set of values
 macro_rules! armors {
     ($($name:ident, $shop_name:ident, $price:expr, $item:expr);*) => {
         $(
@@ -20,6 +22,7 @@ macro_rules! armors {
     }
 }
 
+/// Creates a Weapon
 macro_rules! weapon {
     ($name:expr, $damage:expr, $range:expr, $attack_speed:expr, $weapon_type:expr, $anim_pre:expr, $anim_post:expr, $on_hit:expr) => {{
         $crate::items::weapon::Weapon {
@@ -35,6 +38,7 @@ macro_rules! weapon {
     }}
 }
 
+/// Creates an Armor
 macro_rules! armor {
     ($name:expr, $multiplier:expr, $when_hit:expr, $slot:expr) => {{
         $crate::items::armor::Armor {
@@ -46,6 +50,7 @@ macro_rules! armor {
     }}
 }
 
+/// Creates a shop item
 macro_rules! shop_item {
     ($item:expr, $price:expr) => {{
         $crate::items::shop::ShopItem {

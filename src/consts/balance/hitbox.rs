@@ -1,3 +1,5 @@
+//! Constants involving hitboxes
+
 use cgmath::Point3;
 use collision::Aabb3;
 
@@ -12,7 +14,8 @@ pub fn get_hitbox(entity_type: &EntityType, coords: &Coords) -> Hitbox {
         _ => (Point3::new(0f64, 0.0, 0.0), Point3::new(0f64, 0.0, 0.0)),
     };
 
-    let coords = coords.as_vector();
+    // Calling Into::into on a reference requires manual dereference unfortunately
+    let coords = (*coords).into();
 
     a += coords;
     b += coords;

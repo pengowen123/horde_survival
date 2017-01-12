@@ -1,4 +1,6 @@
-// NOTE: depth -2.0 is shown after depth -1.0, and the canvas must have depth 0.0
+//! Functions that set the widgets of the GUI for each menu
+
+// NOTE: depth -2.0 is drawn after depth -1.0, and the canvas must have depth 0.0
 
 pub mod loading;
 pub mod main;

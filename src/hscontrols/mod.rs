@@ -1,3 +1,5 @@
+//! Player controls
+
 pub mod mouse;
 pub mod movement;
 pub mod input;
