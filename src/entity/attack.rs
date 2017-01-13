@@ -4,7 +4,7 @@ use entity::*;
 use items::*;
 use consts::balance::*;
 
-/// Represents an attack by a MeleeArea weapon
+/// Represents an attack by a `MeleeArea` weapon
 pub fn attack_melee_area(target_index: usize,
                          entities: &mut Vec<Entity>,
                          player: &mut Player)
@@ -23,7 +23,7 @@ pub fn attack_melee_area(target_index: usize,
         range = entity.current_weapon.range;
         team = entity.team.clone();
         point = entity.coords
-            .ray(entity.current_weapon.range, entity.direction.clone())
+            .ray(entity.current_weapon.range, entity.direction)
             .nth(1)
             .unwrap_or_else(|| crash!("Ray was deleted"));
         multiplier = entity.get_damage();
@@ -53,7 +53,7 @@ pub fn attack_melee_area(target_index: usize,
     bounty
 }
 
-/// Represents an attack by a MeleeLine weapon
+/// Represents an attack by a `MeleeLine` weapon
 pub fn attack_melee_line(target_index: usize,
                          entities: &mut Vec<Entity>,
                          player: &mut Player)
@@ -71,7 +71,7 @@ pub fn attack_melee_line(target_index: usize,
 
         // If this is 0, the weapon cannot hit anything
         multiplier = entity.get_damage();
-        coords = entity.coords.clone();
+        coords = entity.coords;
         direction = entity.direction;
         weapon = entity.current_weapon.clone();
 
@@ -80,7 +80,7 @@ pub fn attack_melee_line(target_index: usize,
                 weapon of type MeleeLine");
     }
 
-    let mut new = coords.clone();
+    let mut new = coords;
     new.move_3d(direction, weapon.range);
 
     if let Some(e) = get_collided_entity(target_index, &*entities, coords, new) {
@@ -100,7 +100,7 @@ pub fn attack_melee_line(target_index: usize,
     bounty
 }
 
-/// Represents an attack with a RangedLinear weapon
+/// Represents an attack with a `RangedLinear` weapon
 pub fn attack_ranged_linear(target_index: usize,
                             entities: &mut Vec<Entity>,
                             next_id: &mut usize)
@@ -139,7 +139,7 @@ pub fn attack_ranged_linear(target_index: usize,
     0
 }
 
-/// Represents an attack with a RangedProjectile weapon
+/// Represents an attack with a `RangedProjectile` weapon
 pub fn attack_ranged_projectile(target_index: usize,
                                 entities: &mut Vec<Entity>,
                                 next_id: &mut usize)

@@ -103,9 +103,7 @@ impl Player {
 }
 
 /// Returns the ability's function and animation info
-fn get_ability_and_animation(class: Class,
-                             ability: usize)
-                             -> (fn(&mut Player, &mut Vec<Entity>), (usize, usize)) {
+fn get_ability_and_animation(class: Class, ability: usize) -> (Ability, (usize, usize)) {
     match class {
         Class::Warrior => {
             match ability {

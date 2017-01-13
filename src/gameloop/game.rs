@@ -1,4 +1,4 @@
-//! Gameloop for LoopType::Game
+//! Gameloop for `LoopType::Game`
 
 use glutin::*;
 

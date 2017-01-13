@@ -7,7 +7,7 @@ use player::*;
 use world::*;
 use map::*;
 
-/// Update function for FlyingBallLinear entities
+/// Update function for `FlyingBallLinear` entities
 pub fn update_flying_ball_linear(target_index: usize,
                                  entities: &mut Vec<Entity>,
                                  player: &mut Player) {
@@ -27,19 +27,19 @@ pub fn update_flying_ball_linear(target_index: usize,
             return;
         }
 
-        old = entity.coords.clone();
+        old = entity.coords;
         // Update the projectile's position
         entity.coords.move_3d(entity.direction,
                               speed * RANGED_INTERVAL * RANGED_LINEAR_SPEED);
 
-        new = entity.coords.clone();
+        new = entity.coords;
     }
 
     // Additional updates
     update_flying_ball(target_index, entities, old, new, player);
 }
 
-/// Update function for FlyingBallLinear entities
+/// Update function for `FlyingBallArc` entities
 pub fn update_flying_ball_arc(target_index: usize,
                               entities: &mut Vec<Entity>,
                               player: &mut Player,
@@ -57,14 +57,14 @@ pub fn update_flying_ball_arc(target_index: usize,
         {
             let entity = &entities[target_index];
             spawned_by = entity.spawned_by;
-            projectile_coords = entity.coords.clone();
+            projectile_coords = entity.coords;
             id = entity.id;
 
             // Get the intended target entity of the AI
             let target = entities.iter().find(|e| e.id == entity.ai_target_id);
 
             if let Some(e) = target {
-                target_coords = e.coords.clone();
+                target_coords = e.coords;
             } else {
                 found_target = false;
                 // This value isn't used (target_coords isn't read if no target was found)
@@ -124,7 +124,7 @@ pub fn update_flying_ball_arc(target_index: usize,
     // Scoped for update_flying_ball call
     {
         let entity = &mut entities[target_index];
-        old = entity.coords.clone();
+        old = entity.coords;
         // Update the projectile's horizontal position
         let x_velocity = entity.velocity.component_x * RANGED_ARC_SPEED;
         entity.coords.move_forward(entity.direction.1, x_velocity as f64);
@@ -136,7 +136,7 @@ pub fn update_flying_ball_arc(target_index: usize,
         // Loop for local flow control
         loop {
             if !entity.on_ground {
-                let mut coords = entity.coords.clone();
+                let mut coords = entity.coords;
 
                 coords.translate(&Coords::new(0.0,
                                               entity.velocity.component_y * RANGED_ARC_SPEED,
@@ -163,14 +163,14 @@ pub fn update_flying_ball_arc(target_index: usize,
         let run = entity.velocity.component_x;
         entity.direction.0 = get_angle(rise, run);
 
-        new = entity.coords.clone();
+        new = entity.coords;
     }
 
     // Additional updates
     update_flying_ball(target_index, entities, old, new, player);
 }
 
-/// Updates to be applied to both FlyingBallLinear and FlyingBallProjectile entities
+/// Updates to be applied to both `FlyingBallLinear` and `FlyingBallProjectile` entities
 pub fn update_flying_ball(target_index: usize,
                           entities: &mut Vec<Entity>,
                           old_pos: Coords,

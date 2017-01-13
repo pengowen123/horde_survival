@@ -4,8 +4,6 @@ use gfx_device_gl::{Resources, Factory};
 
 use hsgraphics::*;
 
-pub type Object3dColor = gfx::handle::RenderTargetView<Resources, ColorFormat>;
-pub type Object3dDepth = gfx::handle::DepthStencilView<Resources, ObjectDepth>;
 /// PSO for Object3d
 pub type ObjectPSO = gfx::PipelineState<Resources, gfx3d::pipe::Meta>;
 /// Vertex buffer of 3d vertices

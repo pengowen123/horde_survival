@@ -1,4 +1,4 @@
-//! A simple logging implementation specific to horde_survival
+//! A simple logging implementation specific to `horde_survival`
 
 // TODO: Replace this module with slog
 

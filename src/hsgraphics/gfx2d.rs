@@ -1,8 +1,5 @@
 use hsgraphics::ColorFormat;
 
-/// A color
-pub type Color = [f32; 3];
-
 /// The color used when clearing the screen
 // TODO: Replace this with [1.0; 4] (white) whena skybox is implemented
 //       For now, this color is the sky

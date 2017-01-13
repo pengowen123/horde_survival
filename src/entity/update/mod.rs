@@ -37,9 +37,9 @@ pub fn update_entity(entities: &mut Vec<Entity>,
     // Scoped for other entity updates
     {
         let entity = &mut entities[index];
-        entity_type = entity.entity_type.clone();
+        entity_type = entity.entity_type;
         id = entity.id;
-        coords = entity.coords.clone();
+        coords = entity.coords;
 
         // Update hitbox
         entity.update_hitbox();
@@ -115,7 +115,7 @@ pub fn update_gravity(map: &Map, entity: &mut Entity) {
     // Only apply gravity if the entity has it enabled
     if entity.has_gravity() {
         // Change the entity's vertical position by its vertical velocity
-        let mut coords = entity.coords.clone();
+        let mut coords = entity.coords;
         coords.translate(&Coords::new(0.0, entity.velocity.component_y, 0.0));
         let height = entity.get_height();
 
@@ -160,15 +160,13 @@ pub fn update_clumped_entities(entities: &mut [Entity]) {
             }
 
 
-            let new_angle;
-
-            if entity.coords.distance(&other.coords) <= UNCLUMP_RADIUS {
+            let new_angle = if entity.coords.distance(&other.coords) <= UNCLUMP_RADIUS {
                 let dx = entity.coords.x - other.coords.x;
                 let dy = entity.coords.y - other.coords.y;
-                new_angle = get_angle2(dx, dy);
+                get_angle2(dx, dy)
             } else {
-                new_angle = 0.0;
-            }
+                0.0
+            };
 
 
 

@@ -1,4 +1,4 @@
-//! Gameloop for LoopType::Loading
+//! Gameloop for `LoopType::Loading`
 
 use glutin::Window;
 

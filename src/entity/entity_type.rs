@@ -1,5 +1,5 @@
 /// The type of an entity
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EntityType {
     Player,
     Zombie,

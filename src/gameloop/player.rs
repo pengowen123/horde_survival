@@ -49,6 +49,6 @@ pub fn update_player_non_tps_bound(game: &mut GameState,
 
     // NOTE: Updating the camera here (faster than TPS) might not have any benefit over doing it in
     //       update_player_state, as the mouse input, which controls the camera, is bound to TPS
-    graphics.update_camera(game.player.camera.clone());
+    graphics.update_camera(game.player.camera);
     center_mouse(graphics, &mut game.player.mouse, window);
 }

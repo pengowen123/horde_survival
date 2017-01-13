@@ -1,5 +1,3 @@
-//! Horde Survival is a first person wave based game
-
 #![cfg_attr(not(feature="clippy"), allow(unknown_lints))]
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]

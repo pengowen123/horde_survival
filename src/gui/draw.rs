@@ -21,7 +21,7 @@ pub fn draw_primitives<'a>(mut primitives: render::Primitives<'a>,
     let origin = rt::point(0.0, 0.0);
 
     // Loop through each primitive, and based on the primitive's kind call the appropriate function
-    while let Some(render::Primitive { id, kind, scizzor: _, rect }) = primitives.next() {
+    while let Some(render::Primitive { id, kind, rect, .. }) = primitives.next() {
         match kind {
             PrimitiveKind::Text { color, text, font_id } => {
                 primitive_text(text,
@@ -45,6 +45,7 @@ pub fn draw_primitives<'a>(mut primitives: render::Primitives<'a>,
             }
             // The GUI doesn't contain any other kinds of primitives, so their draw functions aren't
             // implemented
+            // NOTE: If any unimplemented primitives are used, a warning will appear in the logs
             _ => {
                 let kind_text = match kind {
                     PrimitiveKind::Rectangle { .. } => "Rectangle",

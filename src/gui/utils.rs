@@ -3,7 +3,7 @@ use conrod::{Rect, Range};
 
 use hsgraphics::gfx2d::Vertex;
 
-/// Converts a RustType point to a GL point
+/// Converts a `RustType` point to a GL point
 pub fn rt_to_gl_pos(rt_pos: rt::Point<i32>,
                     origin: &rt::Point<f32>,
                     (screen_width, screen_height): (f32, f32))

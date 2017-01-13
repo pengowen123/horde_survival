@@ -12,7 +12,7 @@ impl Iterator for Ray {
     type Item = Coords;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let result = self.coords.clone();
+        let result = self.coords;
         self.coords.move_3d(self.direction, self.interval);
         Some(result)
     }

@@ -190,7 +190,7 @@ impl GraphicsState {
         self.last_cursor_pos = self.window_center;
         let (x, y) = (self.window_center.0, self.window_center.1);
 
-        if let Err(_) = window.set_cursor_position(x, y) {
+        if window.set_cursor_position(x, y).is_err() {
             error!("Failed to set cursor position to ({}, {})", x, y);
         }
     }

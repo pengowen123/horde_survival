@@ -5,7 +5,7 @@ use gfx_device_gl::{Factory, Resources};
 use hsgraphics::gfx_gui::{Vertex, pipe};
 use hsgraphics::object::ObjectEncoder;
 
-/// PSO for ObjectGUI
+/// PSO for `ObjectGUI`
 pub type ObjectPSO = gfx::PipelineState<Resources, pipe::Meta>;
 /// Vertex buffer of 2d vertices for the GUI
 pub type VBufferGUI = gfx::handle::Buffer<Resources, Vertex>;

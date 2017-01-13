@@ -73,7 +73,7 @@ impl Coords {
     /// Returns a ray with the given direction and interval (see docs for Ray)
     pub fn ray(&self, interval: f64, direction: (f64, f64)) -> Ray {
         Ray {
-            coords: self.clone(),
+            coords: *self,
             interval: interval,
             direction: direction,
         }
@@ -94,11 +94,7 @@ impl Coords {
 
     /// Returns this point, translated in the given direction
     pub fn translated(&self, x: f64, y: f64, z: f64) -> Coords {
-        let mut coords = self.clone();
-        coords.x += x;
-        coords.y += y;
-        coords.z += z;
-        coords
+        Coords::new(self.x + x, self.y + y, self.z + z)
     }
 }
 

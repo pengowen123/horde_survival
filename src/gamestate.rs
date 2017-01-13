@@ -26,11 +26,8 @@ impl GameState {
         let map = Map::new(0.0, Default::default(), TEST_SPAWN_POINTS.to_vec());
 
         // Create the player
-        let player = Player::new(player_entity_id,
-                                 0,
-                                 Class::Warrior,
-                                 map.player_spawn.clone());
-        let player_coords = map.player_spawn.clone();
+        let player = Player::new(player_entity_id, 0, Class::Warrior, map.player_spawn);
+        let player_coords = map.player_spawn;
 
         GameState {
             entities: vec![Entity::player(player_coords, player.entity_id, Team::Players)],
@@ -64,9 +61,9 @@ impl GameState {
             .clone();
 
         player.health = player.max_hp;
-        player.coords = self.map.player_spawn.clone();
-        graphics.camera = initial_camera(self.map.player_spawn.clone(), graphics.aspect_ratio);
-        self.player.camera.coords = self.map.player_spawn.clone();
+        player.coords = self.map.player_spawn;
+        graphics.camera = initial_camera(self.map.player_spawn, graphics.aspect_ratio);
+        self.player.camera.coords = self.map.player_spawn;
         self.player.current_cooldowns = [0; 4];
 
         self.entities.clear();

@@ -24,7 +24,7 @@ impl Camera {
     pub fn into_matrix(self, aspect_ratio: f32) -> Matrix4<f32> {
         let Camera { mut coords, direction } = self;
         coords.scale(WORLD_SCALE as f64);
-        let mut pointing_to = coords.clone();
+        let mut pointing_to = coords;
         pointing_to.move_3d(direction, 1.0);
 
         let camera_pos = Point3::new(coords.x as f32, coords.z as f32, coords.y as f32);

@@ -3,13 +3,13 @@
 use world::Coords;
 use items::WeaponType;
 use entity::*;
-use consts::ai_control::*;
+use consts::ai_control::PROJECTILE_LEARNING_RATE;
 
 /// Uses the AI to make decisions for an entity
 /// Called every tick for AI controlled entities
 // NOTE: Entities should only be controlled by one thing at a time, if it is used to control a
 //       player entity, the player can move forward while the AI does, causing double speed, as
-//       Entity::move_forward does not checks for this
+//       Entity::move_forward does not check for this
 pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>) {
     let closest = get_closest_entity(target_index, &*entities);
 
@@ -19,7 +19,7 @@ pub fn apply_ai(target_index: usize, entities: &mut Vec<Entity>) {
         // Scoped for mutable borrow
         {
             let entity = &entities[i];
-            target_coords = entity.coords.clone();
+            target_coords = entity.coords;
             target_id = entity.id;
         }
 

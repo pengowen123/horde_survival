@@ -6,8 +6,10 @@ use entity::*;
 use player::Player;
 use consts::balance::*;
 
+pub type Ability = fn(&mut Player, &mut Vec<Entity>);
+
 /// Ability 0 for the Warrior class
-/// Reduces the damage the player takes for a duration (see WARRIOR_FORTIFY)
+/// Reduces the damage the player takes for a duration (see `WARRIOR_FORTIFY`)
 pub fn warrior_ability_0(player: &mut Player, entities: &mut Vec<Entity>) {
     let player_entity = find_player_entity!(entities.iter_mut(), player);
 
@@ -15,11 +17,9 @@ pub fn warrior_ability_0(player: &mut Player, entities: &mut Vec<Entity>) {
 }
 
 /// Ability 1 for the Warrior class
-/// Reduces the damage and movespeed of nearby entities for a duration (see WARRIOR_MAIM_*)
+/// Reduces the damage and movespeed of nearby entities for a duration (see `WARRIOR_MAIM_*`)
 pub fn warrior_ability_1(player: &mut Player, entities: &mut Vec<Entity>) {
-    let coords = find_player_entity!(entities.iter(), player)
-        .coords
-        .clone();
+    let coords = find_player_entity!(entities.iter(), player).coords;
 
     for entity in entities.iter_mut()
         .filter(|e| e.team != Team::Players && e.coords.in_radius(&coords, WARRIOR_MAIM_RADIUS)) {
@@ -29,7 +29,7 @@ pub fn warrior_ability_1(player: &mut Player, entities: &mut Vec<Entity>) {
 }
 
 /// Ability 2 for the Warrior class
-/// Increases the attack speed and damage of the player for a duration (see WARRIOR_RAGE_*)
+/// Increases the attack speed and damage of the player for a duration (see `WARRIOR_RAGE_*`)
 pub fn warrior_ability_2(player: &mut Player, entities: &mut Vec<Entity>) {
     let player_entity = find_player_entity!(entities.iter_mut(), player);
 
@@ -38,7 +38,7 @@ pub fn warrior_ability_2(player: &mut Player, entities: &mut Vec<Entity>) {
 }
 
 /// Ability 3 for the Warrior class
-/// Deals damage to nearby entities (see WARRIOR_EXECUTE_*)
+/// Deals damage to nearby entities (see `WARRIOR_EXECUTE_*`)
 pub fn warrior_ability_3(player: &mut Player, entities: &mut Vec<Entity>) {
     let coords;
     let player_index;
@@ -46,14 +46,14 @@ pub fn warrior_ability_3(player: &mut Player, entities: &mut Vec<Entity>) {
     // Scoped for damage call
     {
         let (i, entity) = find_player_entity!(INDEX, entities.iter(), player);
-        coords = entity.coords.clone();
+        coords = entity.coords;
         player_index = i;
     }
 
     // Get the indices of the entities to be hit by the ability
     let indices = entities.iter()
         .enumerate()
-        .filter_map(|(i, ref e)| {
+        .filter_map(|(i, e)| {
             if e.team != Team::Players && e.coords.in_radius(&coords, WARRIOR_EXECUTE_RADIUS) {
                 Some(i)
             } else {

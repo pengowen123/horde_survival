@@ -12,7 +12,7 @@ impl Map {
             .unzip::<_, _, Vec<_>, Vec<_>>();
         let choice = random_choice().random_choice_f64(&points, &weights, 1);
 
-        choice[0].clone()
+        *choice[0]
     }
 }
 

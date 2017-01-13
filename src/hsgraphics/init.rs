@@ -88,7 +88,7 @@ impl GraphicsState {
 
         // Create initial camera
         let aspect_ratio = width as f32 / height as f32;
-        let camera = initial_camera(game.map.player_spawn.clone(), aspect_ratio);
+        let camera = initial_camera(game.map.player_spawn, aspect_ratio);
 
         // Create dummy textures and buffers
         let vbuf = factory.create_vertex_buffer(&[]);
