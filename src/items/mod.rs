@@ -19,3 +19,13 @@ pub enum Item {
     Weapon(Weapon),
     Armor(Armor),
 }
+
+impl Item {
+    /// Returns whether the item is a dummy
+    pub fn is_dummy(&self) -> bool {
+        match *self {
+            Item::Weapon(ref w) => w.is_dummy(),
+            Item::Armor(ref a) => a.is_dummy(),
+        }
+    }
+}

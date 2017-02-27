@@ -13,7 +13,7 @@ impl GraphicsState {
 
         for entity in entities {
             //if entity.id == player_entity_id || !entity.needs_update{
-                //continue;
+            //continue;
             //}
             // Don't render the player entity, they can't see themselves
             // TODO: Eventually they might be able to (such as in multiplayer), so this check should
@@ -24,9 +24,15 @@ impl GraphicsState {
 
             // Get the texture for the entity
             let name = get_texture_name(&entity.entity_type);
-            let texture = self.assets.get_or_load_texture(name, &mut self.factory).unwrap_or_else(|e|
-                                        crash!("Failed to load texture {} for entity type: {:?}
-                                               ({})", name, entity.entity_type, e));
+            let texture =
+                self.assets.get_or_load_texture(name, &mut self.factory).unwrap_or_else(|e| {
+                    crash!("Failed to load texture {} for entity type: {:?}
+                                               \
+                            ({})",
+                           name,
+                           entity.entity_type,
+                           e)
+                });
 
             // Get the entity size
             let size = get_entity_box_size(&entity.entity_type);

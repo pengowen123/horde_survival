@@ -8,6 +8,7 @@ use hsgraphics::GraphicsState;
 use hsgraphics::{gfx2d, gfx_gui, object2d, object_gui};
 use hsgraphics::texture::{Texture, update_texture};
 use gui::utils::*;
+use gui::crop;
 
 /// Draws a set of conrod primitives
 pub fn draw_primitives<'a>(mut primitives: render::Primitives<'a>,
@@ -21,24 +22,30 @@ pub fn draw_primitives<'a>(mut primitives: render::Primitives<'a>,
     let origin = rt::point(0.0, 0.0);
 
     // Loop through each primitive, and based on the primitive's kind call the appropriate function
-    while let Some(render::Primitive { id, kind, rect, .. }) = primitives.next() {
+    while let Some(render::Primitive { id, kind, scizzor, rect }) = primitives.next() {
         match kind {
             PrimitiveKind::Text { color, text, font_id } => {
                 primitive_text(text,
                                color,
+                               scizzor,
                                font_id,
                                &origin,
                                (screen_width, screen_height),
                                graphics);
             }
             PrimitiveKind::Rectangle { color } => {
-                primitive_rectangle(color, rect, (screen_width, screen_height), graphics);
+                primitive_rectangle(color,
+                                    rect,
+                                    scizzor,
+                                    (screen_width, screen_height),
+                                    graphics);
             }
             PrimitiveKind::Image { color, source_rect } => {
                 primitive_image(id,
                                 color,
                                 rect,
                                 source_rect,
+                                scizzor,
                                 (screen_width, screen_height),
                                 graphics,
                                 image_map)
@@ -66,6 +73,7 @@ pub fn draw_primitives<'a>(mut primitives: render::Primitives<'a>,
 /// Draws text
 fn primitive_text(text: Text,
                   color: conrod::Color,
+                  scizzor: conrod::Rect,
                   font_id: font::Id,
                   origin: &rt::Point<f32>,
                   screen_size: (f32, f32),
@@ -104,16 +112,21 @@ fn primitive_text(text: Text,
     };
 
     // Calculate the vertices of the text, including texture coordinates
-    // NOTE: This might be inefficient, do some profiling to maybe optimize it
+    // NOTE: This might be inefficient (because of flatmap, maybe chain also), do some profiling to
+    //       maybe optimize it
     let vertices = positioned_glyphs.into_iter()
         // Get the coordinates of the rectangle of the glyph
         // NOTE: cache.rect_for() returns Result<Option<T>, E>
         //       The unwrap_or(None) is not useless because of this
         .filter_map(|g| cache.rect_for(cache_id, g).ok().unwrap_or(None))
-        .flat_map(|(uv_rect, screen_rect)| {
+        .map(|(uv_rect, screen_rect)| {
+            let screen_rect = to_gl_rect(screen_rect);
+
+            crop::text(uv_rect, screen_rect, scizzor)
+        })
+        .flat_map(|(uv_rect, gl_rect)| {
             use std::iter::once;
 
-            let gl_rect = to_gl_rect(screen_rect);
             // Creates an iterator out of a single vertex for chaining
             let v = |pos, uv| once(vertex(pos, uv, color));
 
@@ -144,12 +157,16 @@ fn primitive_text(text: Text,
 /// Draws a rectangle
 fn primitive_rectangle(color: conrod::Color,
                        rect: conrod::Rect,
+                       scizzor: conrod::Rect,
                        screen_size: (f32, f32),
                        graphics: &mut GraphicsState) {
 
     let color = color.to_fsa();
     // Creates a GVertex from a point
     let v = |p: conrod::Point| gfx_gui::Vertex::new([p[0] as f32, p[1] as f32], color);
+
+    // Crop the rectangle
+    let rect = crop::rect(rect, scizzor);
 
     let rect = conrod_to_gl_rect(rect, screen_size);
     // Create the vertices of the rectangle
@@ -167,10 +184,12 @@ fn primitive_rectangle(color: conrod::Color,
 }
 
 /// Draws an image
+#[allow(too_many_arguments)]
 fn primitive_image(id: conrod::widget::Id,
                    color: Option<conrod::Color>,
                    rect: conrod::Rect,
                    uv_rect: Option<conrod::Rect>,
+                   scizzor: conrod::Rect,
                    screen_size: (f32, f32),
                    graphics: &mut GraphicsState,
                    image_map: &conrod::image::Map<Texture>) {
@@ -185,6 +204,10 @@ fn primitive_image(id: conrod::widget::Id,
                                    [uv[0] as f32, uv[1] as f32],
                                    color)
     };
+
+    // TODO: Uncomment when image cropping works
+    // Crop the image
+    let (rect, uv_rect) = crop::image(rect, uv_rect, scizzor);
 
     let rect = conrod_to_gl_rect(rect, screen_size);
     // Create the vertices of the image

@@ -31,3 +31,16 @@ pub fn conrod_to_gl_rect(rect: Rect, (screen_width, screen_height): (f32, f32)) 
 pub fn vertex(pos: [f32; 2], uv: [f32; 2], color: [f32; 4]) -> Vertex {
     Vertex::new_colored(pos, uv, color)
 }
+
+pub fn rt_rect_from_corners<N: Copy>(min: [N; 2], max: [N; 2]) -> rt::Rect<N> {
+    rt::Rect {
+        min: rt::Point {
+            x: min[0],
+            y: min[1],
+        },
+        max: rt::Point {
+            x: max[0],
+            y: max[1],
+        },
+    }
+}

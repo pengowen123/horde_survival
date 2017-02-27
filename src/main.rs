@@ -4,6 +4,7 @@
 
 // Graphics
 #[macro_use]
+// TODO: Make this public only to hsgraphics when pub(restricted) lands
 pub extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate gfx_device_gl;

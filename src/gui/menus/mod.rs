@@ -1,4 +1,4 @@
-//! Functions that set the widgets of the GUI for each menu
+//! Logic for each menu of the GUI
 
 // NOTE: depth -2.0 is drawn after depth -1.0, and the canvas must have depth 0.0
 

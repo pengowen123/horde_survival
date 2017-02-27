@@ -1,9 +1,6 @@
-use hsgraphics::ColorFormat;
+pub use gfx;
 
-/// The color used when clearing the screen
-// TODO: Replace this with [1.0; 4] (white) whena skybox is implemented
-//       For now, this color is the sky
-pub const CLEAR_COLOR: [f32; 4] = [0.0, 0.35, 0.5, 1.0];
+use hsgraphics::ColorFormat;
 
 /// Types used for gfx
 /// 2d vertices contain a position, a texture coordinate, and a color

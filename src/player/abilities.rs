@@ -53,12 +53,11 @@ pub fn warrior_ability_3(player: &mut Player, entities: &mut Vec<Entity>) {
     // Get the indices of the entities to be hit by the ability
     let indices = entities.iter()
         .enumerate()
-        .filter_map(|(i, e)| {
-            if e.team != Team::Players && e.coords.in_radius(&coords, WARRIOR_EXECUTE_RADIUS) {
-                Some(i)
-            } else {
-                None
-            }
+        .filter_map(|(i, e)| if e.team != Team::Players &&
+                                e.coords.in_radius(&coords, WARRIOR_EXECUTE_RADIUS) {
+            Some(i)
+        } else {
+            None
         })
         .collect::<Vec<_>>();
 

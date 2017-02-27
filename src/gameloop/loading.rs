@@ -51,6 +51,8 @@ pub fn loading_screen(ui: &mut UI,
         }
     }
 
+    info!("Done loading textures");
+
     // Create a conrod image map for storing images used in the GUI
     ui.image_map = image_map! {
         (ui.ids.main_menu_image, graphics.assets.get_texture("pepe").unwrap().clone()),

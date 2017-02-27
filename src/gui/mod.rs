@@ -3,6 +3,8 @@
 pub mod ids;
 pub mod draw;
 pub mod menus;
+pub mod state;
+mod crop;
 mod utils;
 
 use conrod::{self, Ui, UiBuilder, Theme, color};
@@ -12,12 +14,14 @@ use hsgraphics::GraphicsState;
 use hsgraphics::texture::Texture;
 use gamestate::GameState;
 use gameloop::LoopType;
+use consts::graphics::GUI_BACKGROUND_COLOR;
 
 /// A wrapper around a conrod Ui that also contains related data
 pub struct UI {
     pub ui: Ui,
     pub ids: ids::Ids,
     pub state: UIState,
+    pub widget_states: state::WidgetStates,
     pub image_map: conrod::image::Map<Texture>,
 }
 
@@ -35,7 +39,7 @@ pub enum UIState {
 impl UI {
     pub fn new() -> UI {
         let theme = Theme {
-            background_color: color::BLUE,
+            background_color: GUI_BACKGROUND_COLOR,
             border_color: color::TRANSPARENT,
             ..Theme::default()
         };
@@ -54,6 +58,7 @@ impl UI {
             ui: ui,
             ids: ids,
             state: UIState::Main,
+            widget_states: Default::default(),
             image_map: conrod::image::Map::new(),
         }
     }
@@ -68,13 +73,40 @@ impl UI {
         let cell = &mut self.ui.set_widgets();
         let ids = &self.ids;
         let ui_state = &mut self.state;
+        let widget_states = &mut self.widget_states;
 
         match self.state {
             UIState::Main => {
                 menus::main::set_widgets(cell, ids, game, graphics, ui_state, loop_type, window)
             }
-            UIState::Pause => return, // not implemented
-            _ => {}
+            UIState::NewGame => {
+                menus::new_game::set_widgets(cell, ids, game, graphics, ui_state, loop_type, window)
+            }
+            UIState::Shop => {
+                menus::shop::set_widgets(cell,
+                                         ids,
+                                         game,
+                                         graphics,
+                                         ui_state,
+                                         widget_states,
+                                         loop_type,
+                                         window)
+            }
+            UIState::Options => {
+                menus::options::set_widgets(cell, ids, game, graphics, ui_state, loop_type, window)
+            }
+            UIState::GameOver => {
+                menus::game_over::set_widgets(cell,
+                                              ids,
+                                              game,
+                                              graphics,
+                                              ui_state,
+                                              loop_type,
+                                              window)
+            }
+            UIState::Pause => {
+                menus::pause::set_widgets(cell, ids, game, graphics, ui_state, loop_type, window)
+            }
         }
     }
 }

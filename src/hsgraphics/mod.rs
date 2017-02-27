@@ -1,5 +1,9 @@
 //! Everything related to drawing the game
 
+// TODO: Implement window resizing, see the resize function here:
+//
+//       https://github.com/lazybox/lazybox/blob/master/graphics/src/lib.rs#L64
+
 #[macro_use]
 pub mod shapes;
 pub mod state;
@@ -19,7 +23,6 @@ mod init;
 pub use self::state::*;
 pub use self::object::*;
 pub use self::shapes::*;
-pub use self::gfx2d::CLEAR_COLOR;
 pub use self::texture::*;
 pub use self::camera::*;
 pub use self::options::*;

@@ -1,3 +1,8 @@
+//! Logic for the main menu
+//!
+//! Displays when the game is started, after it has finished loading
+//! Shows buttons for navigating to the new game and options menu, and for exiting the game
+
 use glutin::{Window, CursorState};
 use conrod::{self, Widget, Colorable, Positionable, Sizeable, Labelable, widget, color};
 
@@ -6,7 +11,6 @@ use gui::UIState;
 use gamestate::GameState;
 use hsgraphics::GraphicsState;
 use gameloop::LoopType;
-use utils::set_cursor_state;
 
 /// Sets the widgets for the main menu
 pub fn set_widgets(ui: &mut conrod::UiCell,
@@ -25,8 +29,7 @@ pub fn set_widgets(ui: &mut conrod::UiCell,
         .color(bg_color)
         .set(ids.background, ui);
 
-    // Starts a new game
-    // TODO: Send to New Game menu instead to adjust settings, and start game from there
+    // Opens the new game menu
     let new_game_button = widget::Button::new()
         .label("New game")
         .label_font_size(30)
@@ -37,7 +40,7 @@ pub fn set_widgets(ui: &mut conrod::UiCell,
         .depth(-2.0)
         .set(ids.button_new_game, ui);
 
-    // Goes to the options menu
+    // Opens the options menu
     let options_button = widget::Button::new()
         .label("Options")
         .label_font_size(30)
@@ -59,6 +62,7 @@ pub fn set_widgets(ui: &mut conrod::UiCell,
         .depth(-2.0)
         .set(ids.button_quit, ui);
 
+    // Main menu background image
     widget::Image::new()
         .wh_of(ids.background)
         .middle()
@@ -66,11 +70,7 @@ pub fn set_widgets(ui: &mut conrod::UiCell,
         .set(ids.main_menu_image, ui);
 
     if new_game_button.was_clicked() {
-        game.new_game();
-        game.next_round();
-        set_cursor_state(window, CursorState::Hide);
-        graphics.reset_cursor(window);
-        *loop_type = LoopType::Game;
+        *ui_state = UIState::NewGame;
     }
 
     if options_button.was_clicked() {

@@ -1,3 +1,5 @@
+pub use gfx;
+
 pub use hsgraphics::ColorFormat;
 
 /// Types used for gfx

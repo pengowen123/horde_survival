@@ -10,8 +10,8 @@ pub struct Armor {
 }
 
 impl Armor {
-    /// Returns whether the armor slot is empty
-    pub fn is_empty(&self) -> bool {
+    /// Returns whether the armor is a dummy
+    pub fn is_dummy(&self) -> bool {
         self.name == "None"
     }
 }

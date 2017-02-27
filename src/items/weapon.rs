@@ -51,6 +51,10 @@ impl Weapon {
 
         x * GLOBAL_ATTACK_TIME
     }
+
+    pub fn is_dummy(&self) -> bool {
+        self.name == "None"
+    }
 }
 
 /// Returns a random weapon to be used by a monster, based on the current wave

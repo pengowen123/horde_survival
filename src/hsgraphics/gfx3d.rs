@@ -1,4 +1,5 @@
 use gfx;
+
 pub use hsgraphics::ColorFormat;
 
 pub type DepthFormat = gfx::format::DepthStencil;

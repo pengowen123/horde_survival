@@ -31,4 +31,4 @@ version = "*"
 optional = true
 
 [features]
-default = ["clippy"]
+default = []
