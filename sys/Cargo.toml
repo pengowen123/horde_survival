@@ -1,0 +1,19 @@
+[package]
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+name = "sys"
+version = "0.1.0"
+
+[dependencies]
+cgmath = "0.14"
+gfx = "0.16"
+gfx_window_glutin = "0.16.0"
+glutin = "0.8"
+log = "0.3.8"
+nalgebra = "0.11"
+ncollide = "0.11"
+nphysics3d = "0.6.1"
+rayon = "0.7.1"
+shred = "0.4"
+shred-derive = "0.3"
+specs = "0.9"
+time = "0.1.37"
