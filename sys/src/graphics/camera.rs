@@ -1,6 +1,5 @@
 //! A system to update the camera
 
-
 // TODO: Fix objects disappearing when the camera points straight up or down
 
 use specs::{self, ReadStorage, Join};
@@ -23,32 +22,41 @@ const FAR: f32 = 1000.0;
 /// Represents a camera in a 3D space
 #[derive(Clone, Copy, Debug)]
 pub struct Camera {
-    matrix: [[f32; 4]; 4],
+    /// The Model View Projection (MVP) matrix
+    matrix: cgmath::Matrix4<f32>,
 }
 
 impl Camera {
-    /// Returns a camera, with the eye at the provided position, pointing in the provided position.
+    /// Returns a camera, with the eye at the provided position, pointing in the provided direction.
     /// Requires the aspect ratio of the window the camera will be used with.
-    pub fn new(pos: world::Position, direction: direction::Direction, aspect_ratio: f32) -> Self {
+    pub fn new(
+        pos: world::components::Position,
+        direction: direction::Direction,
+        aspect_ratio: f32,
+    ) -> Self {
+
         let pos = pos.cast::<f32>();
-        // TODO: Delete this line when movement controls and physics are complete
+        // TODO: Delete this line when movement controls are complete
         let pos = cgmath::Point3::new(5.0, 5.0, 5.0);
         let pointing_to = pos + direction.into_vector().cast::<f32>();
-        let view = cgmath::Matrix4::look_at(pos, pointing_to, cgmath::Vector3::unit_z());
         let proj = cgmath::perspective(cgmath::Deg(FOV_Y), aspect_ratio, NEAR, FAR);
+        let view = cgmath::Matrix4::look_at(pos, pointing_to, cgmath::Vector3::unit_z());
 
         Self { matrix: (proj * view).into() }
     }
 
     /// Returns the default camera given the aspect ratio
     pub fn new_default(aspect_ratio: f32) -> Self {
-        Camera::new(cgmath::Point3::new(0.0, 0.0, 0.0),
-                    direction::Direction::new(cgmath::Rad(0.0), cgmath::Rad(0.0)),
-                    aspect_ratio)
+        Camera::new(
+            cgmath::Point3::new(0.0, 0.0, 0.0),
+            direction::Direction::new(cgmath::Rad(0.0), cgmath::Rad(0.0)),
+            aspect_ratio,
+        )
     }
 
-    pub fn matrix(&self) -> [[f32; 4]; 4] {
-        self.matrix
+    /// Returns the camera matrix
+    pub fn get_matrix(&self) -> &cgmath::Matrix4<f32> {
+        &self.matrix
     }
 }
 
@@ -57,9 +65,9 @@ pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    _player: ReadStorage<'a, player::Player>,
-    space: ReadStorage<'a, world::Spatial>,
-    direction: ReadStorage<'a, world::Direction>,
+    player: ReadStorage<'a, player::Player>,
+    space: ReadStorage<'a, world::components::Spatial>,
+    direction: ReadStorage<'a, world::components::Direction>,
     camera: specs::FetchMut<'a, Camera>,
     window_info: specs::Fetch<'a, window::WindowInfo>,
 }
@@ -70,7 +78,12 @@ impl<'a> specs::System<'a> for System {
     fn run(&mut self, mut data: Self::SystemData) {
         // NOTE: This loop should only run for one iteration (there should only be one player
         //       entity locally)
-        for (i, (space, direction)) in (&data.space, &data.direction).join().enumerate() {
+        for (i, (space, direction, _)) in
+            (&data.space, &data.direction, &data.player)
+                .join()
+                .enumerate()
+        {
+
             assert!(i == 0, "Found multiple player entities");
 
             *data.camera =

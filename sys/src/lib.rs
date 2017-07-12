@@ -28,6 +28,7 @@ extern crate log;
 mod dev;
 
 mod world;
+mod physics;
 mod math;
 mod delta;
 mod player;
@@ -36,13 +37,10 @@ mod control;
 mod graphics;
 
 /// The floating point type used in this crate
-pub type Float = f64;
+pub type Float = f32;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
-// TODO: Add collision detection and handling, and make a `map` entity
-//       Learn and use nphysics3d (clone repo, run examples, copy and edit code)
-
 // TODO: Decide where this initialization should be and how it should be split up
 pub fn run() {
     // Create world
@@ -54,8 +52,9 @@ pub fn run() {
     let dispatcher = delta::init(&mut world, dispatcher);
     // NOTE: I think this should be called before graphics::init so physics runs first
     let dispatcher = world::init(&mut world, dispatcher);
+    let dispatcher = physics::init::init(&mut world, dispatcher);
     let dispatcher = player::init(&mut world, dispatcher);
-    let (dispatcher, window, events) = graphics::init(&mut world, dispatcher);
+    let (dispatcher, window, mut events) = graphics::init(&mut world, dispatcher);
 
     // Build the dispatcher
     let mut dispatcher = dispatcher.build();
@@ -65,14 +64,15 @@ pub fn run() {
         let mut latest_mouse_move = None;
 
         events.poll_events(|e| match e {
-                               glutin::Event::WindowEvent { event, .. } => {
-                                   if let glutin::WindowEvent::MouseMoved(..) = event {
-                                       latest_mouse_move = Some(event);
-                                       return;
-                                   }
-                                   sender.process_window_event(&window, event);
-                               }
-                           });
+            glutin::Event::WindowEvent { event, .. } => {
+                if let glutin::WindowEvent::MouseMoved { .. } = event {
+                    latest_mouse_move = Some(event);
+                    return;
+                }
+                sender.process_window_event(&window, event);
+            }
+            _ => {}
+        });
 
         // Only process the latest mouse movement event
         if let Some(event) = latest_mouse_move {

@@ -17,8 +17,8 @@ gfx_defines! {
     }
 
     constant Locals {
+        // The transformation matrix
         transform: [[f32; 4]; 4] = "u_Transform",
-        position: [f32; 4] = "u_Pos",
     }
 
     pipeline pipe {
@@ -47,10 +47,11 @@ pub struct Drawable<R: gfx::Resources> {
 }
 
 impl<R: gfx::Resources> Drawable<R> {
-    pub fn new(texture: TextureView<R>,
-               vertex_buffer: VertexBuffer<R>,
-               slice: gfx::Slice<R>)
-               -> Self {
+    pub fn new(
+        texture: TextureView<R>,
+        vertex_buffer: VertexBuffer<R>,
+        slice: gfx::Slice<R>,
+    ) -> Self {
         Self {
             texture,
             vertex_buffer,

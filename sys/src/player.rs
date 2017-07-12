@@ -25,9 +25,10 @@ impl specs::Component for Camera {
 }
 
 /// Initializes player-related components
-pub fn init<'a, 'b>(world: &mut specs::World,
-                    dispatcher: DispatcherBuilder<'a, 'b>)
-                    -> DispatcherBuilder<'a, 'b> {
+pub fn init<'a, 'b>(
+    world: &mut specs::World,
+    dispatcher: DispatcherBuilder<'a, 'b>,
+) -> DispatcherBuilder<'a, 'b> {
 
     world.register::<Player>();
     world.register::<Camera>();

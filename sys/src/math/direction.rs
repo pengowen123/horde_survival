@@ -16,7 +16,7 @@ const TAU: ::Float = PI * 2.0;
 /// A type representing a direction in a 3D space
 ///
 /// Pitch ranges from `0.0` to `PI` radians (straight up and down, respectively).
-/// Yaw ranges from `0.0` to `PI * 2.0` radians (increasing yaw moves the direction left).
+/// Yaw ranges from `0.0` to `PI * 2.0` radians (increasing yaw rotates counter-clockwise).
 #[derive(Clone, Copy, Debug)]
 pub struct Direction {
     /// Up and down
@@ -27,10 +27,10 @@ pub struct Direction {
 
 impl Direction {
     pub fn new<T: Into<Rad<::Float>>>(pitch: T, yaw: T) -> Self {
-        Self {
-            pitch: pitch.into(),
-            yaw: yaw.into(),
-        }
+        let pitch = pitch.into();
+        let yaw = yaw.into();
+
+        Self { pitch, yaw }
     }
 
     /// Returns a unit vector pointing in the direction represented by `self`

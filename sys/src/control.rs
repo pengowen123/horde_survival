@@ -42,8 +42,8 @@ impl System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    _player: specs::ReadStorage<'a, player::Player>,
-    direction: specs::WriteStorage<'a, world::Direction>,
+    player: specs::ReadStorage<'a, player::Player>,
+    direction: specs::WriteStorage<'a, world::components::Direction>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -52,7 +52,7 @@ impl<'a> specs::System<'a> for System {
     fn run(&mut self, mut data: Self::SystemData) {
         self.check_input();
 
-        for direction in (&mut data.direction).join() {
+        for (direction, _) in (&mut data.direction, &data.player).join() {
             if let Some(rotation) = self.rotate_direction {
                 direction.0 += rotation;
             }
@@ -61,8 +61,9 @@ impl<'a> specs::System<'a> for System {
 }
 
 /// Initializes controls-related components and systems
-pub fn init<'a, 'b>(dispatcher: DispatcherBuilder<'a, 'b>)
-                    -> (DispatcherBuilder<'a, 'b>, event::SenderHub) {
+pub fn init<'a, 'b>(
+    dispatcher: DispatcherBuilder<'a, 'b>,
+) -> (DispatcherBuilder<'a, 'b>, event::SenderHub) {
 
     let (snd, recv) = event::SenderHub::new();
     let control = System::new(recv.into_receiver());

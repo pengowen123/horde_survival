@@ -34,7 +34,7 @@ impl WindowInfo {
     }
 }
 
-pub type Window = Arc<glutin::Window>;
+pub type Window = Arc<glutin::GlWindow>;
 
 pub struct System;
 

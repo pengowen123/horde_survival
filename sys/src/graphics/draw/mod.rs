@@ -4,14 +4,19 @@
 //! window.
 
 mod shader;
+mod param;
 
 pub use self::shader::{Vertex, ColorFormat, DepthFormat, Drawable};
 pub use self::shader::pipe::new as init_pipeline;
 
-use specs::{self, Join};
 use gfx::{self, texture};
 use gfx::traits::FactoryExt;
+use glutin::GlContext;
+use cgmath::{self, EuclideanSpace};
+use specs::{self, Join};
+
 use graphics::{window, camera};
+use math::convert;
 
 const CLEAR_COLOR: [f32; 4] = [0.1, 0.2, 0.3, 1.0];
 
@@ -20,10 +25,11 @@ pub type OutColor<R> = gfx::handle::RenderTargetView<R, shader::ColorFormat>;
 pub type OutDepth<R> = gfx::handle::DepthStencilView<R, shader::DepthFormat>;
 
 pub struct System<F, C, R, D>
-    where F: gfx::Factory<R>,
-          C: gfx::CommandBuffer<R>,
-          R: gfx::Resources,
-          D: gfx::Device<Resources = R, CommandBuffer = C>
+where
+    F: gfx::Factory<R>,
+    C: gfx::CommandBuffer<R>,
+    R: gfx::Resources,
+    D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     factory: F,
     encoder: gfx::Encoder<R, C>,
@@ -37,33 +43,39 @@ pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, shader::Drawable<R>>,
     window: specs::Fetch<'a, window::Window>,
     camera: specs::Fetch<'a, camera::Camera>,
-    // TODO: Remove this when proper graphics are added
-    space: specs::ReadStorage<'a, ::world::Spatial>,
+    // TODO: Remove these two fields when proper components are added
+    space: specs::ReadStorage<'a, ::world::components::Spatial>,
+    physics: specs::ReadStorage<'a, ::physics::components::Physics>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
-    where F: gfx::Factory<R>,
-          C: gfx::CommandBuffer<R>,
-          R: gfx::Resources,
-          D: gfx::Device<Resources = R, CommandBuffer = C>
+where
+    F: gfx::Factory<R>,
+    C: gfx::CommandBuffer<R>,
+    R: gfx::Resources,
+    D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
-    pub fn new(mut factory: F,
-               device: D,
-               out_color: OutColor<R>,
-               out_depth: OutDepth<R>,
-               encoder: gfx::Encoder<R, C>,
-               pso: gfx::PipelineState<R, shader::pipe::Meta>)
-               -> Self {
+    pub fn new(
+        mut factory: F,
+        device: D,
+        out_color: OutColor<R>,
+        out_depth: OutDepth<R>,
+        encoder: gfx::Encoder<R, C>,
+        pso: gfx::PipelineState<R, shader::pipe::Meta>,
+    ) -> Self {
 
         let vbuf = factory.create_vertex_buffer(&[]);
 
         let texels = [[0x0; 4]];
-        let (_, texture_view) = factory.create_texture_immutable::<gfx::format::Rgba8>(
-            texture::Kind::D2(1, 1, texture::AaMode::Single), &[&texels]
-        ).unwrap();
+        let (_, texture_view) = factory
+            .create_texture_immutable::<gfx::format::Rgba8>(
+                texture::Kind::D2(1, 1, texture::AaMode::Single),
+                &[&texels],
+            )
+            .unwrap();
 
-        let sampler_info = texture::SamplerInfo::new(texture::FilterMethod::Bilinear,
-                                                     texture::WrapMode::Clamp);
+        let sampler_info =
+            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
 
         let data = shader::pipe::Data {
             vbuf: vbuf,
@@ -84,10 +96,14 @@ impl<F, C, R, D> System<F, C, R, D>
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
-    where F: gfx::Factory<R>,
-          C: gfx::CommandBuffer<R>,
-          R: gfx::Resources,
-          D: gfx::Device<Resources = R, CommandBuffer = C>
+where
+    F: gfx::Factory<R>,
+    C: gfx::CommandBuffer<R>,
+    R: gfx::Resources,
+    D: gfx::Device<
+        Resources = R,
+        CommandBuffer = C,
+    >,
 {
     type SystemData = Data<'a, R>;
 
@@ -95,18 +111,25 @@ impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
         self.encoder.clear(&self.data.out_color, CLEAR_COLOR);
         self.encoder.clear_depth(&self.data.out_depth, 1.0);
 
-        let mut locals = shader::Locals {
-            transform: data.camera.matrix(),
-            position: [0.0; 4],
-        };
+        let camera = data.camera.get_matrix();
+        let mut locals = shader::Locals { transform: (*camera).into() };
 
-        for (d, s) in (&data.drawable, &data.space).join() {
-            let pos = s.position;
-            let pos = [pos.x as f32, pos.y as f32, pos.z as f32, 0.0];
-            locals.position = pos;
+        for (d, s, p) in (&data.drawable, &data.space, &data.physics).join() {
+            // TODO: remove this when proper shader params are implemented
+            p.handle().map(|h| {
+                let rot = h.borrow().position().rotation.quaternion().clone();
 
-            self.encoder
-                .update_constant_buffer(&self.data.locals, &locals);
+                let translate =
+                    cgmath::Matrix4::from_translation(s.position.cast::<f32>().to_vec());
+                let rotate = convert::to_rotation_matrix(rot);
+                locals.transform = (camera * translate * rotate).into();
+            });
+
+
+            self.encoder.update_constant_buffer(
+                &self.data.locals,
+                &locals,
+            );
 
             self.data.texture.0 = d.texture().clone();
             self.data.vbuf = d.vertex_buffer().clone();

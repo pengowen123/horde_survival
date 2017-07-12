@@ -1,6 +1,6 @@
 //! Systems and components related to graphics and the window
 
-// TODO: Remove pub when dev module is gone
+// TODO: Remove pub when a better way to create drawables is made (such as a obj loading system)
 pub mod draw;
 mod window;
 mod camera;
@@ -8,32 +8,45 @@ mod camera;
 use gfx;
 use gfx::traits::FactoryExt;
 use gfx_window_glutin;
-use glutin::{self, EventsLoop};
+use glutin::{self, EventsLoop, GlContext};
 use specs::{self, DispatcherBuilder};
 
 use std::sync::Arc;
 
-const VERTEX_SHADER: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"),
-                                                    "/shaders/vertex_150.glsl"));
-const FRAGMENT_SHADER: &[u8] = include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"),
-                                                      "/shaders/fragment_150.glsl"));
+const VERTEX_SHADER: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/shaders/vertex_150.glsl"
+));
+const FRAGMENT_SHADER: &[u8] = include_bytes!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/shaders/fragment_150.glsl"
+));
 
 /// Initializes graphics-related components and systems
-pub fn init<'a, 'b>(world: &mut specs::World,
-                    dispatcher: DispatcherBuilder<'a, 'b>)
-                    -> (DispatcherBuilder<'a, 'b>, window::Window, EventsLoop) {
-    // TODO: Maybe split initialization of submodule systems into other functions
-
+pub fn init<'a, 'b>(
+    world: &mut specs::World,
+    dispatcher: DispatcherBuilder<'a, 'b>,
+) -> (DispatcherBuilder<'a, 'b>, window::Window, EventsLoop) {
     // Initialize window settings
     let (w, h) = (800, 600);
     let events = EventsLoop::new();
-    let builder = glutin::WindowBuilder::new()
+    let context_builder = glutin::ContextBuilder::new();
+    let window_builder = glutin::WindowBuilder::new()
         .with_title("Horde Survival")
         .with_min_dimensions(w, h);
 
     // Initialize gfx structs
     let (window, device, mut factory, main_color, main_depth) =
-        gfx_window_glutin::init::<draw::ColorFormat, draw::DepthFormat>(builder, &events);
+        gfx_window_glutin::init::<draw::ColorFormat, draw::DepthFormat>(
+            window_builder,
+            context_builder,
+            &events,
+        );
+
+    unsafe {
+        window.make_current().unwrap();
+    }
+
     let window = Arc::new(window);
     let encoder = factory.create_command_buffer().into();
     let pso = factory
@@ -63,8 +76,9 @@ pub fn init<'a, 'b>(world: &mut specs::World,
 
 /// A hack to register `Drawable<R>` without specifying the type of `R`
 fn register_drawable<R, F>(world: &mut specs::World, _: &F)
-    where R: gfx::Resources,
-          F: gfx::Factory<R>
+where
+    R: gfx::Resources,
+    F: gfx::Factory<R>,
 {
     world.register::<draw::Drawable<R>>();
 }

@@ -12,9 +12,9 @@ impl Delta {
     pub fn to_float(&self) -> ::Float {
         // One billion divided by the number of nanoseconds
         self.0.num_nanoseconds().unwrap_or_else(|| {
-                                                    warn!("Delta time overflow");
-                                                    1_000_000_000
-                                                }) as ::Float / 1_000_000_000.0
+            warn!("Delta time overflow");
+            1_000_000_000
+        }) as ::Float / 1_000_000_000.0
     }
 }
 
@@ -39,16 +39,18 @@ impl<'a> specs::System<'a> for System {
     type SystemData = specs::FetchMut<'a, Delta>;
 
     fn run(&mut self, mut data: Self::SystemData) {
-        data.0 = Duration::from_std(self.last_update.elapsed())
-            .expect("Delta duration conversion failure");
+        data.0 = Duration::from_std(self.last_update.elapsed()).expect(
+            "Delta duration conversion failure",
+        );
         self.last_update = Instant::now();
     }
 }
 
 /// Initializes delta-related components and systems
-pub fn init<'a, 'b>(world: &mut specs::World,
-                    dispatcher: DispatcherBuilder<'a, 'b>)
-                    -> DispatcherBuilder<'a, 'b> {
+pub fn init<'a, 'b>(
+    world: &mut specs::World,
+    dispatcher: DispatcherBuilder<'a, 'b>,
+) -> DispatcherBuilder<'a, 'b> {
 
     world.add_resource(Delta::default());
     dispatcher.add(System::new(), "delta-time", &[])
