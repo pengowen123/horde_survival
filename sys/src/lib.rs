@@ -37,7 +37,7 @@ mod control;
 mod graphics;
 
 /// The floating point type used in this crate
-pub type Float = f32;
+pub type Float = f64;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)

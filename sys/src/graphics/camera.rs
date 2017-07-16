@@ -1,14 +1,13 @@
-//! A system to update the camera
+//! A resource to store the camera, and a system to update it
 
 // TODO: Fix objects disappearing when the camera points straight up or down
 
 use specs::{self, ReadStorage, Join};
-use cgmath;
+use cgmath::{self, Rotation3};
 
 use world;
 use player;
 use graphics::window;
-use math::direction;
 
 /// Vertical field of view of the camera
 const FOV_Y: f32 = 45.0;
@@ -30,15 +29,12 @@ impl Camera {
     /// Returns a camera, with the eye at the provided position, pointing in the provided direction.
     /// Requires the aspect ratio of the window the camera will be used with.
     pub fn new(
-        pos: world::components::Position,
-        direction: direction::Direction,
+        pos: cgmath::Point3<f32>,
+        direction: cgmath::Quaternion<f32>,
         aspect_ratio: f32,
     ) -> Self {
 
-        let pos = pos.cast::<f32>();
-        // TODO: Delete this line when movement controls are complete
-        let pos = cgmath::Point3::new(5.0, 5.0, 5.0);
-        let pointing_to = pos + direction.into_vector().cast::<f32>();
+        let pointing_to = pos + direction * cgmath::Vector3::unit_z();
         let proj = cgmath::perspective(cgmath::Deg(FOV_Y), aspect_ratio, NEAR, FAR);
         let view = cgmath::Matrix4::look_at(pos, pointing_to, cgmath::Vector3::unit_z());
 
@@ -49,7 +45,7 @@ impl Camera {
     pub fn new_default(aspect_ratio: f32) -> Self {
         Camera::new(
             cgmath::Point3::new(0.0, 0.0, 0.0),
-            direction::Direction::new(cgmath::Rad(0.0), cgmath::Rad(0.0)),
+            cgmath::Quaternion::from_angle_x(cgmath::Deg(90.0)),
             aspect_ratio,
         )
     }
@@ -76,18 +72,12 @@ impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
     fn run(&mut self, mut data: Self::SystemData) {
-        // NOTE: This loop should only run for one iteration (there should only be one player
-        //       entity locally)
-        for (i, (space, direction, _)) in
-            (&data.space, &data.direction, &data.player)
-                .join()
-                .enumerate()
-        {
-
-            assert!(i == 0, "Found multiple player entities");
-
-            *data.camera =
-                Camera::new(space.position, direction.0, data.window_info.aspect_ratio());
+        for (s, d, _) in (&data.space, &data.direction, &data.player).join() {
+            *data.camera = Camera::new(
+                s.0.cast(),
+                cgmath::Quaternion::from_sv(d.0.s as f32, d.0.v.cast()),
+                data.window_info.aspect_ratio(),
+            );
         }
     }
 }

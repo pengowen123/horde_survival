@@ -1,17 +1,14 @@
-//! A direction type and functions for manipulating them
+//! A simple direction type and functions for manipulating them
 
 use cgmath::{self, Rad};
 
 use std::ops;
-use std::f64;
 
 use math::functions;
+use math::consts::{PI, TAU};
 
 /// An angle, in radians.
 pub type Angle = Rad<::Float>;
-
-const PI: ::Float = f64::consts::PI as ::Float;
-const TAU: ::Float = PI * 2.0;
 
 /// A type representing a direction in a 3D space
 ///
@@ -73,15 +70,8 @@ impl ops::Add for Direction {
 
         // Set the min and max pitch to straight down and straight up
         pitch = functions::clamp(pitch, Rad(0.0), Rad(PI));
-
         // Allow the yaw to loop around
-        while yaw > Rad(TAU) {
-            yaw -= Rad(TAU)
-        }
-
-        while yaw < Rad(0.0) {
-            yaw += Rad(TAU);
-        }
+        yaw = functions::wrap(yaw, Rad(0.0), Rad(TAU));
 
         Direction { pitch, yaw }
     }
@@ -90,5 +80,18 @@ impl ops::Add for Direction {
 impl ops::AddAssign for Direction {
     fn add_assign(&mut self, other: Self) {
         *self = *self + other;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use cgmath::Vector3;
+
+    #[test]
+    fn test_direction_into_vector() {
+        let direction = Direction::new(Deg(45.0), Deg(45.0));
+        //assert_eq!(direction.into_vector(), Vector3::new())
     }
 }

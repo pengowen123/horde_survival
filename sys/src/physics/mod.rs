@@ -30,11 +30,10 @@ pub struct Data<'a> {
 impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
-    fn run(&mut self, data: Self::SystemData) {
-        let mut physics = data.physics;
+    fn run(&mut self, mut data: Self::SystemData) {
         let delta = data.delta.to_float();
 
-        for p in (&mut physics).join() {
+        for p in (&mut data.physics).join() {
             match *p.handle() {
                 handle::Handle::Body(_) => {}
                 handle::Handle::Init(f) => {
@@ -54,7 +53,7 @@ impl<'a> specs::System<'a> for System {
 
         self.remove_dead_bodies();
 
-        for p in (&mut physics).join() {
+        for p in (&mut data.physics).join() {
             let handle = p.handle();
 
             if let handle::Handle::Body(ref h) = *handle {

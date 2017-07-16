@@ -30,9 +30,8 @@ impl<'a> specs::System<'a> for System {
         for (p, s, _) in (&data.physics, &mut data.space, &data.tie).join() {
             p.handle().map(|h| {
                 // TODO: Maybe use try_borrow to avoid panics (but maybe it isn't necessary here)
-
                 let pos = h.borrow().position_center();
-                s.position = convert::to_cgmath_point(pos);
+                s.0 = convert::to_cgmath_point(pos);
             });
         }
     }

@@ -1,10 +1,10 @@
 //! Temporary hacks to set the game up for testing
 //! Will be removed when no longer needed
 
+use specs;
 use gfx::{self, texture};
 use gfx::traits::FactoryExt;
-use specs;
-use cgmath;
+use cgmath::{self, Rotation3};
 use na::{Vector3, Translation3};
 use nphysics3d::object::RigidBody;
 use ncollide::shape::{Cuboid, Plane};
@@ -19,40 +19,55 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    const POS: cgmath::Point3<::Float> = cgmath::Point3 {
-        x: 0.0,
-        y: 0.0,
-        z: 10.0,
+    let body_init = || {
+        let geom = Cuboid::new(Vector3::new(1.0, 1.0, 1.0));
+        let mut body = RigidBody::new_static(geom, 1.0, 1.0);
+        body.append_translation(&Translation3::new(5.0, 5.0, 5.0));
+        body
     };
+
+    let physics = Physics::new(body_init, true);
+    let space = Spatial(cgmath::Point3::new(0.0, 0.0, 0.0));
+    let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));
+    let control = Control { movement: cgmath::Vector3::new(0.0, 0.0, 0.0) };
+
+    world
+        .create_entity()
+        .with(physics)
+        .with(space)
+        .with(direction)
+        .with(control)
+        .with(PhysicsTiedPosition)
+        .with(player::Player);
 
     let body_init = || {
         let geom = Cuboid::new(Vector3::new(1.0, 1.0, 1.0));
         let mut body = RigidBody::new_dynamic(geom, 1.0, 1.0, 1.0);
-        body.append_translation(&Translation3::new(POS.x, POS.y, POS.z));
+        body.append_translation(&Translation3::new(0.0, 0.0, 10.0));
         body
     };
 
-    let physics = Physics::new(body_init as _, true);
+    let physics = Physics::new(body_init, false);
 
-    let space = Spatial::new(POS);
-    let direction = Direction(Default::default());
-    let camera: player::Camera = Default::default();
+    let space = Spatial(cgmath::Point3::new(0.0, 0.0, 0.0));
+    let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));
     let control = Control { movement: cgmath::Vector3::new(0.0, 0.0, 0.0) };
 
     let texels = [0x20, 0xA0, 0xC0, 0xFF];
     let (vertices, indices) = create_cube();
     let draw = create_drawable(factory, vertices, indices, texels);
+    let shader_param = draw::ShaderParam::default();
 
-    // Add player entity
+    // Add test dummy entity
     world
         .create_entity()
-        .with(player::Player)
-        .with(camera)
         .with(draw)
+        .with(shader_param)
         .with(physics)
         .with(space)
         .with(direction)
         .with(PhysicsTiedPosition)
+        .with(PhysicsTiedDirection)
         .with(control);
 
     let body_init = || {
@@ -61,14 +76,20 @@ where
     };
 
     let physics = Physics::new(body_init, false);
-    let space = Spatial::new(cgmath::Point3::new(0.0, 0.0, 0.0));
+    let space = Spatial(cgmath::Point3::new(0.0, 0.0, 0.0));
 
     let texels = [0x10, 0xC0, 0x20, 0xFF];
     let (vertices, indices) = create_plane();
     let draw = create_drawable(factory, vertices, indices, texels);
+    let shader_param = draw::ShaderParam::default();
 
     // Add a plane to test physics on
-    world.create_entity().with(physics).with(space).with(draw);
+    world
+        .create_entity()
+        .with(physics)
+        .with(space)
+        .with(draw)
+        .with(shader_param);
 }
 
 fn create_drawable<R, F>(

@@ -7,7 +7,7 @@ use cgmath;
 use std::sync::mpsc;
 
 use control;
-use math::direction;
+use math::direction::Direction;
 
 /// A type for processing window events.
 pub struct SenderHub {
@@ -48,13 +48,13 @@ impl SenderHub {
                 // Yaw control is inverted, so invert it again to fix it
                 let diff_yaw = -diff_yaw;
 
-                let direction = direction::Direction::new(
-                    cgmath::Rad(diff_pitch as ::Float * sensitivity),
-                    cgmath::Rad(diff_yaw as ::Float * sensitivity),
-                );
+                let rot_pitch = diff_pitch as ::Float * sensitivity;
+                let rot_yaw = diff_yaw as ::Float * sensitivity;
+                let camera_rot =
+                    control::CameraRotation::new(cgmath::Rad(rot_pitch), cgmath::Rad(rot_yaw));
 
                 self.control
-                    .send(control::Event::RotateCamera(direction))
+                    .send(control::Event::RotateCamera(camera_rot))
                     .expect("Failed to send event");
             }
             _ => {}
