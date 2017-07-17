@@ -1,10 +1,10 @@
 //! A component and system to tie the direction of an entity to the direction of its physics body
 
-use cgmath;
 use specs::{self, Join};
 
 use world;
 use physics;
+use math::convert;
 
 /// This component acts as a flag to enable the overwriting of an entity's direction with the
 /// direction of its physics body
@@ -32,11 +32,7 @@ impl<'a> specs::System<'a> for System {
                 // TODO: Maybe use try_borrow to avoid panics (but maybe it isn't necessary here)
 
                 let quat = h.borrow().position().rotation.quaternion().clone();
-                let array: [::Float; 4] = (*quat.as_vector()).into();
-                let scalar = array[3];
-                let vector = cgmath::Vector3::new(array[0], array[1], array[2]);
-                let quat = cgmath::Quaternion::from_sv(scalar, vector);
-                d.0 = quat;
+                d.0 = convert::to_cgmath_quaternion(quat);
             });
         }
     }

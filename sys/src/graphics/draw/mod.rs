@@ -19,7 +19,8 @@ use gfx::traits::FactoryExt;
 use glutin::GlContext;
 use specs::{self, Join};
 
-use graphics::{window, camera};
+use graphics::camera;
+use window;
 
 const CLEAR_COLOR: [f32; 4] = [0.1, 0.2, 0.3, 1.0];
 

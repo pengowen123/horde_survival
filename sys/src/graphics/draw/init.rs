@@ -8,7 +8,7 @@ use gfx::traits::FactoryExt;
 
 use std::sync::Arc;
 
-use graphics::window;
+use window;
 use super::param;
 
 const VERTEX_SHADER: &[u8] = include_bytes!(concat!(

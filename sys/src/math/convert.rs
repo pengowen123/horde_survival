@@ -15,13 +15,11 @@ pub fn to_cgmath_point(point: na::Point3<::Float>) -> cgmath::Point3<::Float> {
 
 /// Creates and returns a `cgmath::Matrix4` rotation matrix from the provided
 /// `nalgebra::QuaternionBase`
-pub fn to_rotation_matrix<S>(quat: na::QuaternionBase<::Float, S>) -> cgmath::Matrix4<::Float>
+pub fn to_cgmath_quaternion<S>(quat: na::QuaternionBase<::Float, S>) -> cgmath::Quaternion<::Float>
 where
     S: na::storage::Storage<::Float, na::U4, na::U1>,
 {
     let scalar = quat.scalar();
     let cgmath_vec = cgmath::Vector3::new(quat[0], quat[1], quat[2]);
-    let cgmath_quat = cgmath::Quaternion::from_sv(scalar, cgmath_vec);
-
-    cgmath::Matrix4::from(cgmath_quat)
+    cgmath::Quaternion::from_sv(scalar, cgmath_vec)
 }

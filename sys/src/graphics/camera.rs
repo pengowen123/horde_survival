@@ -7,7 +7,7 @@ use cgmath::{self, Rotation3};
 
 use world;
 use player;
-use graphics::window;
+use window::info;
 
 /// Vertical field of view of the camera
 const FOV_Y: f32 = 45.0;
@@ -65,7 +65,7 @@ pub struct Data<'a> {
     space: ReadStorage<'a, world::components::Spatial>,
     direction: ReadStorage<'a, world::components::Direction>,
     camera: specs::FetchMut<'a, Camera>,
-    window_info: specs::Fetch<'a, window::WindowInfo>,
+    window_info: specs::Fetch<'a, info::WindowInfo>,
 }
 
 impl<'a> specs::System<'a> for System {

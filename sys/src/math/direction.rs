@@ -29,11 +29,6 @@ impl Direction {
 
         Self { pitch, yaw }
     }
-
-    /// Returns a unit vector pointing in the direction represented by `self`
-    pub fn into_vector(self) -> cgmath::Vector3<::Float> {
-        self.into()
-    }
 }
 
 impl Default for Direction {

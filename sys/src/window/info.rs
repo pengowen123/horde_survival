@@ -4,7 +4,7 @@
 use glutin;
 use specs;
 
-use std::sync::Arc;
+use super::Window;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct WindowInfo {
@@ -33,8 +33,6 @@ impl WindowInfo {
         self.aspect_ratio
     }
 }
-
-pub type Window = Arc<glutin::GlWindow>;
 
 pub struct System;
 

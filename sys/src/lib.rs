@@ -32,8 +32,8 @@ mod physics;
 mod math;
 mod delta;
 mod player;
-mod event;
 mod control;
+mod window;
 mod graphics;
 
 /// The floating point type used in this crate

@@ -1,5 +1,3 @@
-//! Window event processing
-//! Processes window events and sends them to the event system to be handled
 
 use glutin::{self, WindowEvent};
 use cgmath;
@@ -7,7 +5,6 @@ use cgmath;
 use std::sync::mpsc;
 
 use control;
-use math::direction::Direction;
 
 /// A type for processing window events.
 pub struct SenderHub {

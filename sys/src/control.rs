@@ -7,9 +7,7 @@ use std::sync::mpsc;
 
 use world;
 use player;
-use event;
-use math::functions;
-use math::consts::PI;
+use window::event;
 
 /// An event sent by a player, for example when a player presses a key an event will be generated
 pub enum Event {
@@ -24,8 +22,11 @@ pub struct CameraRotation {
 }
 
 impl CameraRotation {
-    pub fn new(pitch: cgmath::Rad<::Float>, yaw: cgmath::Rad<::Float>) -> Self {
-        Self { pitch, yaw }
+    pub fn new<T: Into<cgmath::Rad<::Float>>>(pitch: T, yaw: T) -> Self {
+        Self {
+            pitch: pitch.into(),
+            yaw: yaw.into(),
+        }
     }
 }
 
