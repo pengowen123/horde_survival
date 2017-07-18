@@ -13,7 +13,6 @@ pub fn init<'a, 'b>(
     // Register components
     world.register::<components::Spatial>();
     world.register::<components::Direction>();
-    world.register::<components::Control>();
 
     dispatcher
 }

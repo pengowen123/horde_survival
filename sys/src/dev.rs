@@ -12,6 +12,7 @@ use ncollide::shape::{Cuboid, Plane};
 use graphics::draw::{self, Vertex};
 use world::components::*;
 use physics::components::*;
+use control::Control;
 use player;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
@@ -29,7 +30,7 @@ where
     let physics = Physics::new(body_init, true);
     let space = Spatial(cgmath::Point3::new(0.0, 0.0, 0.0));
     let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));
-    let control = Control { movement: cgmath::Vector3::new(0.0, 0.0, 0.0) };
+    let control = Control::default();
 
     world
         .create_entity()
@@ -38,7 +39,7 @@ where
         .with(direction)
         .with(control)
         .with(PhysicsTiedPosition)
-        .with(player::Player);
+        .with(player::components::Player);
 
     let body_init = || {
         let geom = Cuboid::new(Vector3::new(1.0, 1.0, 1.0));
@@ -51,7 +52,7 @@ where
 
     let space = Spatial(cgmath::Point3::new(0.0, 0.0, 0.0));
     let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));
-    let control = Control { movement: cgmath::Vector3::new(0.0, 0.0, 0.0) };
+    let control = Control::default();
 
     let texels = [0x20, 0xA0, 0xC0, 0xFF];
     let (vertices, indices) = create_cube();

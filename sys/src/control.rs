@@ -1,118 +1,68 @@
-//! Controls system to let players control their entity
+//! A component and system to allow other systems to control entities
+//!
+//! For example, the player control system may write to this component to cause the player entity to
+//! move forward
 
-use specs::{self, Join, DispatcherBuilder};
-use cgmath::{self, Quaternion, Rotation3, Rad};
+// TODO: Use this module to control player physics body rotation (but only control yaw, ignore
+//       pitch)
 
-use std::sync::mpsc;
+use specs::{self, DispatcherBuilder, Join};
+use cgmath::{self, Quaternion};
 
-use world;
-use player;
-use window::event;
-use math::functions;
+use physics::components;
+use math::convert;
 
-/// An event sent by a player, for example when a player presses a key an event will be generated
-pub enum Event {
-    /// A player rotated the camera (the direction will be added to the player entity's direction)
-    RotateCamera(CameraRotation),
+/// Controlled properties of an entity
+pub struct Control {
+    direction: Option<cgmath::Quaternion<::Float>>,
 }
 
-pub type EventReceiver = mpsc::Receiver<Event>;
-
-#[derive(Clone, Copy, Debug)]
-pub struct CameraRotation {
-    pitch: Rad<::Float>,
-    yaw: Rad<::Float>,
-}
-
-impl CameraRotation {
-    pub fn new<T: Into<Rad<::Float>>>(pitch: T, yaw: T) -> Self {
-        Self {
-            pitch: pitch.into(),
-            yaw: yaw.into(),
-        }
+impl Control {
+    pub fn new(direction: Option<Quaternion<::Float>>) -> Self {
+        Self { direction }
     }
 }
 
-pub type CameraDirection = cgmath::Euler<Rad<::Float>>;
-
-pub struct System {
-    input: EventReceiver,
-    rotate_direction: Option<CameraRotation>,
-    current_direction: CameraDirection,
-}
-
-impl System {
-    pub fn new(input: EventReceiver) -> Self {
-        Self {
-            input: input,
-            rotate_direction: None,
-            current_direction: cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0)).into(),
-        }
-    }
-
-    fn check_input(&mut self) {
-        while let Ok(e) = self.input.try_recv() {
-            match e {
-                Event::RotateCamera(rot) => {
-                    self.rotate_direction = Some(rot);
-                }
-            }
-        }
+impl Default for Control {
+    fn default() -> Self {
+        Control::new(None)
     }
 }
+
+impl specs::Component for Control {
+    type Storage = specs::VecStorage<Self>;
+}
+
+pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    player: specs::ReadStorage<'a, player::Player>,
-    direction: specs::WriteStorage<'a, world::components::Direction>,
+    control: specs::ReadStorage<'a, Control>,
+    physics: specs::WriteStorage<'a, components::Physics>,
 }
 
 impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
     fn run(&mut self, mut data: Self::SystemData) {
-        // TODO: Maybe use delta time here for controls
-        self.check_input();
-
-        // Apply the input to the player entity
-        for (d, _) in (&mut data.direction, &data.player).join() {
-            if let Some(rot) = self.rotate_direction.clone() {
-                let current = &mut self.current_direction;
-
-                // The pitch, yaw, and roll values are stored internally
-                // Rotations are added to the stored values, and the rotation is constructed each
-                // update, instead of accumulating
-                current.x = functions::clamp(current.x + rot.pitch, Rad(0.0), Rad(3.14));
-                current.y = functions::wrap(current.y + rot.yaw, Rad(-3.14), Rad(3.14));
-
-                let x = current.x;
-                let y = current.y;
-                let z = current.z;
-
-                let pitch = Quaternion::from_angle_x(x);
-                let yaw = Quaternion::from_angle_z(y);
-                let pitch_yaw = yaw * pitch;
-
-                let forward = pitch_yaw * cgmath::Vector3::unit_z();
-                let roll = Quaternion::from_axis_angle(forward, z);
-
-                let quat = roll * pitch_yaw;
-
-                // Rotate the player entity's direction
-                d.0 = quat;
+        for (c, p) in (&data.control, &mut data.physics).join() {
+            if let Some(direction) = c.direction {
+                let direction = convert::to_na_quaternion(direction);
+                p.handle().map(|h| h.borrow_mut().set_rotation(direction));
             }
         }
     }
 }
 
-/// Initializes controls-related components and systems
+/// Initialization of control-related systems and components
 pub fn init<'a, 'b>(
+    world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
-) -> (DispatcherBuilder<'a, 'b>, event::SenderHub) {
+) -> DispatcherBuilder<'a, 'b> {
 
-    let (snd, recv) = event::SenderHub::new();
-    let control = System::new(recv.into_receiver());
-    let dispatcher = dispatcher.add(control, "control", &[]);
+    // Register components
+    world.register::<Control>();
 
-    (dispatcher, snd)
+    // Add systems
+    dispatcher.add(System, "control", &[])
 }

@@ -31,7 +31,7 @@ impl<'a> specs::System<'a> for System {
             p.handle().map(|h| {
                 // TODO: Maybe use try_borrow to avoid panics (but maybe it isn't necessary here)
 
-                let quat = h.borrow().position().rotation.quaternion().clone();
+                let quat = h.borrow().position().rotation;
                 d.0 = convert::to_cgmath_quaternion(quat);
             });
         }

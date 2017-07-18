@@ -41,19 +41,18 @@ pub type Float = f64;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
-// TODO: Decide where this initialization should be and how it should be split up
 pub fn run() {
     // Create world
     let mut world = specs::World::new();
     let dispatcher = specs::DispatcherBuilder::new();
 
     // Call initialization function of each module (initializes their components and systems)
-    let (dispatcher, sender) = control::init(dispatcher);
+    let (dispatcher, sender) = player::init(&mut world, dispatcher);
+    let dispatcher = control::init(&mut world, dispatcher);
     let dispatcher = delta::init(&mut world, dispatcher);
-    // NOTE: I think this should be called before graphics::init so physics runs first
     let dispatcher = world::init(&mut world, dispatcher);
+    // NOTE: This should be called before `graphics::init` so physics runs first
     let dispatcher = physics::init::init(&mut world, dispatcher);
-    let dispatcher = player::init(&mut world, dispatcher);
     let (dispatcher, window, mut events) = graphics::init(&mut world, dispatcher);
 
     // Build the dispatcher

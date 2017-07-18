@@ -8,7 +8,7 @@ use cgmath;
 
 use std::sync::mpsc;
 
-use control;
+use player::control;
 
 /// A type for processing window events.
 pub struct SenderHub {

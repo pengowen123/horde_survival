@@ -9,7 +9,7 @@ mod init;
 
 pub use self::init::init;
 
-// TODO: Maybe remove these re-exports if higher-level functionality is exposed
+// TODO: Remove these re-exports when higher-level functionality is exposed
 pub use self::shader::{Vertex, ColorFormat, DepthFormat, Drawable};
 pub use self::shader::pipe::new as init_pipeline;
 pub use self::param::ShaderParam;

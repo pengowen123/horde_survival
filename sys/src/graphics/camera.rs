@@ -1,12 +1,10 @@
 //! A resource to store the camera, and a system to update it
 
-// TODO: Fix objects disappearing when the camera points straight up or down
-
 use specs::{self, ReadStorage, Join};
 use cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
 
 use world;
-use player;
+use player::components::Player;
 use window::info;
 
 /// Vertical field of view of the camera
@@ -63,7 +61,7 @@ pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    player: ReadStorage<'a, player::Player>,
+    player: ReadStorage<'a, Player>,
     space: ReadStorage<'a, world::components::Spatial>,
     direction: ReadStorage<'a, world::components::Direction>,
     camera: specs::FetchMut<'a, Camera>,

@@ -21,8 +21,6 @@ pub struct System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    // TODO: Find a way for controlled entities (by ai or player) to supply inertia to their body
-    //       Prefer not to force other entities such as the map to have it if possible
     physics: specs::WriteStorage<'a, physics::components::Physics>,
     delta: specs::Fetch<'a, delta::Delta>,
 }
