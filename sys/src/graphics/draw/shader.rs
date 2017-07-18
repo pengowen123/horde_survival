@@ -4,6 +4,8 @@
 use specs;
 use gfx;
 
+use super::param;
+
 /// The color format for graphics
 pub type ColorFormat = gfx::format::Srgba8;
 
@@ -49,6 +51,7 @@ pub struct Drawable<R: gfx::Resources> {
     texture: TextureView<R>,
     vertex_buffer: VertexBuffer<R>,
     slice: gfx::Slice<R>,
+    param: param::ShaderParam,
 }
 
 impl<R: gfx::Resources> Drawable<R> {
@@ -61,6 +64,7 @@ impl<R: gfx::Resources> Drawable<R> {
             texture,
             vertex_buffer,
             slice,
+            param: Default::default(),
         }
     }
 
@@ -74,6 +78,15 @@ impl<R: gfx::Resources> Drawable<R> {
 
     pub fn slice(&self) -> &gfx::Slice<R> {
         &self.slice
+    }
+
+    pub fn param(&self) -> &param::ShaderParam {
+        &self.param
+    }
+
+    /// Sets the shader parameters to the provided value
+    pub fn set_shader_param(&mut self, param: param::ShaderParam) {
+        self.param = param;
     }
 }
 

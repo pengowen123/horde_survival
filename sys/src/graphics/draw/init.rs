@@ -65,10 +65,16 @@ pub fn init<'a, 'b>(
     ::dev::add_test_entities(world, &mut factory);
 
     // Initialize systems
-    let system = super::System::new(factory, device, main_color, main_depth, encoder, pso);
+    let draw = super::System::new(factory, device, main_color, main_depth, encoder, pso);
 
     // Add systems
-    let dispatcher = dispatcher.add_thread_local(system);
+    let dispatcher = dispatcher
+        .add(
+            param::System::new(draw.factory()),
+            "shader-param",
+            &["shader-param-translation", "shader-param-rotation"],
+        )
+        .add_thread_local(draw);
 
     (dispatcher, window, events)
 }

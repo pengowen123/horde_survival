@@ -42,14 +42,6 @@ where
     data: shader::pipe::Data<R>,
 }
 
-#[derive(SystemData)]
-pub struct Data<'a, R: gfx::Resources> {
-    drawable: specs::ReadStorage<'a, shader::Drawable<R>>,
-    param: specs::ReadStorage<'a, ShaderParam>,
-    window: specs::Fetch<'a, window::Window>,
-    camera: specs::Fetch<'a, camera::Camera>,
-}
-
 impl<F, C, R, D> System<F, C, R, D>
 where
     F: gfx::Factory<R>,
@@ -99,6 +91,17 @@ where
             encoder,
         }
     }
+
+    pub fn factory(&self) -> &F {
+        &self.factory
+    }
+}
+
+#[derive(SystemData)]
+pub struct Data<'a, R: gfx::Resources> {
+    drawable: specs::ReadStorage<'a, shader::Drawable<R>>,
+    window: specs::Fetch<'a, window::Window>,
+    camera: specs::Fetch<'a, camera::Camera>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -121,9 +124,10 @@ where
         let camera = data.camera.get_matrix();
         let mut locals = shader::Locals { transform: (*camera).into() };
 
-        for (d, p) in (&data.drawable, &data.param).join() {
+        for d in (&data.drawable).join() {
+            let param = d.param();
             // Update shader parameters
-            let transform = camera * p.translation() * p.rotation();
+            let transform = camera * param.translation() * param.rotation();
             locals.transform = transform.into();
             self.encoder.update_constant_buffer(
                 &self.data.locals,
