@@ -3,7 +3,7 @@
 // TODO: Fix objects disappearing when the camera points straight up or down
 
 use specs::{self, ReadStorage, Join};
-use cgmath::{self, Rotation3};
+use cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
 
 use world;
 use player;
@@ -21,7 +21,7 @@ const FAR: f32 = 1000.0;
 /// Represents a camera in a 3D space
 #[derive(Clone, Copy, Debug)]
 pub struct Camera {
-    /// The Model View Projection (MVP) matrix
+    /// The camera matrix (Projection * View)
     matrix: cgmath::Matrix4<f32>,
 }
 
@@ -34,9 +34,11 @@ impl Camera {
         aspect_ratio: f32,
     ) -> Self {
 
-        let pointing_to = pos + direction * cgmath::Vector3::unit_z();
         let proj = cgmath::perspective(cgmath::Deg(FOV_Y), aspect_ratio, NEAR, FAR);
-        let view = cgmath::Matrix4::look_at(pos, pointing_to, cgmath::Vector3::unit_z());
+        let pos = pos.to_vec();
+        let view = (cgmath::Matrix4::from_translation(pos) * cgmath::Matrix4::from(direction))
+            .invert()
+            .unwrap();
 
         Self { matrix: (proj * view).into() }
     }
@@ -45,7 +47,7 @@ impl Camera {
     pub fn new_default(aspect_ratio: f32) -> Self {
         Camera::new(
             cgmath::Point3::new(0.0, 0.0, 0.0),
-            cgmath::Quaternion::from_angle_x(cgmath::Deg(90.0)),
+            cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0)),
             aspect_ratio,
         )
     }

@@ -1,3 +1,7 @@
+//! Window event processing
+//!
+//! Processes raw window events into higher-level data types and sends them to the event handling
+//! system to be handled
 
 use glutin::{self, WindowEvent};
 use cgmath;
@@ -44,6 +48,8 @@ impl SenderHub {
 
                 // Yaw control is inverted, so invert it again to fix it
                 let diff_yaw = -diff_yaw;
+                // Pitch control is also inverted
+                let diff_pitch = -diff_pitch;
 
                 let rot_pitch = diff_pitch as ::Float * sensitivity;
                 let rot_yaw = diff_yaw as ::Float * sensitivity;

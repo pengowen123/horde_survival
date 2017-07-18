@@ -1,13 +1,14 @@
 //! Controls system to let players control their entity
 
 use specs::{self, Join, DispatcherBuilder};
-use cgmath::{self, Quaternion, Rotation3};
+use cgmath::{self, Quaternion, Rotation3, Rad};
 
 use std::sync::mpsc;
 
 use world;
 use player;
 use window::event;
+use math::functions;
 
 /// An event sent by a player, for example when a player presses a key an event will be generated
 pub enum Event {
@@ -15,14 +16,16 @@ pub enum Event {
     RotateCamera(CameraRotation),
 }
 
+pub type EventReceiver = mpsc::Receiver<Event>;
+
 #[derive(Clone, Copy, Debug)]
 pub struct CameraRotation {
-    pitch: cgmath::Rad<::Float>,
-    yaw: cgmath::Rad<::Float>,
+    pitch: Rad<::Float>,
+    yaw: Rad<::Float>,
 }
 
 impl CameraRotation {
-    pub fn new<T: Into<cgmath::Rad<::Float>>>(pitch: T, yaw: T) -> Self {
+    pub fn new<T: Into<Rad<::Float>>>(pitch: T, yaw: T) -> Self {
         Self {
             pitch: pitch.into(),
             yaw: yaw.into(),
@@ -30,11 +33,12 @@ impl CameraRotation {
     }
 }
 
-pub type EventReceiver = mpsc::Receiver<Event>;
+pub type CameraDirection = cgmath::Euler<Rad<::Float>>;
 
 pub struct System {
     input: EventReceiver,
     rotate_direction: Option<CameraRotation>,
+    current_direction: CameraDirection,
 }
 
 impl System {
@@ -42,6 +46,7 @@ impl System {
         Self {
             input: input,
             rotate_direction: None,
+            current_direction: cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0)).into(),
         }
     }
 
@@ -69,14 +74,32 @@ impl<'a> specs::System<'a> for System {
         // TODO: Maybe use delta time here for controls
         self.check_input();
 
+        // Apply the input to the player entity
         for (d, _) in (&mut data.direction, &data.player).join() {
             if let Some(rot) = self.rotate_direction.clone() {
-                // Create a quaternion from the direction
-                let rot_pitch = Quaternion::from_angle_x(rot.pitch);
-                let rot_yaw = Quaternion::from_angle_y(rot.yaw);
-                let camera_direction = rot_pitch * rot_yaw;
+                let current = &mut self.current_direction;
 
-                d.0 = d.0 * camera_direction;
+                // The pitch, yaw, and roll values are stored internally
+                // Rotations are added to the stored values, and the rotation is constructed each
+                // update, instead of accumulating
+                current.x = functions::clamp(current.x + rot.pitch, Rad(0.0), Rad(3.14));
+                current.y = functions::wrap(current.y + rot.yaw, Rad(-3.14), Rad(3.14));
+
+                let x = current.x;
+                let y = current.y;
+                let z = current.z;
+
+                let pitch = Quaternion::from_angle_x(x);
+                let yaw = Quaternion::from_angle_z(y);
+                let pitch_yaw = yaw * pitch;
+
+                let forward = pitch_yaw * cgmath::Vector3::unit_z();
+                let roll = Quaternion::from_axis_angle(forward, z);
+
+                let quat = roll * pitch_yaw;
+
+                // Rotate the player entity's direction
+                d.0 = quat;
             }
         }
     }
