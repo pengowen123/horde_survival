@@ -3,7 +3,7 @@
 //! Processes raw window events into higher-level data types and sends them to the event handling
 //! system to be handled
 
-use glutin::{self, WindowEvent};
+use glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode};
 use cgmath;
 
 use std::sync::mpsc;
@@ -31,6 +31,7 @@ impl SenderHub {
                 device_id: _,
                 position: (x, y),
             } => {
+                // TODO: Refactor this to make this code cleaner
                 let (w, h) = match window.get_inner_size_pixels() {
                     Some(s) => s,
                     None => return,
@@ -59,6 +60,13 @@ impl SenderHub {
                 self.control
                     .send(control::Event::RotateCamera(camera_rot))
                     .expect("Failed to send event");
+            }
+            WindowEvent::KeyboardInput {
+                input: KeyboardInput { virtual_keycode: Some(VirtualKeyCode::W), .. }, ..
+            } => {
+                self.control.send(control::Event::MoveForward).expect(
+                    "Failed to send event",
+                );
             }
             _ => {}
         }

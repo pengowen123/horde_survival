@@ -1,7 +1,5 @@
 //! Components and systems to pass additional parameters (such as rotation) to the shaders
 
-// TODO: Add a system to write params to Drawable, to allow entities to have no ShaderParam
-//       component
 pub mod translation;
 pub mod rotation;
 

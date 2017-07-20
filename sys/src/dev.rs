@@ -22,8 +22,9 @@ where
 {
     let body_init = || {
         let geom = Cuboid::new(Vector3::new(1.0, 1.0, 1.0));
-        let mut body = RigidBody::new_static(geom, 1.0, 1.0);
-        body.append_translation(&Translation3::new(5.0, 5.0, 5.0));
+        //let mut body = RigidBody::new_static(geom, 1.0, 1.0);
+        let mut body = RigidBody::new_dynamic(geom, 10.0, 0.0, 100.0);
+        body.append_translation(&Translation3::new(5.0, 5.0, 15.0));
         body
     };
 
@@ -32,6 +33,7 @@ where
     let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));
     let control = Control::default();
 
+    // Add player entity
     world
         .create_entity()
         .with(physics)
@@ -43,12 +45,12 @@ where
 
     let body_init = || {
         let geom = Cuboid::new(Vector3::new(1.0, 1.0, 1.0));
-        let mut body = RigidBody::new_dynamic(geom, 1.0, 1.0, 1.0);
+        let mut body = RigidBody::new_dynamic(geom, 10.0, 0.0, 10.0);
         body.append_translation(&Translation3::new(0.0, 0.0, 10.0));
         body
     };
 
-    let physics = Physics::new(body_init, false);
+    let physics = Physics::new(body_init, true);
 
     let space = Spatial(cgmath::Point3::new(0.0, 0.0, 0.0));
     let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));

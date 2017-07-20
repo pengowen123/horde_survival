@@ -4,24 +4,24 @@ name = "sys"
 version = "0.1.0"
 
 [dependencies]
+alga = "0.5.1"
 cgmath = "0.14"
 glutin = "0.9"
 log = "0.3.8"
 nalgebra = "0.11"
 ncollide = "0.11"
-#nphysics3d = "0.6.1"
 rayon = "0.7.1"
 shred = "0.4"
 shred-derive = "0.3"
 specs = "0.9"
 time = "0.1.37"
 
-[dependencies.nphysics3d]
-path = "/home/pengowen/forks/nphysics/build/nphysics3d/"
-features = ["threadsafe"]
-
 [dependencies.gfx]
 git = "https://github.com/gfx-rs/gfx"
 
 [dependencies.gfx_window_glutin]
 git = "https://github.com/gfx-rs/gfx"
+
+[dependencies.nphysics3d]
+features = ["threadsafe"]
+path = "/home/pengowen/forks/nphysics/build/nphysics3d/"

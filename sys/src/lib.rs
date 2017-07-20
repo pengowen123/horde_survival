@@ -9,14 +9,17 @@ extern crate shred_derive;
 // Physics
 extern crate nphysics3d;
 extern crate ncollide;
-extern crate nalgebra as na;
 
 // Graphics
-extern crate cgmath;
 #[macro_use]
 extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
+
+// Math
+extern crate cgmath;
+extern crate nalgebra as na;
+extern crate alga;
 
 // Misc
 extern crate rayon;
