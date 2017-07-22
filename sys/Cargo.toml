@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 alga = "0.5.1"
+bitflags = "0.9.1"
 cgmath = "0.14"
 glutin = "0.9"
 log = "0.3.8"

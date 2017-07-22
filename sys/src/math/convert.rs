@@ -30,9 +30,9 @@ where
 {
     na::UnitQuaternion::from_quaternion(na::QuaternionBase::new(
         quat.s,
-        quat.v[0],
-        quat.v[1],
-        quat.v[2],
+        quat.v.x,
+        quat.v.y,
+        quat.v.z,
     ))
 }
 
@@ -42,4 +42,27 @@ where
     T: Real,
 {
     na::Vector3::new(vector[0], vector[1], vector[2])
+}
+
+// TODO: Write tests
+// TODO: Use quickcheck for all math tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use cgmath::{Rotation3, InnerSpace, Deg};
+
+    #[test]
+    fn test_to_na_quaternion() {
+        let quat = cgmath::Quaternion::from_axis_angle(
+            cgmath::Vector3::new(1.0, 1.0, 1.0).normalize(),
+            Deg(45.0),
+        );
+        let na_quat = to_na_quaternion(quat);
+
+        let cgmath_output = quat * cgmath::Vector3::unit_z();
+        let na_output = na_quat * na::Vector3::z();
+
+        assert_eq!(to_na_vector(cgmath_output), na_output);
+    }
 }

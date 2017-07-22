@@ -21,9 +21,8 @@ where
     F: gfx::Factory<R>,
 {
     let body_init = || {
-        let geom = Cuboid::new(Vector3::new(1.0, 1.0, 1.0));
-        //let mut body = RigidBody::new_static(geom, 1.0, 1.0);
-        let mut body = RigidBody::new_dynamic(geom, 10.0, 0.0, 100.0);
+        let geom = Cuboid::new(Vector3::new(1.0, 1.0, 10.0));
+        let mut body = RigidBody::new_dynamic(geom, 100.0, 0.0, 100.0);
         body.append_translation(&Translation3::new(5.0, 5.0, 15.0));
         body
     };

@@ -3,9 +3,6 @@
 //! For example, the player control system may write to this component to cause the player entity to
 //! move forward
 
-// TODO: Use this module to control player physics body rotation (but only control yaw, ignore
-//       pitch)
-
 use specs::{self, DispatcherBuilder, Join};
 use cgmath::{self, Quaternion};
 use na;
@@ -24,9 +21,8 @@ pub struct Control {
 pub enum VelocityModifier {
     /// Set the velocity to the value
     SetTo(cgmath::Vector3<::Float>),
-    /// Set the velocity to moving at the provided speed, in the direction the entity is facing
-    /// If the second field is set to `true`, only take into account the entity's yaw
-    MoveForward(::Float, bool),
+    /// Set the velocity to moving at the provided speed, in the provided direction
+    MoveForward(Quaternion<::Float>, ::Float),
 }
 
 impl Control {
@@ -50,18 +46,10 @@ impl Control {
         self.velocity = Some(VelocityModifier::SetTo(velocity));
     }
 
-    /// Sets the velocity of the entity so that it moves at the provided speed in the direction it
-    /// is facing
-    pub fn move_forward(&mut self, speed: ::Float) {
-        self.velocity = Some(VelocityModifier::MoveForward(speed, false));
-    }
-
-    /// Like `Control::move_forward`, but only takes into account the yaw of the entity
-    ///
-    /// This should be used for walking entities, while `Control::move_forward` should be used for
-    /// flying.
-    pub fn move_forward_heading(&mut self, speed: ::Float) {
-        self.velocity = Some(VelocityModifier::MoveForward(speed, true));
+    /// Sets the velocity of the entity so that it moves at the provided speed in the provided
+    /// direction
+    pub fn move_in_direction(&mut self, direction: Quaternion<::Float>, speed: ::Float) {
+        self.velocity = Some(VelocityModifier::MoveForward(direction, speed));
     }
 }
 
@@ -98,23 +86,24 @@ impl<'a> specs::System<'a> for System {
                 c.direction = None;
             }
 
+            // Reset the entity's velocity every frame
+            p.handle().map(|h| {
+                let vel = h.borrow().lin_vel();
+                h.borrow_mut().set_lin_vel([0.0, 0.0, vel[2]].into());
+            });
+
             if let Some(modifier) = c.velocity {
-                p.handle().map(|h| {
-                    let vel = h.borrow().lin_vel();
-                    // FIXME: this doesn't work
-                    h.borrow_mut().set_lin_vel([0.0, 0.0, vel[2]].into());
+                p.handle().map(|h| match modifier {
+                    VelocityModifier::SetTo(velocity) => {
+                        let velocity = convert::to_na_vector(velocity);
+                        h.borrow_mut().set_lin_vel(velocity);
+                    }
+                    VelocityModifier::MoveForward(direction, speed) => {
+                        let direction = convert::to_na_quaternion(direction);
+                        let mut body = h.borrow_mut();
 
-                    match modifier {
-                        VelocityModifier::SetTo(velocity) => {
-                            let velocity = convert::to_na_vector(velocity);
-                            h.borrow_mut().set_lin_vel(velocity);
-                        }
-                        VelocityModifier::MoveForward(speed, yaw_only) => {
-                            let mut body = h.borrow_mut();
-
-                            let velocity = (body.position().rotation * na::Vector3::z()) * speed;
-                            body.set_lin_vel(velocity);
-                        }
+                        let velocity = (direction * -na::Vector3::z()).normalize() * speed;
+                        body.set_lin_vel(velocity);
                     }
                 });
                 c.velocity = None;

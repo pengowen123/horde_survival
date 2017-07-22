@@ -3,6 +3,7 @@ name = "sys"
 version = "0.1.0"
 dependencies = [
  "alga 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "bitflags 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "cgmath 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gfx 0.16.0 (git+https://github.com/gfx-rs/gfx)",
  "gfx_window_glutin 0.17.0 (git+https://github.com/gfx-rs/gfx)",

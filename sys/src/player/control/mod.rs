@@ -1,60 +1,42 @@
 //! Controls system to let players control their entity
 
+pub mod event;
+mod input;
+mod utils;
+
+pub use self::input::Direction;
+pub use self::utils::CameraRotation;
+
 use specs::{self, Join};
 use cgmath::{self, Quaternion, Rotation3, Rad};
-
-use std::sync::mpsc;
 
 use world;
 use control;
 use player::components::Player;
 use math::functions;
-
-/// An event sent by a player, for example when a player presses a key an event will be generated
-pub enum Event {
-    /// A player rotated the camera (the direction will be added to the player entity's direction)
-    RotateCamera(CameraRotation),
-    MoveForward,
-}
-
-pub type EventReceiver = mpsc::Receiver<Event>;
-
-#[derive(Clone, Copy, Debug)]
-pub struct CameraRotation {
-    pitch: Rad<::Float>,
-    yaw: Rad<::Float>,
-}
-
-impl CameraRotation {
-    pub fn new<T: Into<Rad<::Float>>>(pitch: T, yaw: T) -> Self {
-        Self {
-            pitch: pitch.into(),
-            yaw: yaw.into(),
-        }
-    }
-}
+use self::event::Event;
 
 /// A type alias for convenience
 type Euler = cgmath::Euler<Rad<::Float>>;
 
 pub struct System {
     /// Receives events
-    input: EventReceiver,
+    input: event::EventReceiver,
     /// The rotation to apply to the player entity
     rotate_direction: Option<CameraRotation>,
     /// Internally used for clamping the camera controls
     current_direction: Euler,
-    /// Whether to move forward
-    move_forward: bool,
+    /// Input state
+    input_state: input::InputState,
 }
 
 impl System {
-    pub fn new(input: EventReceiver) -> Self {
+    pub fn new(input: event::EventReceiver) -> Self {
         Self {
             input: input,
             rotate_direction: None,
             current_direction: cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0)).into(),
-            move_forward: false,
+            input_state: Default::default(),
         }
     }
 
@@ -62,7 +44,18 @@ impl System {
         while let Ok(e) = self.input.try_recv() {
             match e {
                 Event::RotateCamera(rot) => self.rotate_direction = Some(rot),
-                Event::MoveForward => self.move_forward = true,
+                Event::EnableMoveDirection(direction) => {
+                    self.input_state.insert(
+                        input::InputState::from_bits(direction as _)
+                            .unwrap(),
+                    );
+                }
+                Event::DisableMoveDirection(direction) => {
+                    self.input_state.remove(
+                        input::InputState::from_bits(direction as _)
+                            .unwrap(),
+                    );
+                }
             }
         }
     }
@@ -74,8 +67,8 @@ impl System {
         // The pitch, yaw, and roll values are stored internally
         // Rotations are added to the stored values, and the rotation is constructed each
         // update, instead of accumulating
-        current.x = functions::clamp(current.x + rot.pitch, Rad(0.0), Rad(3.14));
-        current.y = functions::wrap(current.y + rot.yaw, Rad(-3.14), Rad(3.14));
+        current.x = functions::clamp(current.x + rot.pitch(), Rad(0.0), Rad(3.14));
+        current.y = functions::wrap(current.y + rot.yaw(), Rad(-3.14), Rad(3.14));
 
         let pitch = Quaternion::from_angle_x(current.x);
         let yaw = Quaternion::from_angle_z(current.y);
@@ -115,9 +108,9 @@ impl<'a> specs::System<'a> for System {
                 c.set_rotation(Quaternion::from_angle_z(self.current_direction.y));
             }
 
-            if self.move_forward {
-                c.move_forward(1.0);
-                self.move_forward = false;
+            if let Some(angle) = self.input_state.get_movement_angle() {
+                let dir = d.0 * Quaternion::from_angle_y(angle);
+                c.move_in_direction(dir, 10.0);
             }
         }
     }

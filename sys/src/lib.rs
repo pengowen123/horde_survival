@@ -21,11 +21,15 @@ extern crate cgmath;
 extern crate nalgebra as na;
 extern crate alga;
 
+// Logging
+#[macro_use]
+extern crate log;
+
 // Misc
 extern crate rayon;
 extern crate time;
 #[macro_use]
-extern crate log;
+extern crate bitflags;
 
 // TODO: Remove when no longer needed
 mod dev;
