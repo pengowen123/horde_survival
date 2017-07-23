@@ -18,6 +18,7 @@ use gfx::{self, texture};
 use gfx::traits::FactoryExt;
 use glutin::GlContext;
 use specs::{self, Join};
+use cgmath::{Matrix4, SquareMatrix};
 
 use graphics::camera;
 use window;
@@ -121,14 +122,23 @@ where
         self.encoder.clear(&self.data.out_color, CLEAR_COLOR);
         self.encoder.clear_depth(&self.data.out_depth, 1.0);
 
-        let camera = data.camera.get_matrix();
-        let mut locals = shader::Locals { transform: (*camera).into() };
+        // Get camera matrices
+        let proj = data.camera.projection();
+        let view = data.camera.view();
+        // Proj * View
+        let vp = proj * view;
+        // Initialize shader uniforms
+        let mut locals = shader::Locals {
+            mvp: vp.into(),
+            model_view: view.clone().into(),
+            model: Matrix4::identity().into(),
+        };
 
         for d in (&data.drawable).join() {
             let param = d.param();
             // Update shader parameters
-            let transform = camera * param.translation() * param.rotation();
-            locals.transform = transform.into();
+            let mvp = vp * param.translation() * param.rotation();
+            locals.mvp = mvp.into();
             self.encoder.update_constant_buffer(
                 &self.data.locals,
                 &locals,

@@ -16,6 +16,9 @@ extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
 
+// Format-specific libraries
+extern crate obj;
+
 // Math
 extern crate cgmath;
 extern crate nalgebra as na;
@@ -30,10 +33,14 @@ extern crate rayon;
 extern crate time;
 #[macro_use]
 extern crate bitflags;
+#[macro_use]
+extern crate quick_error;
+extern crate genmesh;
 
 // TODO: Remove when no longer needed
 mod dev;
 
+mod assets;
 mod world;
 mod physics;
 mod math;

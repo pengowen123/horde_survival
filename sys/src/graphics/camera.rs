@@ -19,8 +19,10 @@ const FAR: f32 = 1000.0;
 /// Represents a camera in a 3D space
 #[derive(Clone, Copy, Debug)]
 pub struct Camera {
-    /// The camera matrix (Projection * View)
-    matrix: cgmath::Matrix4<f32>,
+    /// The projection matrix
+    proj: cgmath::Matrix4<f32>,
+    /// The view matrix
+    view: cgmath::Matrix4<f32>,
 }
 
 impl Camera {
@@ -38,7 +40,7 @@ impl Camera {
             .invert()
             .unwrap();
 
-        Self { matrix: (proj * view).into() }
+        Self { proj, view }
     }
 
     /// Returns the default camera given the aspect ratio
@@ -50,9 +52,14 @@ impl Camera {
         )
     }
 
-    /// Returns the camera matrix
-    pub fn get_matrix(&self) -> &cgmath::Matrix4<f32> {
-        &self.matrix
+    /// Returns the projection matrix
+    pub fn projection(&self) -> &cgmath::Matrix4<f32> {
+        &self.proj
+    }
+
+    /// Returns the view matrix
+    pub fn view(&self) -> &cgmath::Matrix4<f32> {
+        &self.view
     }
 }
 

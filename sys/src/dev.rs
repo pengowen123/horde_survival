@@ -13,6 +13,7 @@ use graphics::draw::{self, Vertex};
 use world::components::*;
 use physics::components::*;
 use control::Control;
+use assets::obj;
 use player;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
@@ -55,9 +56,13 @@ where
     let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));
     let control = Control::default();
 
-    let texels = [0x20, 0xA0, 0xC0, 0xFF];
-    let (vertices, indices) = create_cube();
-    let draw = create_drawable(factory, vertices, indices, texels);
+    // TODO: get a better model that has textures to test with
+    //       make shader loading happen at runtime
+    //       make lighting and shadows in shaders
+    let draw = obj::create_drawable_from_obj_file(
+        concat!(env!("CARGO_MANIFEST_DIR"), "/assets/suzanne.obj"),
+        factory,
+    ).unwrap();
     let shader_param = draw::ShaderParam::default();
 
     // Add test dummy entity
@@ -119,35 +124,35 @@ where
 fn create_cube() -> (Vec<Vertex>, Vec<u16>) {
     let vertex_data = vec![
         // top (0.0, 0.0, 1.0)
-        Vertex::new([-1.0, -1.0, 1.0], [0.0, 0.0]),
-        Vertex::new([1.0, -1.0, 1.0], [1.0, 0.0]),
-        Vertex::new([1.0, 1.0, 1.0], [1.0, 1.0]),
-        Vertex::new([-1.0, 1.0, 1.0], [0.0, 1.0]),
+        Vertex::new([-1.0, -1.0, 1.0], [0.0, 0.0], Default::default()),
+        Vertex::new([1.0, -1.0, 1.0], [1.0, 0.0], Default::default()),
+        Vertex::new([1.0, 1.0, 1.0], [1.0, 1.0], Default::default()),
+        Vertex::new([-1.0, 1.0, 1.0], [0.0, 1.0], Default::default()),
         // bottom (0.0, 0.0, -1.0)
-        Vertex::new([-1.0, 1.0, -1.0], [1.0, 0.0]),
-        Vertex::new([1.0, 1.0, -1.0], [0.0, 0.0]),
-        Vertex::new([1.0, -1.0, -1.0], [0.0, 1.0]),
-        Vertex::new([-1.0, -1.0, -1.0], [1.0, 1.0]),
+        Vertex::new([-1.0, 1.0, -1.0], [1.0, 0.0], Default::default()),
+        Vertex::new([1.0, 1.0, -1.0], [0.0, 0.0], Default::default()),
+        Vertex::new([1.0, -1.0, -1.0], [0.0, 1.0], Default::default()),
+        Vertex::new([-1.0, -1.0, -1.0], [1.0, 1.0], Default::default()),
         // right (1.0, 0.0, 0.0)
-        Vertex::new([1.0, -1.0, -1.0], [0.0, 0.0]),
-        Vertex::new([1.0, 1.0, -1.0], [1.0, 0.0]),
-        Vertex::new([1.0, 1.0, 1.0], [1.0, 1.0]),
-        Vertex::new([1.0, -1.0, 1.0], [0.0, 1.0]),
+        Vertex::new([1.0, -1.0, -1.0], [0.0, 0.0], Default::default()),
+        Vertex::new([1.0, 1.0, -1.0], [1.0, 0.0], Default::default()),
+        Vertex::new([1.0, 1.0, 1.0], [1.0, 1.0], Default::default()),
+        Vertex::new([1.0, -1.0, 1.0], [0.0, 1.0], Default::default()),
         // left (-1.0, 0.0, 0.0)
-        Vertex::new([-1.0, -1.0, 1.0], [1.0, 0.0]),
-        Vertex::new([-1.0, 1.0, 1.0], [0.0, 0.0]),
-        Vertex::new([-1.0, 1.0, -1.0], [0.0, 1.0]),
-        Vertex::new([-1.0, -1.0, -1.0], [1.0, 1.0]),
+        Vertex::new([-1.0, -1.0, 1.0], [1.0, 0.0], Default::default()),
+        Vertex::new([-1.0, 1.0, 1.0], [0.0, 0.0], Default::default()),
+        Vertex::new([-1.0, 1.0, -1.0], [0.0, 1.0], Default::default()),
+        Vertex::new([-1.0, -1.0, -1.0], [1.0, 1.0], Default::default()),
         // front (0.0, 1.0, 0.0)
-        Vertex::new([1.0, 1.0, -1.0], [1.0, 0.0]),
-        Vertex::new([-1.0, 1.0, -1.0], [0.0, 0.0]),
-        Vertex::new([-1.0, 1.0, 1.0], [0.0, 1.0]),
-        Vertex::new([1.0, 1.0, 1.0], [1.0, 1.0]),
+        Vertex::new([1.0, 1.0, -1.0], [1.0, 0.0], Default::default()),
+        Vertex::new([-1.0, 1.0, -1.0], [0.0, 0.0], Default::default()),
+        Vertex::new([-1.0, 1.0, 1.0], [0.0, 1.0], Default::default()),
+        Vertex::new([1.0, 1.0, 1.0], [1.0, 1.0], Default::default()),
         // back (0.0, -1.0, 0.0)
-        Vertex::new([1.0, -1.0, 1.0], [0.0, 0.0]),
-        Vertex::new([-1.0, -1.0, 1.0], [1.0, 0.0]),
-        Vertex::new([-1.0, -1.0, -1.0], [1.0, 1.0]),
-        Vertex::new([1.0, -1.0, -1.0], [0.0, 1.0]),
+        Vertex::new([1.0, -1.0, 1.0], [0.0, 0.0], Default::default()),
+        Vertex::new([-1.0, -1.0, 1.0], [1.0, 0.0], Default::default()),
+        Vertex::new([-1.0, -1.0, -1.0], [1.0, 1.0], Default::default()),
+        Vertex::new([1.0, -1.0, -1.0], [0.0, 1.0], Default::default()),
     ];
 
     let index_data =
@@ -165,16 +170,20 @@ fn create_cube() -> (Vec<Vertex>, Vec<u16>) {
 
 fn create_plane() -> (Vec<Vertex>, Vec<u16>) {
     let mut vertex_data = vec![
-        Vertex::new([1.0, 1.0, 0.0], [1.0, 1.0]),
-        Vertex::new([-1.0, 1.0, 0.0], [0.0, 1.0]),
-        Vertex::new([1.0, -1.0, 0.0], [1.0, 0.0]),
-        Vertex::new([-1.0, -1.0, 0.0], [0.0, 0.0]),
+        Vertex::new([1.0, 1.0, 0.0], [1.0, 1.0], Default::default()),
+        Vertex::new([-1.0, 1.0, 0.0], [0.0, 1.0], Default::default()),
+        Vertex::new([1.0, -1.0, 0.0], [1.0, 0.0], Default::default()),
+        Vertex::new([-1.0, -1.0, 0.0], [0.0, 0.0], Default::default()),
     ];
     let scale = 100.0;
     vertex_data = vertex_data
         .into_iter()
         .map(|v| {
-            Vertex::new([v.pos[0] * scale, v.pos[1] * scale, v.pos[2] * scale], v.uv)
+            Vertex::new(
+                [v.pos[0] * scale, v.pos[1] * scale, v.pos[2] * scale],
+                v.uv,
+                Default::default(),
+            )
         })
         .collect();
 

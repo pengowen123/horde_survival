@@ -13,11 +13,11 @@ use super::param;
 
 const VERTEX_SHADER: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/shaders/vertex_150.glsl"
+    "/assets/shaders/vertex_150.glsl"
 ));
 const FRAGMENT_SHADER: &[u8] = include_bytes!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/shaders/fragment_150.glsl"
+    "/assets/shaders/fragment_150.glsl"
 ));
 
 /// Initializes rendering-related components and systems

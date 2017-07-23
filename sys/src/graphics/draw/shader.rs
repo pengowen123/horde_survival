@@ -21,11 +21,14 @@ gfx_defines! {
     vertex Vertex {
         pos: [f32; 4] = "a_Pos",
         uv: [f32; 2] = "a_Uv",
+        normal: [f32; 3] = "a_Normal",
     }
 
     constant Locals {
         // The transformation matrix
-        transform: [[f32; 4]; 4] = "u_Transform",
+        mvp:        [[f32; 4]; 4] = "u_MVP",
+        model_view: [[f32; 4]; 4] = "u_MV",
+        model:      [[f32; 4]; 4] = "u_M",
     }
 
     pipeline pipe {
@@ -38,10 +41,11 @@ gfx_defines! {
 }
 
 impl Vertex {
-    pub fn new(pos: [f32; 3], uv: [f32; 2]) -> Self {
+    pub fn new(pos: [f32; 3], uv: [f32; 2], normal: [f32; 3]) -> Self {
         Self {
             pos: [pos[0], pos[1], pos[2], 1.0],
             uv: uv,
+            normal,
         }
     }
 }
@@ -55,6 +59,7 @@ pub struct Drawable<R: gfx::Resources> {
 }
 
 impl<R: gfx::Resources> Drawable<R> {
+    /// Returns a new `Drawable`, with the provided texture, vertex buffer, and slice
     pub fn new(
         texture: TextureView<R>,
         vertex_buffer: VertexBuffer<R>,
