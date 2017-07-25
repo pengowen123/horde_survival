@@ -23,6 +23,8 @@ pub struct Camera {
     proj: cgmath::Matrix4<f32>,
     /// The view matrix
     view: cgmath::Matrix4<f32>,
+    /// The position of the eye
+    eye_position: cgmath::Point3<f32>,
 }
 
 impl Camera {
@@ -35,12 +37,16 @@ impl Camera {
     ) -> Self {
 
         let proj = cgmath::perspective(cgmath::Deg(FOV_Y), aspect_ratio, NEAR, FAR);
-        let pos = pos.to_vec();
-        let view = (cgmath::Matrix4::from_translation(pos) * cgmath::Matrix4::from(direction))
+        let pos_vec = pos.to_vec();
+        let view = (cgmath::Matrix4::from_translation(pos_vec) * cgmath::Matrix4::from(direction))
             .invert()
             .unwrap();
 
-        Self { proj, view }
+        Self {
+            proj,
+            view,
+            eye_position: pos,
+        }
     }
 
     /// Returns the default camera given the aspect ratio
@@ -60,6 +66,11 @@ impl Camera {
     /// Returns the view matrix
     pub fn view(&self) -> &cgmath::Matrix4<f32> {
         &self.view
+    }
+
+    /// Returns the eye position
+    pub fn eye_position(&self) -> &cgmath::Point3<f32> {
+        &self.eye_position
     }
 }
 

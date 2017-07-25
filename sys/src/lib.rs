@@ -16,8 +16,9 @@ extern crate gfx;
 extern crate gfx_window_glutin;
 extern crate glutin;
 
-// Format-specific libraries
+// Assets
 extern crate obj;
+extern crate image_utils;
 
 // Math
 extern crate cgmath;

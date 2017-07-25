@@ -9,16 +9,8 @@ use gfx::traits::FactoryExt;
 use std::sync::Arc;
 
 use window;
+use assets::shader;
 use super::param;
-
-const VERTEX_SHADER: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/assets/shaders/vertex_150.glsl"
-));
-const FRAGMENT_SHADER: &[u8] = include_bytes!(concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/assets/shaders/fragment_150.glsl"
-));
 
 /// Initializes rendering-related components and systems
 pub fn init<'a, 'b>(
@@ -51,8 +43,19 @@ pub fn init<'a, 'b>(
 
     let window = Arc::new(window);
     let encoder = factory.create_command_buffer().into();
+
+    let vertex_shader = shader::load_shader_file(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/assets/shaders/vertex_150.glsl"
+    )).expect("Failed to read vertex shader file");
+
+    let fragment_shader = shader::load_shader_file(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/assets/shaders/fragment_150.glsl"
+    )).expect("Failed to read fragment shader file");
+
     let pso = factory
-        .create_pipeline_simple(VERTEX_SHADER, FRAGMENT_SHADER, super::init_pipeline())
+        .create_pipeline_simple(&vertex_shader, &fragment_shader, super::init_pipeline())
         .unwrap_or_else(|e| panic!("Failed to create PSO: {}", e));
 
     // Register components

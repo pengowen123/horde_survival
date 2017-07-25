@@ -127,11 +127,25 @@ where
         let view = data.camera.view();
         // Proj * View
         let vp = proj * view;
+
+        // Get camera position
+        let eye_pos: [f32; 3] = data.camera.eye_position().clone().into();
+        let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
+
         // Initialize shader uniforms
         let mut locals = shader::Locals {
             mvp: vp.into(),
             model_view: view.clone().into(),
             model: Matrix4::identity().into(),
+
+            ambient_color: [1.0, 1.0, 1.0, 1.0],
+            ambient_strength: 0.05,
+
+            light_pos: [5.0, 5.0, 5.0, 1.0],
+            light_color: [0.3, 0.3, 1.0, 1.0],
+            light_strength: 0.5,
+
+            eye_pos,
         };
 
         for d in (&data.drawable).join() {

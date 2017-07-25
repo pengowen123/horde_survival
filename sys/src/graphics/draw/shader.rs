@@ -25,10 +25,18 @@ gfx_defines! {
     }
 
     constant Locals {
-        // The transformation matrix
+        // Transformation matrices
         mvp:        [[f32; 4]; 4] = "u_MVP",
         model_view: [[f32; 4]; 4] = "u_MV",
         model:      [[f32; 4]; 4] = "u_M",
+
+        // Lighting
+        light_pos: [f32; 4] = "u_LightPos",
+        light_color: [f32; 4] = "u_LightColor",
+        ambient_color: [f32; 4] = "u_AmbientColor",
+        eye_pos: [f32; 4] = "u_EyePos",
+        light_strength: f32 = "u_LightStrength",
+        ambient_strength: f32 = "u_AmbientStrength",
     }
 
     pipeline pipe {

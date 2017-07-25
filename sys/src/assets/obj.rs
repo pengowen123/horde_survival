@@ -1,14 +1,16 @@
 //! OBJ loading
 
-use std::path::Path;
-use std::io::{self, BufReader, Read};
-use std::fs::File;
 use gfx::traits::FactoryExt;
-use gfx::{self, texture};
+use gfx;
+use image_utils;
 use obj;
 use genmesh;
 
+use std::path::Path;
+use std::io::{self, BufReader};
+
 use graphics::draw::{Vertex, Drawable};
+use super::utils;
 
 /// Loads an OBJ file from the provided path, and creates a `Drawable` component from it
 pub fn create_drawable_from_obj_file<P, R, F>(
@@ -21,9 +23,7 @@ where
     F: gfx::Factory<R>,
 {
     // Read data from the file
-    let mut file = File::open(path)?;
-    let mut data = Vec::new();
-    file.read_to_end(&mut data)?;
+    let data = utils::read_bytes(path)?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
     let data = obj::Obj::load_buf(&mut buf_reader)?;
@@ -48,13 +48,8 @@ where
     }
 
     let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
-    let texels = [0xFF, 0x00, 0x00, 0xFF];
-    let (_, texture_view) = factory
-        .create_texture_immutable::<gfx::format::Rgba8>(
-            texture::Kind::D2(1, 1, texture::AaMode::Single),
-            &[&[texels]],
-        )
-        .unwrap();
+    let texture_data = utils::read_bytes(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/rock.png"))?;
+    let texture_view = image_utils::load_texture(factory, &texture_data)?;
 
     Ok(Drawable::new(texture_view, vbuf, slice))
 }
@@ -64,6 +59,10 @@ quick_error! {
     pub enum ObjError {
         Io(err: io::Error) {
             display("IO error: {}", err)
+            from()
+        }
+        Texture(err: image_utils::TextureError) {
+            display("Texture creation error: {}", err)
             from()
         }
     }
