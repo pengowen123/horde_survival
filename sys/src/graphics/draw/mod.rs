@@ -41,6 +41,8 @@ where
     device: D,
     pso: gfx::PipelineState<R, shader::pipe::Meta>,
     data: shader::pipe::Data<R>,
+    // TODO: remove, this is for testing lighting
+    time: f64,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -90,6 +92,7 @@ where
             pso,
             data,
             encoder,
+            time: 0.0,
         }
     }
 
@@ -103,6 +106,8 @@ pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, shader::Drawable<R>>,
     window: specs::Fetch<'a, window::Window>,
     camera: specs::Fetch<'a, camera::Camera>,
+    // TODO: remove this too
+    delta: specs::Fetch<'a, ::delta::Delta>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -132,6 +137,13 @@ where
         let eye_pos: [f32; 3] = data.camera.eye_position().clone().into();
         let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
 
+        self.time += data.delta.to_float();
+        let angle = ::cgmath::Rad((self.time / 2.0).sin().abs() * 3.14 * 2.0);
+        let mut vec = ::cgmath::vec3(5.0, 0.0, 0.0);
+        use cgmath::Rotation3;
+        vec = ::cgmath::Quaternion::from_angle_z(angle) * vec;
+        vec.z += 5.0;
+
         // Initialize shader uniforms
         let mut locals = shader::Locals {
             mvp: vp.into(),
@@ -139,11 +151,14 @@ where
             model: Matrix4::identity().into(),
 
             ambient_color: [1.0, 1.0, 1.0, 1.0],
-            ambient_strength: 0.05,
+            ambient_strength: 0.005,
 
-            light_pos: [5.0, 5.0, 5.0, 1.0],
+            light_pos: [vec[0] as f32, vec[1] as f32, vec[2] as f32, 1.0],
             light_color: [0.3, 0.3, 1.0, 1.0],
-            light_strength: 0.5,
+            light_strength: 2.0,
+
+            specular_strength: 0.5,
+            specular_focus: 32.0,
 
             eye_pos,
         };
@@ -151,22 +166,32 @@ where
         for d in (&data.drawable).join() {
             let param = d.param();
             // Update shader parameters
-            let mvp = vp * param.translation() * param.rotation();
+            let m = param.translation() * param.rotation();
+            let mvp = vp * m;
+            // Update MVP matrix
             locals.mvp = mvp.into();
+            // Update Model matrix
+            locals.model = m.into();
+
+            // Update the buffer with the new data
             self.encoder.update_constant_buffer(
                 &self.data.locals,
                 &locals,
             );
+            // Update the texture
             self.data.texture.0 = d.texture().clone();
+            // Update the vertex buffer
             self.data.vbuf = d.vertex_buffer().clone();
 
             // Draw the model
             self.encoder.draw(d.slice(), &self.pso, &self.data);
         }
 
-        // Cleanup code
+        // Send commands to the GPU (actually draw the things)
         self.encoder.flush(&mut self.device);
+        // Display the results to the window
         data.window.swap_buffers().expect("Failed to swap buffers");
+        // Cleanup resources
         self.device.cleanup();
     }
 }

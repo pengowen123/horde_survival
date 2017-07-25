@@ -19,16 +19,16 @@ pub type VertexBuffer<R> = gfx::handle::Buffer<R, Vertex>;
 
 gfx_defines! {
     vertex Vertex {
-        pos: [f32; 4] = "a_Pos",
-        uv: [f32; 2] = "a_Uv",
+        pos: [f32; 3] = "a_Pos",
         normal: [f32; 3] = "a_Normal",
+        uv: [f32; 2] = "a_Uv",
     }
 
     constant Locals {
         // Transformation matrices
         mvp:        [[f32; 4]; 4] = "u_MVP",
-        model_view: [[f32; 4]; 4] = "u_MV",
-        model:      [[f32; 4]; 4] = "u_M",
+        model_view: [[f32; 4]; 4] = "u_ModelView",
+        model:      [[f32; 4]; 4] = "u_Model",
 
         // Lighting
         light_pos: [f32; 4] = "u_LightPos",
@@ -37,6 +37,8 @@ gfx_defines! {
         eye_pos: [f32; 4] = "u_EyePos",
         light_strength: f32 = "u_LightStrength",
         ambient_strength: f32 = "u_AmbientStrength",
+        specular_strength: f32 = "u_SpecularStrength",
+        specular_focus: f32 = "u_SpecularFocus",
     }
 
     pipeline pipe {
@@ -50,11 +52,7 @@ gfx_defines! {
 
 impl Vertex {
     pub fn new(pos: [f32; 3], uv: [f32; 2], normal: [f32; 3]) -> Self {
-        Self {
-            pos: [pos[0], pos[1], pos[2], 1.0],
-            uv: uv,
-            normal,
-        }
+        Self { pos, normal, uv }
     }
 }
 
