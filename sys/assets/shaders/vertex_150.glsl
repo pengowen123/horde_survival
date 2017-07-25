@@ -47,7 +47,7 @@ void main() {
 	v_Model = u_Model;
 	v_Uv = a_Uv;
 	v_Normal = mat3(transpose(inverse(u_Model))) * a_Normal;
-	v_EyePos = vec3(u_Model * u_EyePos);
+	v_EyePos = vec3(u_EyePos);
 	v_FragPos = vec3(u_Model * vec4(a_Pos, 1.0));
 	v_AmbientColor = vec3(u_AmbientColor);
 	v_AmbientStrength = u_AmbientStrength;
