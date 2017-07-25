@@ -25,6 +25,9 @@ git = "https://github.com/gfx-rs/gfx"
 [dependencies.gfx_window_glutin]
 git = "https://github.com/gfx-rs/gfx"
 
+[dependencies.image_utils]
+path = "image_utils"
+
 [dependencies.nphysics3d]
 features = ["threadsafe"]
 path = "/home/pengowen/forks/nphysics/build/nphysics3d/"
@@ -32,6 +35,3 @@ path = "/home/pengowen/forks/nphysics/build/nphysics3d/"
 [dependencies.obj]
 features = ["genmesh"]
 version = "0.8.0"
-
-[dependencies.image_utils]
-path = "image_utils"

@@ -83,6 +83,8 @@ where
         let data = pipeline::pipe::Data {
             vbuf: vbuf,
             locals: factory.create_constant_buffer(1),
+            material: factory.create_constant_buffer(1),
+            light: factory.create_constant_buffer(1),
             texture: (texture_view, sampler),
             out_color: out_color,
             out_depth: out_depth,
@@ -150,21 +152,31 @@ where
         // Initialize shader uniforms
         let mut locals = pipeline::Locals {
             mvp: vp.into(),
-            model_view: view.clone().into(),
             model: Matrix4::identity().into(),
-
-            ambient_color: [1.0, 1.0, 1.0, 1.0],
-            ambient_strength: 0.005,
-
-            light_pos: [vec[0] as f32, vec[1] as f32, vec[2] as f32, 1.0],
-            light_color: [0.3, 0.3, 1.0, 1.0],
-            light_strength: 2.0,
-
-            specular_strength: 0.5,
-            specular_focus: 32.0,
-
             eye_pos,
         };
+
+        let material = pipeline::Material::new(
+            // Ambient
+            [1.0, 1.0, 1.0],
+            // Diffuse
+            [1.0, 1.0, 1.0],
+            // Specular
+            [1.0, 1.0, 1.0],
+            // Shininess
+            1.0,
+        );
+
+        let light = pipeline::Light::new(
+            // Position
+            vec.cast().into(),
+            // Ambient
+            [1.0, 1.0, 1.0],
+            // Diffuse
+            [1.0, 1.0, 1.0],
+            // Specular
+            [1.0, 1.0, 1.0],
+        );
 
         for d in (&data.drawable).join() {
             let param = d.param();
@@ -176,10 +188,18 @@ where
             // Update Model matrix
             locals.model = m.into();
 
-            // Update the buffer with the new data
+            // Update buffers
             self.encoder.update_constant_buffer(
                 &self.data.locals,
                 &locals,
+            );
+            self.encoder.update_constant_buffer(
+                &self.data.material,
+                &material,
+            );
+            self.encoder.update_constant_buffer(
+                &self.data.light,
+                &light,
             );
             // Update the texture
             self.data.texture.0 = d.texture().clone();
