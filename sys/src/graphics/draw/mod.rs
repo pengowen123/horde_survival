@@ -3,15 +3,17 @@
 //! Draws each entity that has a `Drawable` component and handles displaying the results to the
 //! window.
 
-mod shader;
+mod pipeline;
+mod components;
 mod param;
 mod init;
 
 pub use self::init::init;
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
-pub use self::shader::{Vertex, ColorFormat, DepthFormat, Drawable};
-pub use self::shader::pipe::new as init_pipeline;
+pub use self::pipeline::{Vertex, ColorFormat, DepthFormat};
+pub use self::pipeline::pipe::new as init_pipeline;
+pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, texture};
@@ -26,8 +28,8 @@ use window;
 const CLEAR_COLOR: [f32; 4] = [0.1, 0.2, 0.3, 1.0];
 
 // TODO: Write docs for these type aliases when I figure out what they do
-pub type OutColor<R> = gfx::handle::RenderTargetView<R, shader::ColorFormat>;
-pub type OutDepth<R> = gfx::handle::DepthStencilView<R, shader::DepthFormat>;
+pub type OutColor<R> = gfx::handle::RenderTargetView<R, pipeline::ColorFormat>;
+pub type OutDepth<R> = gfx::handle::DepthStencilView<R, pipeline::DepthFormat>;
 
 pub struct System<F, C, R, D>
 where
@@ -39,8 +41,8 @@ where
     factory: F,
     encoder: gfx::Encoder<R, C>,
     device: D,
-    pso: gfx::PipelineState<R, shader::pipe::Meta>,
-    data: shader::pipe::Data<R>,
+    pso: gfx::PipelineState<R, pipeline::pipe::Meta>,
+    data: pipeline::pipe::Data<R>,
     // TODO: remove, this is for testing lighting
     time: f64,
 }
@@ -58,7 +60,7 @@ where
         out_color: OutColor<R>,
         out_depth: OutDepth<R>,
         encoder: gfx::Encoder<R, C>,
-        pso: gfx::PipelineState<R, shader::pipe::Meta>,
+        pso: gfx::PipelineState<R, pipeline::pipe::Meta>,
     ) -> Self {
 
         // Create dummy data to initialize the shader data
@@ -78,7 +80,7 @@ where
             texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
         let sampler = factory.create_sampler(sampler_info);
 
-        let data = shader::pipe::Data {
+        let data = pipeline::pipe::Data {
             vbuf: vbuf,
             locals: factory.create_constant_buffer(1),
             texture: (texture_view, sampler),
@@ -103,7 +105,7 @@ where
 
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
-    drawable: specs::ReadStorage<'a, shader::Drawable<R>>,
+    drawable: specs::ReadStorage<'a, components::Drawable<R>>,
     window: specs::Fetch<'a, window::Window>,
     camera: specs::Fetch<'a, camera::Camera>,
     // TODO: remove this too
@@ -137,6 +139,7 @@ where
         let eye_pos: [f32; 3] = data.camera.eye_position().clone().into();
         let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
 
+        // TODO: remove this too
         self.time += data.delta.to_float();
         let angle = ::cgmath::Rad((self.time / 2.0).sin().abs() * 3.14 * 2.0);
         let mut vec = ::cgmath::vec3(5.0, 0.0, 0.0);
@@ -145,7 +148,7 @@ where
         vec.z += 5.0;
 
         // Initialize shader uniforms
-        let mut locals = shader::Locals {
+        let mut locals = pipeline::Locals {
             mvp: vp.into(),
             model_view: view.clone().into(),
             model: Matrix4::identity().into(),

@@ -24,30 +24,24 @@ uniform sampler2D t_Color;
 void main() {
 	vec4 objectColor = texture(t_Color, v_Uv);
 
-	// Calculate ambient light
+	// Ambient
 	vec3 ambient = v_AmbientStrength * v_AmbientColor;
 
-	// Normalize some values
+	// Diffuse
 	vec3 normal = normalize(v_Normal);
 	vec3 lightDir = normalize(v_LightPos - v_FragPos);
-	
-	// Calculate diffuse light
 	float diff = max(dot(normal, lightDir), 0.0);
 	vec3 diffuse = diff * v_LightColor * v_LightStrength;
 
-	// Calculate some values related to view direction
+	// Specular
 	vec3 viewDir = normalize(v_EyePos - v_FragPos);
 	vec3 reflectDir = reflect(-lightDir, normal);
-
-	// Calculate specular light
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), v_SpecularFocus);
 	vec3 specular = v_SpecularStrength * spec * v_LightColor;
 
-	// Calculate combined light
+	// Combined
 	vec3 light = ambient + diffuse + specular;
-
 	vec4 color = vec4(light, 1.0) * objectColor;
-
 	Target0 = color;
 }
 

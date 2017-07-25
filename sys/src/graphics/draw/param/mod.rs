@@ -9,7 +9,7 @@ use gfx;
 
 use self::translation::Translation;
 use self::rotation::Rotation;
-use graphics::draw::shader;
+use graphics::draw::components;
 
 /// A type that stores all individual parameters to pass the the graphics system
 #[derive(Clone, Copy, Debug)]
@@ -57,7 +57,7 @@ impl<R: gfx::Resources> System<R> {
 
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
-    drawable: specs::WriteStorage<'a, shader::Drawable<R>>,
+    drawable: specs::WriteStorage<'a, components::Drawable<R>>,
     param: specs::ReadStorage<'a, ShaderParam>,
 }
 
