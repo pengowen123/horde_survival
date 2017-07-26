@@ -25,17 +25,23 @@ gfx_defines! {
     }
 
     constant Material {
-        ambient: Vec3 = "ambient",
-        diffuse: Vec3 = "diffuse",
-        specular: Vec3 = "specular",
-        shininess: f32 = "shininess",
+        ambient: Vec3 = "u_Material_ambient",
+        padding_0: f32 = "padding_0",
+        diffuse: Vec3 = "u_Material_diffuse",
+        padding_1: f32 = "padding_1",
+        specular: Vec3 = "u_Material_specular",
+        padding_2: f32 = "padding_2",
+        shininess: f32 = "u_Material_shininess",
     }
 
     constant Light {
-        position: Vec3 = "position",
-        ambient: Vec3 = "ambient",
-        diffuse: Vec3 = "diffuse",
-        specular: Vec3 = "specular",
+        position: Vec3 = "u_Light_position",
+        padding_3: f32 = "padding_3",
+        ambient: Vec3 = "u_Light_ambient",
+        padding_4: f32 = "padding_4",
+        diffuse: Vec3 = "u_Light_diffuse",
+        padding_5: f32 = "padding_5",
+        specular: Vec3 = "u_Light_specular",
     }
 
     constant Locals {
@@ -66,6 +72,9 @@ impl Material {
             diffuse,
             specular,
             shininess,
+            padding_0: 0.0,
+            padding_1: 0.0,
+            padding_2: 0.0,
         }
     }
 }
@@ -77,6 +86,9 @@ impl Light {
             ambient,
             diffuse,
             specular,
+            padding_3: 0.0,
+            padding_4: 0.0,
+            padding_5: 0.0,
         }
     }
 }

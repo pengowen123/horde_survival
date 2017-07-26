@@ -142,12 +142,11 @@ where
         let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
 
         // TODO: remove this too
+        use cgmath::InnerSpace;
         self.time += data.delta.to_float();
-        let angle = ::cgmath::Rad((self.time / 2.0).sin().abs() * 3.14 * 2.0);
-        let mut vec = ::cgmath::vec3(5.0, 0.0, 0.0);
-        use cgmath::Rotation3;
-        vec = ::cgmath::Quaternion::from_angle_z(angle) * vec;
-        vec.z += 5.0;
+        let x = self.time.sin() * 5.0;
+        let y = self.time.cos() * 5.0;
+        let vec = ::cgmath::vec3(x, y, 5.0).normalize() * 5.0;
 
         // Initialize shader uniforms
         let mut locals = pipeline::Locals {
@@ -158,24 +157,24 @@ where
 
         let material = pipeline::Material::new(
             // Ambient
-            [1.0, 1.0, 1.0],
+            [0.2, 0.2, 0.2],
             // Diffuse
             [1.0, 1.0, 1.0],
             // Specular
-            [1.0, 1.0, 1.0],
+            [0.5, 0.5, 0.5],
             // Shininess
-            1.0,
+            32.0,
         );
 
         let light = pipeline::Light::new(
             // Position
             vec.cast().into(),
             // Ambient
-            [1.0, 1.0, 1.0],
+            [0.1, 0.1, 0.1],
             // Diffuse
             [1.0, 1.0, 1.0],
             // Specular
-            [1.0, 1.0, 1.0],
+            [0.5, 0.5, 0.5],
         );
 
         for d in (&data.drawable).join() {
