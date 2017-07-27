@@ -78,14 +78,15 @@ where
         // Create a texture sampler
         let sampler_info =
             texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
-        let sampler = factory.create_sampler(sampler_info);
 
         let data = pipeline::pipe::Data {
             vbuf: vbuf,
             locals: factory.create_constant_buffer(1),
             material: factory.create_constant_buffer(1),
             light: factory.create_constant_buffer(1),
-            texture: (texture_view, sampler),
+            texture: (texture_view.clone(), factory.create_sampler(sampler_info)),
+            texture_diffuse: (texture_view.clone(), factory.create_sampler(sampler_info)),
+            texture_specular: (texture_view, factory.create_sampler(sampler_info)),
             out_color: out_color,
             out_depth: out_depth,
         };
@@ -156,27 +157,22 @@ where
         };
 
         let material = pipeline::Material::new(
-            // Ambient
-            [0.2, 0.2, 0.2],
-            // Diffuse
-            [1.0, 1.0, 1.0],
-            // Specular
-            [0.5, 0.5, 0.5],
             // Shininess
             32.0,
         );
 
         let light = pipeline::Light::new(
             // Position
-            vec.cast().into(),
+            [vec[0] as f32, vec[1] as f32, vec[2] as f32, 1.0],
             // Ambient
-            [0.1, 0.1, 0.1],
+            [0.1, 0.1, 0.1, 1.0],
             // Diffuse
-            [1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0, 1.0],
             // Specular
-            [0.5, 0.5, 0.5],
+            [0.5, 0.5, 0.5, 1.0],
         );
 
+        // Draw each entity
         for d in (&data.drawable).join() {
             let param = d.param();
             // Update shader parameters
@@ -202,6 +198,10 @@ where
             );
             // Update the texture
             self.data.texture.0 = d.texture().clone();
+            // Update the diffuse texture
+            self.data.texture_diffuse.0 = d.diffuse().clone();
+            // Update the specular texture
+            self.data.texture_specular.0 = d.specular().clone();
             // Update the vertex buffer
             self.data.vbuf = d.vertex_buffer().clone();
 

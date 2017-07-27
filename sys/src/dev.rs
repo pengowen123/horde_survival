@@ -59,7 +59,7 @@ where
     // TODO: make shader loading happen at runtime
     //       make lighting and shadows in shaders
     let draw = obj::create_drawable_from_obj_file(
-        concat!(env!("CARGO_MANIFEST_DIR"), "/assets/suzanne.obj"),
+        concat!(env!("CARGO_MANIFEST_DIR"), "/assets/models/suzanne.obj"),
         factory,
     ).unwrap();
     let shader_param = draw::ShaderParam::default();
@@ -108,16 +108,27 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    let (_, texture_view) = factory
-        .create_texture_immutable::<gfx::format::Rgba8>(
-            texture::Kind::D2(1, 1, texture::AaMode::Single),
-            &[&[texels]],
-        )
-        .unwrap();
+    let (texture, diffuse, specular) = {
+        let mut create_texture = |texels| {
+            factory
+                .create_texture_immutable::<gfx::format::Rgba8>(
+                    texture::Kind::D2(1, 1, texture::AaMode::Single),
+                    &[&[texels]],
+                )
+                .unwrap()
+                .1
+        };
+
+        let texture = create_texture(texels);
+        let diffuse = create_texture([255; 4]);
+        let specular = create_texture([128, 128, 128, 255]);
+
+        (texture, diffuse, specular)
+    };
 
     let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, indices.as_slice());
 
-    draw::Drawable::new(texture_view, vbuf, slice)
+    draw::Drawable::new(vbuf, slice, texture, diffuse, specular)
 }
 
 fn create_plane() -> (Vec<Vertex>, Vec<u16>) {

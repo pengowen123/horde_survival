@@ -16,7 +16,7 @@ uniform u_Locals {
 	mat4 u_MVP;
 	// Model matrix
 	mat4 u_Model;
-	vec3 u_EyePos;
+	vec4 u_EyePos;
 };
 
 void main() {

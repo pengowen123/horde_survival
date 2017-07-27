@@ -7,54 +7,49 @@ in vec3 v_FragPos;
 out vec4 Target0;
 
 uniform sampler2D t_Color;
+uniform sampler2D t_Diffuse;
+uniform sampler2D t_Specular;
 
 uniform u_Locals {
 	mat4 u_MVP;
 	mat4 u_Model;
-	vec3 u_EyePos;
+	vec4 u_EyePos;
 };
 
 uniform u_Material {
-	vec3 u_Material_ambient;
-	float padding_0;
-	vec3 u_Material_diffuse;
-	float padding_1;
-	vec3 u_Material_specular;
-	float padding_2;
 	float u_Material_shininess;
 };
 
 uniform u_Light {
-	vec3 u_Light_position;
-	float padding_3;
-	vec3 u_Light_ambient;
-	float padding_4;
-	vec3 u_Light_diffuse;
-	float padding_5;
-	vec3 u_Light_specular;
+	vec4 u_Light_position;
+	vec4 u_Light_ambient;
+	vec4 u_Light_diffuse;
+	vec4 u_Light_specular;
 };
 
 void main() {
 	vec4 objectColor = texture(t_Color, v_Uv);
+	vec4 objectDiffuse = texture(t_Diffuse, v_Uv);
+	vec4 objectSpecular = texture(t_Specular, v_Uv);
 
 	// Ambient
-	vec3 ambient = u_Light_ambient * u_Material_ambient;
+	vec4 ambient = u_Light_ambient * objectDiffuse;
 
 	// Diffuse
 	vec3 normal = normalize(v_Normal);
-	vec3 u_LightDir = normalize(u_Light_position - v_FragPos);
+	vec3 u_LightDir = normalize(vec3(u_Light_position) - v_FragPos);
 	float diff = max(dot(normal, u_LightDir), 0.0);
-	vec3 diffuse = u_Light_diffuse * (diff * u_Material_diffuse);
+	vec4 diffuse = u_Light_diffuse * (diff * objectDiffuse);
 
 	// Specular
 	vec3 viewDir = normalize(vec3(u_EyePos) - v_FragPos);
 	vec3 reflectDir = reflect(-u_LightDir, normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material_shininess);
-	vec3 specular = u_Light_specular * (spec * u_Material_specular);
+	vec4 specular = u_Light_specular * (spec * objectSpecular);
 
 	// Combined
-	vec3 u_Light = ambient + diffuse + specular;
-	vec4 color = vec4(u_Light, 1.0) * objectColor;
+	vec4 u_Light = ambient + diffuse + specular;
+	vec4 color = u_Light * objectColor;
 	Target0 = color;
 }
 

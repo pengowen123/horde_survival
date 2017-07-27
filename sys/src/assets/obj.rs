@@ -48,10 +48,23 @@ where
     }
 
     let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
-    let texture_data = utils::read_bytes(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/rock.png"))?;
-    let texture_view = image_utils::load_texture(factory, &texture_data)?;
 
-    Ok(Drawable::new(texture_view, vbuf, slice))
+    let mut load_texture = |path| {
+        let data = utils::read_bytes(format!(
+            "{}/assets/models/{}",
+            env!("CARGO_MANIFEST_DIR"),
+            path
+        ))?;
+        let result: Result<_, ObjError> =
+            image_utils::load_texture(factory, &data).map_err(|e| e.into());
+        result
+    };
+
+    let texture = load_texture("suzanne_texture.png")?;
+    let diffuse = load_texture("suzanne_diffuse.png")?;
+    let specular = load_texture("suzanne_specular.png")?;
+
+    Ok(Drawable::new(vbuf, slice, texture, diffuse, specular))
 }
 
 quick_error! {
