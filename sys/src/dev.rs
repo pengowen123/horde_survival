@@ -132,11 +132,12 @@ where
 }
 
 fn create_plane() -> (Vec<Vertex>, Vec<u16>) {
+    let normal = [0.0, 0.0, 1.0];
     let mut vertex_data = vec![
-        Vertex::new([1.0, 1.0, 0.0], [1.0, 1.0], Default::default()),
-        Vertex::new([-1.0, 1.0, 0.0], [0.0, 1.0], Default::default()),
-        Vertex::new([1.0, -1.0, 0.0], [1.0, 0.0], Default::default()),
-        Vertex::new([-1.0, -1.0, 0.0], [0.0, 0.0], Default::default()),
+        Vertex::new([1.0, 1.0, 0.0], [1.0, 1.0], normal),
+        Vertex::new([-1.0, 1.0, 0.0], [0.0, 1.0], normal),
+        Vertex::new([1.0, -1.0, 0.0], [1.0, 0.0], normal),
+        Vertex::new([-1.0, -1.0, 0.0], [0.0, 0.0], normal),
     ];
     let scale = 100.0;
     vertex_data = vertex_data

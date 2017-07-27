@@ -170,6 +170,10 @@ where
             [1.0, 1.0, 1.0, 1.0],
             // Specular
             [0.5, 0.5, 0.5, 1.0],
+            // Attenuation constant, linear, and quadratic values
+            1.0,
+            0.09,
+            0.032,
         );
 
         // Draw each entity

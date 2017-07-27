@@ -30,9 +30,15 @@ gfx_defines! {
 
     constant Light {
         position: Vec4 = "u_Light_position",
+
         ambient: Vec4 = "u_Light_ambient",
         diffuse: Vec4 = "u_Light_diffuse",
         specular: Vec4 = "u_Light_specular",
+
+        // Attenuation properties
+        constant: f32 = "u_Light_constant",
+        linear: f32 = "u_Light_linear",
+        quadratic: f32 = "u_Light_quadratic",
     }
 
     constant Locals {
@@ -65,12 +71,26 @@ impl Material {
 }
 
 impl Light {
-    pub fn new(position: Vec4, ambient: Vec4, diffuse: Vec4, specular: Vec4) -> Self {
+    /// Returns a new `Light` with the provided properties
+    ///
+    /// If the `w` component of the position vector is `0.0`, the light will be directional
+    pub fn new(
+        position: Vec4,
+        ambient: Vec4,
+        diffuse: Vec4,
+        specular: Vec4,
+        constant: f32,
+        linear: f32,
+        quadratic: f32,
+    ) -> Self {
         Self {
             position,
             ambient,
             diffuse,
             specular,
+            constant,
+            linear,
+            quadratic,
         }
     }
 }
