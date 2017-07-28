@@ -7,18 +7,22 @@ mod pipeline;
 mod components;
 mod param;
 mod init;
+mod utils;
 
 pub use self::init::init;
 
+use self::pipeline::{main, postprocessing};
+
 // TODO: Remove these re-exports when higher-level functionality is exposed
-pub use self::pipeline::{Vertex, ColorFormat, DepthFormat};
-pub use self::pipeline::pipe::new as init_pipeline;
+pub use self::pipeline::main::Vertex;
+pub use self::pipeline::{ColorFormat, DepthFormat};
+//pub use self::pipeline::pipe::init_all as init_pipelines;
 pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, texture};
 use gfx::traits::FactoryExt;
-use glutin::GlContext;
+use glutin::{Window, GlContext};
 use specs::{self, Join};
 use cgmath::{Matrix4, SquareMatrix};
 
@@ -41,8 +45,10 @@ where
     factory: F,
     encoder: gfx::Encoder<R, C>,
     device: D,
-    pso: gfx::PipelineState<R, pipeline::pipe::Meta>,
-    data: pipeline::pipe::Data<R>,
+    pso: gfx::PipelineState<R, main::pipe::Meta>,
+    pso_post: gfx::PipelineState<R, postprocessing::pipe::Meta>,
+    data: main::pipe::Data<R>,
+    data_post: postprocessing::pipe::Data<R>,
     // TODO: remove, this is for testing lighting
     time: f64,
 }
@@ -56,11 +62,13 @@ where
 {
     pub fn new(
         mut factory: F,
+        window: &Window,
         device: D,
         out_color: OutColor<R>,
         out_depth: OutDepth<R>,
         encoder: gfx::Encoder<R, C>,
-        pso: gfx::PipelineState<R, pipeline::pipe::Meta>,
+        pso_main: gfx::PipelineState<R, main::pipe::Meta>,
+        pso_post: gfx::PipelineState<R, postprocessing::pipe::Meta>,
     ) -> Self {
 
         // Create dummy data to initialize the shader data
@@ -75,27 +83,53 @@ where
             )
             .unwrap();
 
-        // Create a texture sampler
+        // Create texture sampler info
         let sampler_info =
             texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
 
-        let data = pipeline::pipe::Data {
-            vbuf: vbuf,
+        // Create a render target (postprocessing gets the screen's render target)
+        let (width, height) = window.get_inner_size_pixels().expect(
+            "Failed to get window size",
+        );
+        let (width, height) = (width as u16, height as u16);
+        let (_, srv, rtv) = factory.create_render_target(width, height).expect(
+            "Failed to create render target",
+        );
+        // Create a depth stencil for the render target
+        let dsv = factory
+            .create_depth_stencil_view_only(width, height)
+            .expect("Failed to create depth stencil");
+
+        let data = main::pipe::Data {
+            vbuf: vbuf.clone(),
             locals: factory.create_constant_buffer(1),
             material: factory.create_constant_buffer(1),
             light: factory.create_constant_buffer(1),
             texture: (texture_view.clone(), factory.create_sampler(sampler_info)),
             texture_diffuse: (texture_view.clone(), factory.create_sampler(sampler_info)),
             texture_specular: (texture_view, factory.create_sampler(sampler_info)),
-            out_color: out_color,
-            out_depth: out_depth,
+            out_color: rtv,
+            out_depth: dsv,
+        };
+
+        // TODO: make screen quad here
+        let vertices = utils::create_screen_quad();
+        let vbuf_post = factory.create_vertex_buffer(&vertices);
+
+        let data_post = postprocessing::pipe::Data {
+            vbuf: vbuf_post,
+            texture: (srv, factory.create_sampler(sampler_info)),
+            screen_color: out_color,
+            screen_depth: out_depth,
         };
 
         Self {
             factory,
             device,
-            pso,
+            pso: pso_main,
+            pso_post,
             data,
+            data_post,
             encoder,
             time: 0.0,
         }
@@ -103,6 +137,19 @@ where
 
     pub fn factory(&self) -> &F {
         &self.factory
+    }
+
+    fn clear_render_targets(&mut self) {
+        // Main render target
+        self.encoder.clear(&self.data.out_color, CLEAR_COLOR);
+        self.encoder.clear_depth(&self.data.out_depth, 1.0);
+
+        // Window render target
+        self.encoder.clear(
+            &self.data_post.screen_color,
+            CLEAR_COLOR,
+        );
+        self.encoder.clear_depth(&self.data_post.screen_depth, 1.0);
     }
 }
 
@@ -128,9 +175,8 @@ where
     type SystemData = Data<'a, R>;
 
     fn run(&mut self, data: Self::SystemData) {
-        // Clear the window
-        self.encoder.clear(&self.data.out_color, CLEAR_COLOR);
-        self.encoder.clear_depth(&self.data.out_depth, 1.0);
+        // Clear all render targets
+        self.clear_render_targets();
 
         // Get camera matrices
         let proj = data.camera.projection();
@@ -150,18 +196,18 @@ where
         let vec = ::cgmath::vec3(x, y, 5.0).normalize() * 5.0;
 
         // Initialize shader uniforms
-        let mut locals = pipeline::Locals {
+        let mut locals = main::Locals {
             mvp: vp.into(),
             model: Matrix4::identity().into(),
             eye_pos,
         };
 
-        let material = pipeline::Material::new(
+        let material = main::Material::new(
             // Shininess
             32.0,
         );
 
-        let light = pipeline::Light::new(
+        let light = main::Light::new(
             // Position
             [vec[0] as f32, vec[1] as f32, vec[2] as f32, 1.0],
             // Ambient
@@ -212,6 +258,11 @@ where
             // Draw the model
             self.encoder.draw(d.slice(), &self.pso, &self.data);
         }
+
+        // The above code only draws to a texture. This runs postprocessing shaders that draw a
+        // screen quad with the texture.
+        let slice = gfx::Slice::new_match_vertex_buffer(&self.data_post.vbuf);
+        self.encoder.draw(&slice, &self.pso_post, &self.data_post);
 
         // Send commands to the GPU (actually draw the things)
         self.encoder.flush(&mut self.device);

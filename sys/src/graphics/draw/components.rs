@@ -8,7 +8,7 @@ use super::{param, pipeline};
 /// A view into a texture
 pub type TextureView<R> = gfx::handle::ShaderResourceView<R, [f32; 4]>;
 /// A vertex buffer
-pub type VertexBuffer<R> = gfx::handle::Buffer<R, pipeline::Vertex>;
+pub type VertexBuffer<R> = gfx::handle::Buffer<R, pipeline::main::Vertex>;
 
 /// A component that stores the information needed to draw an entity
 pub struct Drawable<R: gfx::Resources> {
