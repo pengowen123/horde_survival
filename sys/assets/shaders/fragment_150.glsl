@@ -1,5 +1,46 @@
 #version 150 core
 
+// A directional light
+struct DirLight {
+	vec4 direction;
+
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+};
+
+vec4 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+
+// A point light
+struct PointLight {
+	vec4 position;
+
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+
+	float constant;
+	float linear;
+	float quadratic;
+};
+
+vec4 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos);
+
+// A spotlight
+struct SpotLight {
+	vec4 position;
+	vec4 direction;
+
+	vec4 ambient;
+	vec4 diffuse;
+	vec4 specular;
+
+	float cutOff;
+	float outerCutOff;
+};
+
+vec4 CalcSpotLight(SpotLight light, vec3 normal, vec3 viewDir, vec3 fragPos);
+
 in vec2 v_Uv;
 in vec3 v_Normal;
 in vec3 v_FragPos;
@@ -35,51 +76,103 @@ uniform u_Light {
 void main() {
 	// Sample textures
 	vec4 objectColor = texture(t_Color, v_Uv);
-	vec4 objectDiffuse = texture(t_Diffuse, v_Uv);
-	vec4 objectSpecular = texture(t_Specular, v_Uv);
+	// Properties
+	vec3 norm = normalize(v_Normal);
+	vec3 viewDir = normalize(vec3(u_EyePos) - v_FragPos);
 
-	bool is_directional = u_Light_position.w < 0.01;
+	SpotLight light;
 
-	// Calculate attenuation
-	float dist = length(vec3(u_Light_position) - v_FragPos);
-	float attenuation  = 1.0 / (
-			u_Light_constant +
-			u_Light_linear * dist +
-			u_Light_quadratic * (dist * dist));
+	light.position = vec4(0.0, 0.0, 10.0, 1.0);
+	light.direction = vec4(0.0, 0.0, -1.0, 0.0);
+	light.ambient = u_Light_ambient;
+	light.diffuse = u_Light_diffuse;
+	light.specular = u_Light_specular;
+	light.cutOff = cos(0.2);
+	light.outerCutOff = cos(0.3);
 
-	// Ambient
-	vec4 ambient = u_Light_ambient * objectDiffuse;
+	vec4 result = CalcSpotLight(light, norm, viewDir, v_FragPos);
+
+	vec4 color = result * objectColor;
+	Target0 = color;
+}
+
+vec4 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
+	vec3 lightDir = normalize(vec3(-light.direction));
 
 	// Diffuse
-	vec3 normal = normalize(v_Normal);
-	vec3 lightDir;
-
-	if (is_directional) {
-		lightDir = normalize(vec3(-u_Light_position));
-	} else {
-		lightDir = normalize(vec3(u_Light_position) - v_FragPos);
-	};
-
 	float diff = max(dot(normal, lightDir), 0.0);
-	vec4 diffuse = u_Light_diffuse * (diff * objectDiffuse);
 
 	// Specular
-	vec3 viewDir = normalize(vec3(u_EyePos) - v_FragPos);
 	vec3 reflectDir = reflect(-lightDir, normal);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material_shininess);
-	vec4 specular = u_Light_specular * (spec * objectSpecular);
 
-	// Apply attenuation if the light source is not directional
-	if (!is_directional) {
-		ambient *= attenuation;
-		diffuse *= attenuation;
-		specular *= attenuation;
-	}
+	// Apply lighting maps and light properties
+	vec4 ambient = light.ambient * texture(t_Diffuse, v_Uv);
+	vec4 diffuse = light.diffuse * (diff * texture(t_Diffuse, v_Uv));
+	vec4 specular = light.specular * (spec * texture(t_Specular, v_Uv));
 
-	// Combined
-	vec4 u_Light = ambient + diffuse + specular;
-	vec4 color = u_Light * objectColor;
-	Target0 = color;
+	return (ambient + diffuse + specular);
+}
+
+vec4 CalcPointLight(PointLight light, vec3 normal, vec3 viewDir, vec3 fragPos) {
+	vec3 lightDir = normalize(vec3(light.position) - fragPos);
+
+	// Diffuse
+	float diff = max(dot(normal, lightDir), 0.0);
+
+	// Specular
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material_shininess);
+
+	// Attenuation
+	float dist = length(vec3(light.position) - fragPos);
+	float attenuation  = 1.0 / (
+			light.constant +
+			light.linear * dist +
+			light.quadratic * (dist * dist));
+
+	// Apply lighting maps and light properties
+	vec4 ambient = light.ambient * texture(t_Diffuse, v_Uv);
+	vec4 diffuse = light.diffuse * (diff * texture(t_Diffuse, v_Uv));
+	vec4 specular = light.specular * (spec * texture(t_Specular, v_Uv));
+
+	// Apply attenuation
+	ambient *= attenuation;
+	diffuse *= attenuation;
+	specular *= attenuation;
+
+	return (ambient + diffuse + specular);
+}
+
+vec4 CalcSpotLight(SpotLight light, vec3 normal, vec3 viewDir, vec3 fragPos) {
+	vec3 lightDir = normalize(vec3(light.position) - fragPos);
+
+	vec4 result;
+
+	// Diffuse
+	float diff = max(dot(normal, lightDir), 0.0);
+
+	// Specular
+	vec3 reflectDir = reflect(-lightDir, normal);
+	float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_Material_shininess);
+
+	// Apply lighting maps and light properties
+	vec4 ambient = light.ambient * texture(t_Diffuse, v_Uv);
+	vec4 diffuse = light.diffuse * (diff * texture(t_Diffuse, v_Uv));
+	vec4 specular = light.specular * (spec * texture(t_Specular, v_Uv));
+
+	// Calculate intensity of the spotlight based on the angle
+	float theta = dot(lightDir, normalize(vec3(-light.direction)));
+	float epsilon = light.cutOff - light.outerCutOff;
+	float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
+
+	// TODO: maybe remove ambient scaling (at least for testing that the spotlight works on a real
+	//		 map)
+	ambient *= intensity;
+	diffuse *= intensity;
+	specular *= intensity;
+
+	return (ambient + diffuse + specular);
 }
 
 // vim: ft=glsl

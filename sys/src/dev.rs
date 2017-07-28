@@ -120,7 +120,7 @@ where
         };
 
         let texture = create_texture(texels);
-        let diffuse = create_texture([255; 4]);
+        let diffuse = create_texture(texels);
         let specular = create_texture([128, 128, 128, 255]);
 
         (texture, diffuse, specular)
@@ -139,7 +139,7 @@ fn create_plane() -> (Vec<Vertex>, Vec<u16>) {
         Vertex::new([1.0, -1.0, 0.0], [1.0, 0.0], normal),
         Vertex::new([-1.0, -1.0, 0.0], [0.0, 0.0], normal),
     ];
-    let scale = 100.0;
+    let scale = 1000.0;
     vertex_data = vertex_data
         .into_iter()
         .map(|v| {

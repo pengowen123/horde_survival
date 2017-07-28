@@ -165,7 +165,7 @@ where
             // Position
             [vec[0] as f32, vec[1] as f32, vec[2] as f32, 1.0],
             // Ambient
-            [0.1, 0.1, 0.1, 1.0],
+            [0.01, 0.01, 0.01, 1.0],
             // Diffuse
             [1.0, 1.0, 1.0, 1.0],
             // Specular

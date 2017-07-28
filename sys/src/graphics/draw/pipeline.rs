@@ -73,7 +73,9 @@ impl Material {
 impl Light {
     /// Returns a new `Light` with the provided properties
     ///
-    /// If the `w` component of the position vector is `0.0`, the light will be directional
+    /// If the `w` component of the position vector is `0.0`, the light will be directional.
+    ///
+    /// The `constant`, `linear` and `quadratic` values are used for attenuation calculations.
     pub fn new(
         position: Vec4,
         ambient: Vec4,
