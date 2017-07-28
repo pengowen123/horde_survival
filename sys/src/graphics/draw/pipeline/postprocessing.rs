@@ -14,7 +14,6 @@ gfx_defines! {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         texture: gfx::TextureSampler<Vec4> = "t_Screen",
         screen_color: gfx::RenderTarget<ColorFormat> = "Target0",
-        screen_depth: gfx::DepthTarget<DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
    }
 }
 

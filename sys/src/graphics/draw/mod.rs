@@ -31,9 +31,8 @@ use window;
 
 const CLEAR_COLOR: [f32; 4] = [0.1, 0.2, 0.3, 1.0];
 
-// TODO: Write docs for these type aliases when I figure out what they do
-pub type OutColor<R> = gfx::handle::RenderTargetView<R, pipeline::ColorFormat>;
-pub type OutDepth<R> = gfx::handle::DepthStencilView<R, pipeline::DepthFormat>;
+/// A render target
+pub type RenderTarget<R> = gfx::handle::RenderTargetView<R, pipeline::ColorFormat>;
 
 pub struct System<F, C, R, D>
 where
@@ -64,8 +63,7 @@ where
         mut factory: F,
         window: &Window,
         device: D,
-        out_color: OutColor<R>,
-        out_depth: OutDepth<R>,
+        out_color: RenderTarget<R>,
         encoder: gfx::Encoder<R, C>,
         pso_main: gfx::PipelineState<R, main::pipe::Meta>,
         pso_post: gfx::PipelineState<R, postprocessing::pipe::Meta>,
@@ -120,7 +118,6 @@ where
             vbuf: vbuf_post,
             texture: (srv, factory.create_sampler(sampler_info)),
             screen_color: out_color,
-            screen_depth: out_depth,
         };
 
         Self {
@@ -149,7 +146,6 @@ where
             &self.data_post.screen_color,
             CLEAR_COLOR,
         );
-        self.encoder.clear_depth(&self.data_post.screen_depth, 1.0);
     }
 }
 

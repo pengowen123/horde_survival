@@ -29,7 +29,7 @@ pub fn init<'a, 'b>(
         .with_min_dimensions(w, h);
 
     // Initialize gfx structs
-    let (window, device, mut factory, main_color, main_depth) =
+    let (window, device, mut factory, main_color, _) =
         gfx_window_glutin::init::<super::ColorFormat, super::DepthFormat>(
             window_builder,
             context_builder,
@@ -84,7 +84,6 @@ pub fn init<'a, 'b>(
         &*window,
         device,
         main_color,
-        main_depth,
         encoder,
         pso_main,
         pso_post,
