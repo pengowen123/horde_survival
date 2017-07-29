@@ -1,7 +1,6 @@
 use gfx::{self, texture};
-use glutin;
 
-use std::path::PathBuf;
+use std::path::Path;
 
 use super::*;
 use graphics::draw::types;
@@ -107,12 +106,9 @@ impl<R: gfx::Resources> Pipeline<R> {
     ) -> Result<Self, PsoError>
     where
         F: gfx::Factory<R>,
-        P: Into<PathBuf>,
+        P: AsRef<Path>,
     {
-        let vs_path = vs_path.into();
-        let fs_path = fs_path.into();
-
-        let pso = load_pso(factory, &vs_path, &fs_path, pipe::new())?;
+        let pso = load_pso(factory, vs_path, fs_path, pipe::new())?;
 
         // Create dummy data
         let vbuf = factory.create_vertex_buffer(&[]);
@@ -141,6 +137,6 @@ impl<R: gfx::Resources> Pipeline<R> {
             out_depth: dsv,
         };
 
-        Ok(Pipeline::new(pso, data, vs_path, fs_path))
+        Ok(Pipeline::new(pso, data))
     }
 }

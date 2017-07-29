@@ -2,8 +2,6 @@
 
 use gfx;
 
-use super::pipeline;
-
 /// The color format for graphics
 pub type ColorFormat = gfx::format::Srgba8;
 
@@ -15,9 +13,6 @@ pub type RenderTargetView<R> = gfx::handle::RenderTargetView<R, ColorFormat>;
 
 /// A depth stencil view
 pub type DepthTargetView<R> = gfx::handle::DepthStencilView<R, DepthFormat>;
-
-/// A shader resource view
-pub type ShaderResourceView<R> = gfx::handle::ShaderResourceView<R, ColorFormat>;
 
 /// A view into a texture
 pub type TextureView<R> = gfx::handle::ShaderResourceView<R, [f32; 4]>;

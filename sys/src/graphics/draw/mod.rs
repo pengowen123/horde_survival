@@ -85,9 +85,6 @@ where
             env!("CARGO_MANIFEST_DIR"),
             "/assets/shaders/fragment_150.glsl"
         );
-        let pso_main =
-            pipeline::load_pso(&mut factory, main_vs_path, main_fs_path, main::pipe::new())
-                .unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
 
         let post_vs_path = concat!(
             env!("CARGO_MANIFEST_DIR"),

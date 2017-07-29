@@ -6,7 +6,7 @@ pub mod postprocessing;
 use gfx::{self, pso};
 use gfx::traits::FactoryExt;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::io;
 
 use assets::shader;
@@ -65,9 +65,6 @@ where
 {
     pub pso: gfx::PipelineState<R, D::Meta>,
     pub data: D,
-    // Shader paths, used for reloading
-    vs_path: PathBuf,
-    fs_path: PathBuf,
 }
 
 impl<R, D> Pipeline<R, D>
@@ -75,17 +72,7 @@ where
     R: gfx::Resources,
     D: gfx::pso::PipelineData<R>,
 {
-    pub fn new(
-        pso: pso::PipelineState<R, D::Meta>,
-        data: D,
-        vs_path: PathBuf,
-        fs_path: PathBuf,
-    ) -> Self {
-        Self {
-            pso,
-            data,
-            vs_path,
-            fs_path,
-        }
+    pub fn new(pso: pso::PipelineState<R, D::Meta>, data: D) -> Self {
+        Self { pso, data }
     }
 }
