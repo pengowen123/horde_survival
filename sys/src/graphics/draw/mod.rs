@@ -21,8 +21,7 @@ pub use self::types::{ColorFormat, DepthFormat};
 pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
-use gfx::{self, texture};
-use gfx::traits::FactoryExt;
+use gfx;
 use glutin::{Window, GlContext};
 use specs::{self, Join};
 use cgmath::{Matrix4, SquareMatrix};
@@ -31,6 +30,26 @@ use graphics::camera;
 use window;
 
 const CLEAR_COLOR: [f32; 4] = [1.0; 4];
+
+// TODO: replace these with asset loader struct that hands out paths
+const MAIN_VS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/vertex_150.glsl"
+);
+
+const MAIN_FS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/fragment_150.glsl"
+);
+
+const POST_VS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/post_vertex_150.glsl"
+);
+const POST_FS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/post_fragment_150.glsl"
+);
 
 pub struct System<F, C, R, D>
 where
@@ -76,30 +95,12 @@ where
             .create_depth_stencil_view_only(width, height)
             .expect("Failed to create depth stencil");
 
-
-        let main_vs_path = concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/assets/shaders/vertex_150.glsl"
-        );
-        let main_fs_path = concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/assets/shaders/fragment_150.glsl"
-        );
-
-        let post_vs_path = concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/assets/shaders/post_vertex_150.glsl"
-        );
-        let post_fs_path = concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/assets/shaders/post_fragment_150.glsl"
-        );
-
         let pipe_main =
-            pipeline::Pipeline::new_main(&mut factory, rtv, dsv, main_vs_path, main_fs_path)
+            pipeline::Pipeline::new_main(&mut factory, rtv, dsv, MAIN_VS_PATH, MAIN_FS_PATH)
                 .unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
+
         let pipe_post =
-            pipeline::Pipeline::new_post(&mut factory, srv, out_color, post_vs_path, post_fs_path)
+            pipeline::Pipeline::new_post(&mut factory, srv, out_color, POST_VS_PATH, POST_FS_PATH)
                 .unwrap_or_else(|e| panic!("Failed to create postprocessing PSO: {}", e));
 
         Self {
@@ -115,6 +116,7 @@ where
         &self.factory
     }
 
+    /// Clears all render targets
     fn clear_render_targets(&mut self) {
         // Main render target
         self.encoder.clear(
@@ -131,6 +133,27 @@ where
             &self.pipe_post.data.screen_color,
             CLEAR_COLOR,
         );
+    }
+
+    /// Reloads the shaders
+    fn reload_shaders(&mut self) -> Result<(), pipeline::PsoError> {
+        let pso_main = pipeline::load_pso(
+            &mut self.factory,
+            MAIN_VS_PATH,
+            MAIN_FS_PATH,
+            main::pipe::new(),
+        )?;
+        let pso_post = pipeline::load_pso(
+            &mut self.factory,
+            POST_VS_PATH,
+            POST_FS_PATH,
+            postprocessing::pipe::new(),
+        )?;
+
+        self.pipe_main.pso = pso_main;
+        self.pipe_post.pso = pso_post;
+
+        Ok(())
     }
 }
 
@@ -154,6 +177,11 @@ where
     type SystemData = Data<'a, R>;
 
     fn run(&mut self, data: Self::SystemData) {
+        // TODO: make a better way to do this
+        //self.reload_shaders().unwrap_or_else(|e| {
+        //eprintln!("Failed to reload shaders: {}", e);
+        //});
+
         // Clear all render targets
         self.clear_render_targets();
 
