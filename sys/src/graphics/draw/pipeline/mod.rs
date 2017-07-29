@@ -1,4 +1,4 @@
-//! Graphics pipeline declaration
+//! Graphics pipeline declaration and creation
 
 pub mod main;
 pub mod postprocessing;
@@ -49,6 +49,7 @@ where
 }
 
 quick_error! {
+    /// An error while loading a PSO from a file
     #[derive(Debug)]
     pub enum PsoError {
         Io(err: io::Error) {
@@ -59,5 +60,25 @@ quick_error! {
             display("Pipeline state error: {}", err)
             from()
         }
+    }
+}
+
+/// A PSO and its `Data` struct
+pub struct Pipeline<R, D>
+where
+    R: gfx::Resources,
+    D: pso::PipelineData<R>,
+{
+    pub pso: gfx::PipelineState<R, D::Meta>,
+    pub data: D,
+}
+
+impl<R, D> Pipeline<R, D>
+where
+    R: gfx::Resources,
+    D: gfx::pso::PipelineData<R>,
+{
+    pub fn new(pso: pso::PipelineState<R, D::Meta>, data: D) -> Self {
+        Self { pso, data }
     }
 }

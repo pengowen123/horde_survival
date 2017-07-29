@@ -4,6 +4,9 @@ use gfx;
 
 use super::*;
 
+/// A `Pipeline` for the postprocessing shaders
+pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
+
 gfx_defines! {
     vertex Vertex {
         pos: Vec2 = "a_Pos",

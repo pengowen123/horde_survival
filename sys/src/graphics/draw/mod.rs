@@ -44,12 +44,9 @@ where
     factory: F,
     encoder: gfx::Encoder<R, C>,
     device: D,
-    pso: gfx::PipelineState<R, main::pipe::Meta>,
-    pso_post: gfx::PipelineState<R, postprocessing::pipe::Meta>,
-    data: main::pipe::Data<R>,
-    data_post: postprocessing::pipe::Data<R>,
-    // TODO: remove, this is for testing lighting
-    time: f64,
+    // Shader pipelines
+    pipe_main: main::Pipeline<R>,
+    pipe_post: postprocessing::Pipeline<R>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -65,8 +62,6 @@ where
         device: D,
         out_color: RenderTarget<R>,
         encoder: gfx::Encoder<R, C>,
-        pso_main: gfx::PipelineState<R, main::pipe::Meta>,
-        pso_post: gfx::PipelineState<R, postprocessing::pipe::Meta>,
     ) -> Self {
 
         // Create dummy data to initialize the shader data
@@ -98,7 +93,7 @@ where
             .create_depth_stencil_view_only(width, height)
             .expect("Failed to create depth stencil");
 
-        let data = main::pipe::Data {
+        let data_main = main::pipe::Data {
             vbuf: vbuf.clone(),
             locals: factory.create_constant_buffer(1),
             material: factory.create_constant_buffer(1),
@@ -110,7 +105,6 @@ where
             out_depth: dsv,
         };
 
-        // TODO: make screen quad here
         let vertices = utils::create_screen_quad();
         let vbuf_post = factory.create_vertex_buffer(&vertices);
 
@@ -120,15 +114,42 @@ where
             screen_color: out_color,
         };
 
+        let main_vs_path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/assets/shaders/vertex_150.glsl"
+        );
+        let main_fs_path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/assets/shaders/fragment_150.glsl"
+        );
+        let pso_main =
+            pipeline::load_pso(&mut factory, main_vs_path, main_fs_path, main::pipe::new())
+                .unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
+
+        let post_vs_path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/assets/shaders/post_vertex_150.glsl"
+        );
+        let post_fs_path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/assets/shaders/post_fragment_150.glsl"
+        );
+        let pso_post = pipeline::load_pso(
+            &mut factory,
+            post_vs_path,
+            post_fs_path,
+            postprocessing::pipe::new(),
+        ).unwrap_or_else(|e| panic!("Failed to create postprocessing PSO: {}", e));
+
+        let pipe_main = pipeline::Pipeline::new(pso_main, data_main);
+        let pipe_post = pipeline::Pipeline::new(pso_post, data_post);
+
         Self {
             factory,
             device,
-            pso: pso_main,
-            pso_post,
-            data,
-            data_post,
+            pipe_main,
+            pipe_post,
             encoder,
-            time: 0.0,
         }
     }
 
@@ -138,12 +159,18 @@ where
 
     fn clear_render_targets(&mut self) {
         // Main render target
-        self.encoder.clear(&self.data.out_color, CLEAR_COLOR);
-        self.encoder.clear_depth(&self.data.out_depth, 1.0);
+        self.encoder.clear(
+            &self.pipe_main.data.out_color,
+            CLEAR_COLOR,
+        );
+        self.encoder.clear_depth(
+            &self.pipe_main.data.out_depth,
+            1.0,
+        );
 
         // Window render target
         self.encoder.clear(
-            &self.data_post.screen_color,
+            &self.pipe_post.data.screen_color,
             CLEAR_COLOR,
         );
     }
@@ -154,8 +181,6 @@ pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, components::Drawable<R>>,
     window: specs::Fetch<'a, window::Window>,
     camera: specs::Fetch<'a, camera::Camera>,
-    // TODO: remove this too
-    delta: specs::Fetch<'a, ::delta::Delta>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -184,13 +209,6 @@ where
         let eye_pos: [f32; 3] = data.camera.eye_position().clone().into();
         let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
 
-        // TODO: remove this too
-        use cgmath::InnerSpace;
-        self.time += data.delta.to_float();
-        let x = self.time.sin() * 5.0;
-        let y = self.time.cos() * 5.0;
-        let vec = ::cgmath::vec3(x, y, 5.0).normalize() * 5.0;
-
         // Initialize shader uniforms
         let mut locals = main::Locals {
             mvp: vp.into(),
@@ -205,7 +223,7 @@ where
 
         let light = main::Light::new(
             // Position
-            [vec[0] as f32, vec[1] as f32, vec[2] as f32, 1.0],
+            [0.0, 0.0, 10.0, 1.0],
             // Ambient
             [0.01, 0.01, 0.01, 1.0],
             // Diffuse
@@ -229,36 +247,36 @@ where
             // Update Model matrix
             locals.model = m.into();
 
+            let data = &mut self.pipe_main.data;
+
             // Update buffers
+            self.encoder.update_constant_buffer(&data.locals, &locals);
             self.encoder.update_constant_buffer(
-                &self.data.locals,
-                &locals,
-            );
-            self.encoder.update_constant_buffer(
-                &self.data.material,
+                &data.material,
                 &material,
             );
-            self.encoder.update_constant_buffer(
-                &self.data.light,
-                &light,
-            );
+            self.encoder.update_constant_buffer(&data.light, &light);
             // Update the texture
-            self.data.texture.0 = d.texture().clone();
+            data.texture.0 = d.texture().clone();
             // Update the diffuse texture
-            self.data.texture_diffuse.0 = d.diffuse().clone();
+            data.texture_diffuse.0 = d.diffuse().clone();
             // Update the specular texture
-            self.data.texture_specular.0 = d.specular().clone();
+            data.texture_specular.0 = d.specular().clone();
             // Update the vertex buffer
-            self.data.vbuf = d.vertex_buffer().clone();
+            data.vbuf = d.vertex_buffer().clone();
 
             // Draw the model
-            self.encoder.draw(d.slice(), &self.pso, &self.data);
+            self.encoder.draw(d.slice(), &self.pipe_main.pso, data);
         }
 
         // The above code only draws to a texture. This runs postprocessing shaders that draw a
         // screen quad with the texture.
-        let slice = gfx::Slice::new_match_vertex_buffer(&self.data_post.vbuf);
-        self.encoder.draw(&slice, &self.pso_post, &self.data_post);
+        let slice = gfx::Slice::new_match_vertex_buffer(&self.pipe_post.data.vbuf);
+        self.encoder.draw(
+            &slice,
+            &self.pipe_post.pso,
+            &self.pipe_post.data,
+        );
 
         // Send commands to the GPU (actually draw the things)
         self.encoder.flush(&mut self.device);
