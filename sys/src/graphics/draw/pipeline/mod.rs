@@ -2,9 +2,11 @@
 
 pub mod main;
 pub mod postprocessing;
+pub mod skybox;
 
 use gfx::{self, pso};
 use gfx::traits::FactoryExt;
+use image_utils;
 
 use std::path::Path;
 use std::io;
@@ -19,6 +21,26 @@ pub type Vec3 = [f32; 3];
 pub type Vec4 = [f32; 4];
 /// A GLSL `mat4`
 pub type Mat4 = [Vec4; 4];
+
+/// A PSO and its `Data` struct
+pub struct Pipeline<R, D>
+where
+    R: gfx::Resources,
+    D: pso::PipelineData<R>,
+{
+    pub pso: gfx::PipelineState<R, D::Meta>,
+    pub data: D,
+}
+
+impl<R, D> Pipeline<R, D>
+where
+    R: gfx::Resources,
+    D: gfx::pso::PipelineData<R>,
+{
+    pub fn new(pso: pso::PipelineState<R, D::Meta>, data: D) -> Self {
+        Self { pso, data }
+    }
+}
 
 /// Loads shaders from the provided paths, and returns a PSO built from the shaders and pipeline
 pub fn load_pso<R, F, P, I>(
@@ -54,25 +76,9 @@ quick_error! {
             display("Pipeline state error: {}", err)
             from()
         }
-    }
-}
-
-/// A PSO and its `Data` struct
-pub struct Pipeline<R, D>
-where
-    R: gfx::Resources,
-    D: pso::PipelineData<R>,
-{
-    pub pso: gfx::PipelineState<R, D::Meta>,
-    pub data: D,
-}
-
-impl<R, D> Pipeline<R, D>
-where
-    R: gfx::Resources,
-    D: gfx::pso::PipelineData<R>,
-{
-    pub fn new(pso: pso::PipelineState<R, D::Meta>, data: D) -> Self {
-        Self { pso, data }
+        Texture(err: image_utils::TextureError) {
+            display("Texture creation error: {}", err)
+            from()
+        }
     }
 }

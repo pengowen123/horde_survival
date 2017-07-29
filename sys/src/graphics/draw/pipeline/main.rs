@@ -1,3 +1,5 @@
+//! Pipeline declaration for the main shaders
+
 use gfx::{self, texture};
 
 use std::path::Path;
@@ -95,7 +97,7 @@ impl Vertex {
 pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
 
 impl<R: gfx::Resources> Pipeline<R> {
-    /// Returns a new `Pipeline`, created from the provided shaders and pipeline initialization
+    /// Returns a new main `Pipeline`, created from the provided shaders and pipeline initialization
     /// data
     pub fn new_main<F, P>(
         factory: &mut F,
@@ -125,7 +127,7 @@ impl<R: gfx::Resources> Pipeline<R> {
         let sampler_info =
             texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
 
-        let data = main::pipe::Data {
+        let data = pipe::Data {
             vbuf: vbuf,
             locals: factory.create_constant_buffer(1),
             material: factory.create_constant_buffer(1),

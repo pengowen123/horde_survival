@@ -139,7 +139,7 @@ fn create_plane() -> (Vec<Vertex>, Vec<u16>) {
         Vertex::new([1.0, -1.0, 0.0], [1.0, 0.0], normal),
         Vertex::new([-1.0, -1.0, 0.0], [0.0, 0.0], normal),
     ];
-    let scale = 1000.0;
+    let scale = 15.0;
     vertex_data = vertex_data
         .into_iter()
         .map(|v| {

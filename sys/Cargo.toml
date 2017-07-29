@@ -35,3 +35,6 @@ path = "/home/pengowen/forks/nphysics/build/nphysics3d/"
 [dependencies.obj]
 features = ["genmesh"]
 version = "0.8.0"
+
+[dev-dependencies]
+approx = "0.1.1"

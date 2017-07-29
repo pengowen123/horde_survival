@@ -38,6 +38,11 @@ extern crate bitflags;
 extern crate quick_error;
 extern crate genmesh;
 
+// Dev dependencies
+#[cfg(test)]
+#[macro_use]
+extern crate approx;
+
 // TODO: Remove when no longer needed
 mod dev;
 

@@ -12,7 +12,7 @@ mod types;
 
 pub use self::init::init;
 
-use self::pipeline::{main, postprocessing};
+use self::pipeline::{main, postprocessing, skybox};
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
 pub use self::pipeline::main::Vertex;
@@ -51,6 +51,15 @@ const POST_FS_PATH: &str = concat!(
     "/assets/shaders/post_fragment_150.glsl"
 );
 
+const SKYBOX_VS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/skybox_vertex_150.glsl"
+);
+const SKYBOX_FS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/skybox_fragment_150.glsl"
+);
+
 pub struct System<F, C, R, D>
 where
     F: gfx::Factory<R>,
@@ -64,6 +73,7 @@ where
     // Shader pipelines
     pipe_main: main::Pipeline<R>,
     pipe_post: postprocessing::Pipeline<R>,
+    pipe_skybox: skybox::Pipeline<R>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -95,19 +105,28 @@ where
             .create_depth_stencil_view_only(width, height)
             .expect("Failed to create depth stencil");
 
-        let pipe_main =
-            pipeline::Pipeline::new_main(&mut factory, rtv, dsv, MAIN_VS_PATH, MAIN_FS_PATH)
-                .unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
+        let pipe_main = pipeline::Pipeline::new_main(
+            &mut factory,
+            rtv.clone(),
+            dsv.clone(),
+            MAIN_VS_PATH,
+            MAIN_FS_PATH,
+        ).unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
 
         let pipe_post =
             pipeline::Pipeline::new_post(&mut factory, srv, out_color, POST_VS_PATH, POST_FS_PATH)
                 .unwrap_or_else(|e| panic!("Failed to create postprocessing PSO: {}", e));
+
+        let pipe_skybox =
+            pipeline::Pipeline::new_skybox(&mut factory, rtv, dsv, SKYBOX_VS_PATH, SKYBOX_FS_PATH)
+                .unwrap_or_else(|e| panic!("Failed to create skybox PSO: {}", e));
 
         Self {
             factory,
             device,
             pipe_main,
             pipe_post,
+            pipe_skybox,
             encoder,
         }
     }
@@ -150,8 +169,16 @@ where
             postprocessing::pipe::new(),
         )?;
 
+        let pso_skybox = pipeline::load_pso(
+            &mut self.factory,
+            SKYBOX_VS_PATH,
+            SKYBOX_FS_PATH,
+            skybox::pipe::new(),
+        )?;
+
         self.pipe_main.pso = pso_main;
         self.pipe_post.pso = pso_post;
+        self.pipe_skybox.pso = pso_skybox;
 
         Ok(())
     }
@@ -254,6 +281,22 @@ where
             // Draw the model
             self.encoder.draw(d.slice(), &self.pipe_main.pso, data);
         }
+
+        // Draw the skybox
+
+        let skybox_camera = data.camera.skybox_camera();
+        let skybox_locals = skybox::Locals { view_proj: skybox_camera.into() };
+
+        let slice = gfx::Slice::new_match_vertex_buffer(&self.pipe_skybox.data.vbuf);
+        self.encoder.update_constant_buffer(
+            &self.pipe_skybox.data.locals,
+            &skybox_locals,
+        );
+        self.encoder.draw(
+            &slice,
+            &self.pipe_skybox.pso,
+            &self.pipe_skybox.data,
+        );
 
         // The above code only draws to a texture. This runs postprocessing shaders that draw a
         // screen quad with the texture.

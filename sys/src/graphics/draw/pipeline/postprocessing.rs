@@ -3,11 +3,7 @@
 use gfx::{self, texture};
 
 use super::*;
-
 use graphics::draw::{types, utils};
-
-/// A `Pipeline` for the postprocessing shaders
-pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
 
 gfx_defines! {
     vertex Vertex {
@@ -28,9 +24,12 @@ impl Vertex {
     }
 }
 
+/// A `Pipeline` for the postprocessing shaders
+pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
+
 impl<R: gfx::Resources> Pipeline<R> {
-    /// Returns a new `Pipeline`, created from the provided shaders and pipeline initialization
-    /// data
+    /// Returns a new postprocessing `Pipeline`, created from the provided shaders and pipeline
+    /// initialization data
     pub fn new_post<F, P>(
         factory: &mut F,
         srv: types::TextureView<R>,
@@ -44,15 +43,15 @@ impl<R: gfx::Resources> Pipeline<R> {
     {
         let pso = load_pso(factory, vs_path, fs_path, pipe::new())?;
 
-        // Create dummy data
-        let vertices = utils::create_screen_quad();
+        // Create a screen quad to render to
+        let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
         let vbuf = factory.create_vertex_buffer(&vertices);
 
         // Create texture sampler info
         let sampler_info =
             texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
 
-        let data = postprocessing::pipe::Data {
+        let data = pipe::Data {
             vbuf: vbuf,
             texture: (srv, factory.create_sampler(sampler_info)),
             screen_color: rtv,

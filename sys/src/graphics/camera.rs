@@ -4,6 +4,7 @@ use specs::{self, ReadStorage, Join};
 use cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
 
 use world;
+use math::functions;
 use player::components::Player;
 use window::info;
 
@@ -13,7 +14,7 @@ const FOV_Y: f32 = 45.0;
 /// Near plane distance for the cull frustum
 const NEAR: f32 = 0.01;
 
-/// Far plane distance for the cull frustum (controls render distance)
+/// Far plane distance for the cull frustum
 const FAR: f32 = 1000.0;
 
 /// Represents a camera in a 3D space
@@ -66,6 +67,20 @@ impl Camera {
     /// Returns the view matrix
     pub fn view(&self) -> &cgmath::Matrix4<f32> {
         &self.view
+    }
+
+    /// Calculates the `view * projection` matrix for the skybox camera
+    ///
+    /// This matrix has translation removed because the skybox should stay centered on the camera.
+    /// It is also rotated to account for coordinate space differences.
+    pub fn skybox_camera(&self) -> cgmath::Matrix4<f32> {
+        // Remove the translation
+        let mut view = functions::remove_translation(self.view);
+        // Rotate the camera
+        view = view * cgmath::Matrix4::from_angle_x(cgmath::Deg(90.0));
+
+        // Create the camera matrix
+        self.proj * view
     }
 
     /// Returns the eye position

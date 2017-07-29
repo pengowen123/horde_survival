@@ -1,5 +1,7 @@
 //! Various math-related functions
 
+use cgmath;
+
 use std::ops;
 
 /// Returns `val`, clamped to the range between `lower` and `upper`
@@ -51,6 +53,46 @@ where
     val
 }
 
+/// Returns the matrix with the translation removed
+pub fn remove_translation<T>(mat: cgmath::Matrix4<T>) -> cgmath::Matrix4<T>
+where
+    T: cgmath::BaseFloat,
+{
+    let row0 = cgmath::Vector3::new(mat.x.x, mat.x.y, mat.x.z);
+    let row1 = cgmath::Vector3::new(mat.y.x, mat.y.y, mat.y.z);
+    let row2 = cgmath::Vector3::new(mat.z.x, mat.z.y, mat.z.z);
+
+    cgmath::Matrix3 {
+        x: row0,
+        y: row1,
+        z: row2,
+    }.into()
+}
+
+#[cfg(test)]
+mod tests {
+    use cgmath::*;
+
+    use super::*;
+
+    #[test]
+    fn test() {
+        let rotate = Matrix4::from_angle_y(Deg(180.0));
+        let translate = Matrix4::from_translation(Vector3::new(0.0, 0.0, 10.0));
+
+        let vec = Vector4::new(1.0, 0.0, 0.0, 1.0);
+
+        let transform = translate * rotate;
+
+        // The vector is rotated 180 degrees then translated by 10 units in the positive Z
+        // direction
+        assert_relative_eq!(transform * vec, Vector4::new(-1.0, 0.0, 10.0, 1.0));
+
+        // With the translation removed, the vector should only be rotated 180 degrees
+        let removed = remove_translation(transform);
+        assert_relative_eq!(removed * vec, Vector4::new(-1.0, 0.0, 0.0, 1.0));
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
