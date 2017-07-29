@@ -4,18 +4,14 @@ use specs;
 use gfx;
 
 use super::{param, pipeline};
-
-/// A view into a texture
-pub type TextureView<R> = gfx::handle::ShaderResourceView<R, [f32; 4]>;
-/// A vertex buffer
-pub type VertexBuffer<R> = gfx::handle::Buffer<R, pipeline::main::Vertex>;
+use super::types::{TextureView, VertexBuffer};
 
 /// A component that stores the information needed to draw an entity
 pub struct Drawable<R: gfx::Resources> {
     texture: TextureView<R>,
     diffuse: TextureView<R>,
     specular: TextureView<R>,
-    vertex_buffer: VertexBuffer<R>,
+    vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
     slice: gfx::Slice<R>,
     param: param::ShaderParam,
 }
@@ -23,7 +19,7 @@ pub struct Drawable<R: gfx::Resources> {
 impl<R: gfx::Resources> Drawable<R> {
     /// Returns a new `Drawable`, with the provided texture, vertex buffer, and slice
     pub fn new(
-        vertex_buffer: VertexBuffer<R>,
+        vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
         slice: gfx::Slice<R>,
         texture: TextureView<R>,
         diffuse: TextureView<R>,
@@ -54,7 +50,7 @@ impl<R: gfx::Resources> Drawable<R> {
         &self.specular
     }
 
-    pub fn vertex_buffer(&self) -> &VertexBuffer<R> {
+    pub fn vertex_buffer(&self) -> &VertexBuffer<R, pipeline::main::Vertex> {
         &self.vertex_buffer
     }
 

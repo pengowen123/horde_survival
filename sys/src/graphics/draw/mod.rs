@@ -8,6 +8,7 @@ mod components;
 mod param;
 mod init;
 mod utils;
+mod types;
 
 pub use self::init::init;
 
@@ -15,7 +16,7 @@ use self::pipeline::{main, postprocessing};
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
 pub use self::pipeline::main::Vertex;
-pub use self::pipeline::{ColorFormat, DepthFormat};
+pub use self::types::{ColorFormat, DepthFormat};
 //pub use self::pipeline::pipe::init_all as init_pipelines;
 pub use self::components::Drawable;
 pub use self::param::ShaderParam;
@@ -29,10 +30,7 @@ use cgmath::{Matrix4, SquareMatrix};
 use graphics::camera;
 use window;
 
-const CLEAR_COLOR: [f32; 4] = [0.1, 0.2, 0.3, 1.0];
-
-/// A render target
-pub type RenderTarget<R> = gfx::handle::RenderTargetView<R, pipeline::ColorFormat>;
+const CLEAR_COLOR: [f32; 4] = [1.0; 4];
 
 pub struct System<F, C, R, D>
 where
@@ -60,31 +58,16 @@ where
         mut factory: F,
         window: &Window,
         device: D,
-        out_color: RenderTarget<R>,
+        out_color: types::RenderTargetView<R>,
         encoder: gfx::Encoder<R, C>,
     ) -> Self {
 
-        // Create dummy data to initialize the shader data
-
-        let vbuf = factory.create_vertex_buffer(&[]);
-
-        let texels = [[0x0; 4]];
-        let (_, texture_view) = factory
-            .create_texture_immutable::<gfx::format::Rgba8>(
-                texture::Kind::D2(1, 1, texture::AaMode::Single),
-                &[&texels],
-            )
-            .unwrap();
-
-        // Create texture sampler info
-        let sampler_info =
-            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
-
-        // Create a render target (postprocessing gets the screen's render target)
         let (width, height) = window.get_inner_size_pixels().expect(
             "Failed to get window size",
         );
         let (width, height) = (width as u16, height as u16);
+        // Create a render target for the main shaders to draw to
+        // Postprocessing will read from this render target as a textur
         let (_, srv, rtv) = factory.create_render_target(width, height).expect(
             "Failed to create render target",
         );
@@ -93,26 +76,6 @@ where
             .create_depth_stencil_view_only(width, height)
             .expect("Failed to create depth stencil");
 
-        let data_main = main::pipe::Data {
-            vbuf: vbuf.clone(),
-            locals: factory.create_constant_buffer(1),
-            material: factory.create_constant_buffer(1),
-            light: factory.create_constant_buffer(1),
-            texture: (texture_view.clone(), factory.create_sampler(sampler_info)),
-            texture_diffuse: (texture_view.clone(), factory.create_sampler(sampler_info)),
-            texture_specular: (texture_view, factory.create_sampler(sampler_info)),
-            out_color: rtv,
-            out_depth: dsv,
-        };
-
-        let vertices = utils::create_screen_quad();
-        let vbuf_post = factory.create_vertex_buffer(&vertices);
-
-        let data_post = postprocessing::pipe::Data {
-            vbuf: vbuf_post,
-            texture: (srv, factory.create_sampler(sampler_info)),
-            screen_color: out_color,
-        };
 
         let main_vs_path = concat!(
             env!("CARGO_MANIFEST_DIR"),
@@ -134,15 +97,13 @@ where
             env!("CARGO_MANIFEST_DIR"),
             "/assets/shaders/post_fragment_150.glsl"
         );
-        let pso_post = pipeline::load_pso(
-            &mut factory,
-            post_vs_path,
-            post_fs_path,
-            postprocessing::pipe::new(),
-        ).unwrap_or_else(|e| panic!("Failed to create postprocessing PSO: {}", e));
 
-        let pipe_main = pipeline::Pipeline::new(pso_main, data_main);
-        let pipe_post = pipeline::Pipeline::new(pso_post, data_post);
+        let pipe_main =
+            pipeline::Pipeline::new_main(&mut factory, rtv, dsv, main_vs_path, main_fs_path)
+                .unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
+        let pipe_post =
+            pipeline::Pipeline::new_post(&mut factory, srv, out_color, post_vs_path, post_fs_path)
+                .unwrap_or_else(|e| panic!("Failed to create postprocessing PSO: {}", e));
 
         Self {
             factory,

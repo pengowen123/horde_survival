@@ -6,16 +6,10 @@ pub mod postprocessing;
 use gfx::{self, pso};
 use gfx::traits::FactoryExt;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::io;
 
 use assets::shader;
-
-/// The color format for graphics
-pub type ColorFormat = gfx::format::Srgba8;
-
-/// The depth format for graphics
-pub type DepthFormat = gfx::format::DepthStencil;
 
 /// A GLSL `vec2`
 pub type Vec2 = [f32; 2];
@@ -71,6 +65,9 @@ where
 {
     pub pso: gfx::PipelineState<R, D::Meta>,
     pub data: D,
+    // Shader paths, used for reloading
+    vs_path: PathBuf,
+    fs_path: PathBuf,
 }
 
 impl<R, D> Pipeline<R, D>
@@ -78,7 +75,17 @@ where
     R: gfx::Resources,
     D: gfx::pso::PipelineData<R>,
 {
-    pub fn new(pso: pso::PipelineState<R, D::Meta>, data: D) -> Self {
-        Self { pso, data }
+    pub fn new(
+        pso: pso::PipelineState<R, D::Meta>,
+        data: D,
+        vs_path: PathBuf,
+        fs_path: PathBuf,
+    ) -> Self {
+        Self {
+            pso,
+            data,
+            vs_path,
+            fs_path,
+        }
     }
 }

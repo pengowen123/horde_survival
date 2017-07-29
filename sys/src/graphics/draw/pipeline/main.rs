@@ -1,9 +1,10 @@
-use gfx;
+use gfx::{self, texture};
+use glutin;
+
+use std::path::PathBuf;
 
 use super::*;
-
-/// A `Pipeline` for the main shaders
-pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
+use graphics::draw::types;
 
 gfx_defines! {
     vertex Vertex {
@@ -45,8 +46,8 @@ gfx_defines! {
         texture: gfx::TextureSampler<Vec4> = "t_Color",
         texture_diffuse: gfx::TextureSampler<Vec4> = "t_Diffuse",
         texture_specular: gfx::TextureSampler<Vec4> = "t_Specular",
-        out_color: gfx::RenderTarget<ColorFormat> = "Target0",
-        out_depth: gfx::DepthTarget<DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
+        out_color: gfx::RenderTarget<types::ColorFormat> = "Target0",
+        out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
     }
 }
 
@@ -88,5 +89,58 @@ impl Light {
 impl Vertex {
     pub fn new(pos: Vec3, uv: Vec2, normal: Vec3) -> Self {
         Self { pos, normal, uv }
+    }
+}
+
+/// A `Pipeline` for the main shaders
+pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
+
+impl<R: gfx::Resources> Pipeline<R> {
+    /// Returns a new `Pipeline`, created from the provided shaders and pipeline initialization
+    /// data
+    pub fn new_main<F, P>(
+        factory: &mut F,
+        rtv: types::RenderTargetView<R>,
+        dsv: types::DepthTargetView<R>,
+        vs_path: P,
+        fs_path: P,
+    ) -> Result<Self, PsoError>
+    where
+        F: gfx::Factory<R>,
+        P: Into<PathBuf>,
+    {
+        let vs_path = vs_path.into();
+        let fs_path = fs_path.into();
+
+        let pso = load_pso(factory, &vs_path, &fs_path, pipe::new())?;
+
+        // Create dummy data
+        let vbuf = factory.create_vertex_buffer(&[]);
+
+        let texels = [[0x0; 4]];
+        let (_, texture_view) = factory
+            .create_texture_immutable::<gfx::format::Rgba8>(
+                texture::Kind::D2(1, 1, texture::AaMode::Single),
+                &[&texels],
+            )
+            .unwrap();
+
+        // Create texture sampler info
+        let sampler_info =
+            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
+
+        let data = main::pipe::Data {
+            vbuf: vbuf,
+            locals: factory.create_constant_buffer(1),
+            material: factory.create_constant_buffer(1),
+            light: factory.create_constant_buffer(1),
+            texture: (texture_view.clone(), factory.create_sampler(sampler_info)),
+            texture_diffuse: (texture_view.clone(), factory.create_sampler(sampler_info)),
+            texture_specular: (texture_view, factory.create_sampler(sampler_info)),
+            out_color: rtv,
+            out_depth: dsv,
+        };
+
+        Ok(Pipeline::new(pso, data, vs_path, fs_path))
     }
 }
