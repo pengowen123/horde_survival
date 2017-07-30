@@ -60,13 +60,13 @@ impl Camera {
     }
 
     /// Returns the projection matrix
-    pub fn projection(&self) -> &cgmath::Matrix4<f32> {
-        &self.proj
+    pub fn projection(&self) -> cgmath::Matrix4<f32> {
+        self.proj
     }
 
     /// Returns the view matrix
-    pub fn view(&self) -> &cgmath::Matrix4<f32> {
-        &self.view
+    pub fn view(&self) -> cgmath::Matrix4<f32> {
+        self.view
     }
 
     /// Calculates the `view * projection` matrix for the skybox camera
@@ -84,8 +84,8 @@ impl Camera {
     }
 
     /// Returns the eye position
-    pub fn eye_position(&self) -> &cgmath::Point3<f32> {
-        &self.eye_position
+    pub fn eye_position(&self) -> cgmath::Point3<f32> {
+        self.eye_position
     }
 }
 
