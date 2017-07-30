@@ -6,7 +6,7 @@ pub type DepthFormat = gfx::format::DepthStencil;
 
 /// Types used for gfx
 /// 3d vertices contain a position and a texture coordinate
-gfx_defines!{
+gfx_defines! {
     vertex Vertex {
         pos: [f32; 4] = "a_Pos",
         uv: [f32; 2] = "a_Uv",

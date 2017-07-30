@@ -12,10 +12,10 @@ use window::info;
 const FOV_Y: f32 = 45.0;
 
 /// Near plane distance for the cull frustum
-const NEAR: f32 = 0.01;
+const NEAR: f32 = 1.0;
 
 /// Far plane distance for the cull frustum
-const FAR: f32 = 1000.0;
+const FAR: f32 = 100.0;
 
 /// Represents a camera in a 3D space
 #[derive(Clone, Copy, Debug)]

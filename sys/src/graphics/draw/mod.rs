@@ -298,7 +298,7 @@ where
             &self.pipe_skybox.data,
         );
 
-        // The above code only draws to a texture. This runs postprocessing shaders that draw a
+        // The above code only draws to a texture. This runs postprocessing shaders that draws a
         // screen quad with the texture.
         let slice = gfx::Slice::new_match_vertex_buffer(&self.pipe_post.data.vbuf);
         self.encoder.draw(

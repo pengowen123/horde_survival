@@ -76,28 +76,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
-        let rotate = Matrix4::from_angle_y(Deg(180.0));
-        let translate = Matrix4::from_translation(Vector3::new(0.0, 0.0, 10.0));
-
-        let vec = Vector4::new(1.0, 0.0, 0.0, 1.0);
-
-        let transform = translate * rotate;
-
-        // The vector is rotated 180 degrees then translated by 10 units in the positive Z
-        // direction
-        assert_relative_eq!(transform * vec, Vector4::new(-1.0, 0.0, 10.0, 1.0));
-
-        // With the translation removed, the vector should only be rotated 180 degrees
-        let removed = remove_translation(transform);
-        assert_relative_eq!(removed * vec, Vector4::new(-1.0, 0.0, 0.0, 1.0));
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
     fn test_clamp_in_range() {
         let val = 3;
         let clamped = clamp(val, 0, 6);
@@ -148,5 +126,23 @@ mod tests {
         let val = 0;
         let wrapped = wrap(val, 5, 5);
         assert_eq!(wrapped, 5);
+    }
+
+    #[test]
+    fn test() {
+        let rotate = Matrix4::from_angle_y(Deg(180.0));
+        let translate = Matrix4::from_translation(Vector3::new(0.0, 0.0, 10.0));
+
+        let vec = Vector4::new(1.0, 0.0, 0.0, 1.0);
+
+        let transform = translate * rotate;
+
+        // The vector is rotated 180 degrees then translated by 10 units in the positive Z
+        // direction
+        assert_relative_eq!(transform * vec, Vector4::new(-1.0, 0.0, 10.0, 1.0));
+
+        // With the translation removed, the vector should only be rotated 180 degrees
+        let removed = remove_translation(transform);
+        assert_relative_eq!(removed * vec, Vector4::new(-1.0, 0.0, 0.0, 1.0));
     }
 }
