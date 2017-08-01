@@ -1,6 +1,6 @@
 //! Pipeline declaration for postprocessing
 
-use gfx::{self, texture};
+use gfx::{self, texture, state};
 
 use super::*;
 use graphics::draw::{types, utils};
@@ -41,7 +41,14 @@ impl<R: gfx::Resources> Pipeline<R> {
         F: gfx::Factory<R>,
         P: AsRef<Path>,
     {
-        let pso = load_pso(factory, vs_path, fs_path, pipe::new())?;
+        let pso = load_pso(
+            factory,
+            vs_path,
+            fs_path,
+            gfx::Primitive::TriangleList,
+            state::Rasterizer::new_fill(),
+            pipe::new(),
+        )?;
 
         // Create a screen quad to render to
         let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));

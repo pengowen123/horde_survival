@@ -1,6 +1,6 @@
 //! Pipeline declaration for the skybox
 
-use gfx;
+use gfx::{self, state};
 use image_utils;
 
 use super::*;
@@ -48,7 +48,14 @@ impl<R: gfx::Resources> Pipeline<R> {
         F: gfx::Factory<R>,
         P: AsRef<Path>,
     {
-        let pso = load_pso(factory, vs_path, fs_path, pipe::new())?;
+        let pso = load_pso(
+            factory,
+            vs_path,
+            fs_path,
+            gfx::Primitive::TriangleList,
+            state::Rasterizer::new_fill(),
+            pipe::new(),
+        )?;
 
         // Create a screen quad to render to
         let vertices = utils::create_skybox_cube(|pos| Vertex::new(pos));

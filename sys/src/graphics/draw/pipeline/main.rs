@@ -1,6 +1,6 @@
 //! Pipeline declaration for the main shaders
 
-use gfx::{self, texture};
+use gfx::{self, texture, state};
 
 use std::path::Path;
 
@@ -110,7 +110,20 @@ impl<R: gfx::Resources> Pipeline<R> {
         F: gfx::Factory<R>,
         P: AsRef<Path>,
     {
-        let pso = load_pso(factory, vs_path, fs_path, pipe::new())?;
+        // TODO: maybe enable culling
+        let rasterizer = state::Rasterizer {
+            samples: Some(state::MultiSample),
+            ..state::Rasterizer::new_fill()
+        };
+
+        let pso = load_pso(
+            factory,
+            vs_path,
+            fs_path,
+            gfx::Primitive::TriangleList,
+            rasterizer,
+            pipe::new(),
+        )?;
 
         // Create dummy data
         let vbuf = factory.create_vertex_buffer(&[]);

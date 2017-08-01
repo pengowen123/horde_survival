@@ -47,6 +47,8 @@ pub fn load_pso<R, F, P, I>(
     factory: &mut F,
     vs_path: P,
     fs_path: P,
+    primitive: gfx::Primitive,
+    rasterizer: gfx::state::Rasterizer,
     init: I,
 ) -> Result<pso::PipelineState<R, I::Meta>, PsoError>
 where
@@ -57,11 +59,11 @@ where
 {
     let vs = shader::load_shader_file(vs_path)?;
     let fs = shader::load_shader_file(fs_path)?;
+    let set = factory.create_shader_set(&vs, &fs)?;
 
-    // TODO: allow configuration of rasterizer
-    factory.create_pipeline_simple(&vs, &fs, init).map_err(
-        |e| e.into(),
-    )
+    factory
+        .create_pipeline_state(&set, primitive, rasterizer, init)
+        .map_err(|e| e.into())
 }
 
 quick_error! {
@@ -74,6 +76,10 @@ quick_error! {
         }
         PipelineState(err: gfx::PipelineStateError<String>) {
             display("Pipeline state error: {}", err)
+            from()
+        }
+        ProgramError(err: gfx::shade::ProgramError) {
+            display("Program error: {}", err)
             from()
         }
         Texture(err: image_utils::TextureError) {

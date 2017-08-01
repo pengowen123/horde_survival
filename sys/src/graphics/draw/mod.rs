@@ -3,12 +3,14 @@
 //! Draws each entity that has a `Drawable` component and handles displaying the results to the
 //! window.
 
+// TODO: this file is getting a bit large, look into moving some code in new modules
 mod pipeline;
 mod components;
 mod param;
 mod init;
-mod utils;
 mod types;
+mod factory_ext;
+mod utils;
 
 pub use self::init::init;
 
@@ -96,7 +98,7 @@ where
         );
         let (width, height) = (width as u16, height as u16);
         // Create a render target for the main shaders to draw to
-        // Postprocessing will read from this render target as a textur
+        // Postprocessing will read from this render target as a texture
         let (_, srv, rtv) = factory.create_render_target(width, height).expect(
             "Failed to create render target",
         );
@@ -231,30 +233,7 @@ where
 
     /// Reloads the shaders
     fn reload_shaders(&mut self) -> Result<(), pipeline::PsoError> {
-        let pso_main = pipeline::load_pso(
-            &mut self.factory,
-            MAIN_VS_PATH,
-            MAIN_FS_PATH,
-            main::pipe::new(),
-        )?;
-        let pso_post = pipeline::load_pso(
-            &mut self.factory,
-            POST_VS_PATH,
-            POST_FS_PATH,
-            postprocessing::pipe::new(),
-        )?;
-
-        let pso_skybox = pipeline::load_pso(
-            &mut self.factory,
-            SKYBOX_VS_PATH,
-            SKYBOX_FS_PATH,
-            skybox::pipe::new(),
-        )?;
-
-        self.pipe_main.pso = pso_main;
-        self.pipe_post.pso = pso_post;
-        self.pipe_skybox.pso = pso_skybox;
-
+        // TODO: remake this with multisampling and other graphics settings applied
         Ok(())
     }
 }
