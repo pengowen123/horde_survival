@@ -21,7 +21,7 @@ pub use self::types::{ColorFormat, DepthFormat};
 pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
-use gfx::{self, texture};
+use gfx::{self, texture, handle};
 use glutin::{Window, GlContext};
 use specs::{self, Join};
 use cgmath::{Matrix4, SquareMatrix};
@@ -89,19 +89,23 @@ where
         mut factory: F,
         window: &Window,
         device: D,
-        out_color: types::RenderTargetView<R>,
+        out_color: handle::RenderTargetView<R, types::ColorFormat>,
         encoder: gfx::Encoder<R, C>,
     ) -> Self {
 
+        // Get the dimensions for the new render target
         let (width, height) = window.get_inner_size_pixels().expect(
             "Failed to get window size",
         );
         let (width, height) = (width as u16, height as u16);
+
+        // Anti-aliasing mode
+        let aa_mode = texture::AaMode::Multi(8);
+
         // Create a render target for the main shaders to draw to
         // Postprocessing will read from this render target as a texture
-        let aa_mode = texture::AaMode::Multi(8);
         let (_, srv, rtv) = factory
-            .create_render_target_with_aa(width, height, aa_mode)
+            .create_render_target_with_aa::<gfx::format::Rgba8>(width, height, aa_mode)
             .expect("Failed to create render target");
         // Create a depth stencil for the render target
         let dsv = factory
@@ -285,7 +289,7 @@ where
         // TODO: cleanup material and light initialization when deferred is implemented
         let material = main::Material::new(
             // Shininess
-            32.0,
+            64.0,
         );
 
         let light = main::Light::new(
@@ -296,7 +300,7 @@ where
             // Diffuse
             [1.0, 1.0, 1.0, 1.0],
             // Specular
-            [0.5, 0.5, 0.5, 1.0],
+            [1.0, 1.0, 1.0, 1.0],
             // Attenuation constant, linear, and quadratic values
             1.0,
             0.09,

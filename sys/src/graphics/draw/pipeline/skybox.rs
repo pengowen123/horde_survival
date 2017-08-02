@@ -1,6 +1,6 @@
 //! Pipeline declaration for the skybox
 
-use gfx::{self, state};
+use gfx::{self, state, handle, format};
 use image_utils;
 
 use super::*;
@@ -20,7 +20,7 @@ gfx_defines! {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         skybox: gfx::TextureSampler<Vec4> = "t_Skybox",
         locals: gfx::ConstantBuffer<Locals> = "u_Locals",
-        out_color: gfx::RenderTarget<types::ColorFormat> = "Target0",
+        out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
         out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
     }
 }
@@ -39,8 +39,8 @@ impl<R: gfx::Resources> Pipeline<R> {
     /// initialization data
     pub fn new_skybox<F, P>(
         factory: &mut F,
-        rtv: types::RenderTargetView<R>,
-        dsv: types::DepthTargetView<R>,
+        rtv: handle::RenderTargetView<R, format::Rgba8>,
+        dsv: handle::DepthStencilView<R, types::DepthFormat>,
         vs_path: P,
         fs_path: P,
     ) -> Result<Self, PsoError>

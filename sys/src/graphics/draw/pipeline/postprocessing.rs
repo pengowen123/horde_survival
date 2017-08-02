@@ -1,6 +1,6 @@
 //! Pipeline declaration for postprocessing
 
-use gfx::{self, texture, state};
+use gfx::{self, texture, state, handle};
 
 use super::*;
 use graphics::draw::{types, utils};
@@ -33,7 +33,7 @@ impl<R: gfx::Resources> Pipeline<R> {
     pub fn new_post<F, P>(
         factory: &mut F,
         srv: types::TextureView<R>,
-        rtv: types::RenderTargetView<R>,
+        rtv: handle::RenderTargetView<R, types::ColorFormat>,
         vs_path: P,
         fs_path: P,
     ) -> Result<Self, PsoError>

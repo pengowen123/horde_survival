@@ -13,7 +13,7 @@ use gfx::handle::ShaderResourceView;
 use std::io::Cursor;
 
 /// The color format used by this library
-pub type ColorFormat = format::Rgba8;
+pub type ColorFormat = format::Srgba8;
 
 /// Loads a texture from the provided data
 ///
@@ -49,7 +49,7 @@ where
     );
 
     factory
-        .create_texture_immutable_u8::<format::Rgba8>(kind, &[data])
+        .create_texture_immutable_u8::<ColorFormat>(kind, &[data])
         .map(|(_, view)| view)
 }
 

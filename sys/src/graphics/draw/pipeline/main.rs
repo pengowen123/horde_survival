@@ -1,6 +1,8 @@
 //! Pipeline declaration for the main shaders
 
-use gfx::{self, texture, state};
+// TODO: fix gamma correction when graphics are completed
+
+use gfx::{self, texture, state, handle, format};
 
 use std::path::Path;
 
@@ -47,7 +49,7 @@ gfx_defines! {
         texture: gfx::TextureSampler<Vec4> = "t_Color",
         texture_diffuse: gfx::TextureSampler<Vec4> = "t_Diffuse",
         texture_specular: gfx::TextureSampler<Vec4> = "t_Specular",
-        out_color: gfx::RenderTarget<types::ColorFormat> = "Target0",
+        out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
         out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
     }
 }
@@ -101,8 +103,8 @@ impl<R: gfx::Resources> Pipeline<R> {
     /// data
     pub fn new_main<F, P>(
         factory: &mut F,
-        rtv: types::RenderTargetView<R>,
-        dsv: types::DepthTargetView<R>,
+        rtv: handle::RenderTargetView<R, format::Rgba8>,
+        dsv: handle::DepthStencilView<R, types::DepthFormat>,
         vs_path: P,
         fs_path: P,
     ) -> Result<Self, PsoError>
