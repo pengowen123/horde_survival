@@ -14,8 +14,6 @@ mod utils;
 
 pub use self::init::init;
 
-use self::pipeline::{main, postprocessing, skybox};
-
 // TODO: Remove these re-exports when higher-level functionality is exposed
 pub use self::pipeline::main::Vertex;
 pub use self::types::{ColorFormat, DepthFormat};
@@ -23,11 +21,13 @@ pub use self::types::{ColorFormat, DepthFormat};
 pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
-use gfx;
+use gfx::{self, texture};
 use glutin::{Window, GlContext};
 use specs::{self, Join};
 use cgmath::{Matrix4, SquareMatrix};
 
+use self::pipeline::{main, postprocessing, skybox};
+use self::factory_ext::FactoryExtension;
 use graphics::camera;
 use window;
 
@@ -99,12 +99,13 @@ where
         let (width, height) = (width as u16, height as u16);
         // Create a render target for the main shaders to draw to
         // Postprocessing will read from this render target as a texture
-        let (_, srv, rtv) = factory.create_render_target(width, height).expect(
-            "Failed to create render target",
-        );
+        let aa_mode = texture::AaMode::Multi(8);
+        let (_, srv, rtv) = factory
+            .create_render_target_with_aa(width, height, aa_mode)
+            .expect("Failed to create render target");
         // Create a depth stencil for the render target
         let dsv = factory
-            .create_depth_stencil_view_only(width, height)
+            .create_depth_stencil_view_only_with_aa(width, height, aa_mode)
             .expect("Failed to create depth stencil");
 
         let pipe_main = pipeline::Pipeline::new_main(

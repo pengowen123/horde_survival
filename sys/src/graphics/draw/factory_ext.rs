@@ -45,17 +45,12 @@ pub trait FactoryExtension<R: gfx::Resources>: Factory<R> {
     }
 
     /// Creates a depth stencil with the provided anti-aliasing mode enabled
-    fn create_depth_stencil_with_aa<DF>(
+    fn create_depth_stencil_view_only_with_aa<DF>(
         &mut self,
         width: texture::Size,
         height: texture::Size,
         aa_mode: texture::AaMode,
-    ) -> Result<
-        (handle::Texture<R, DF::Surface>,
-         handle::ShaderResourceView<R, DF::View>,
-         handle::DepthStencilView<R, DF>),
-        gfx::CombinedError,
-    >
+    ) -> Result<handle::DepthStencilView<R, DF>, gfx::CombinedError>
     where
         DF: format::DepthFormat + format::TextureFormat,
     {
@@ -72,16 +67,10 @@ pub trait FactoryExtension<R: gfx::Resources>: Factory<R> {
             memory::Usage::Data,
             Some(channel_type),
         )?;
-        // Get the texture as a shader resource
-        let resource = self.view_texture_as_shader_resource::<DF>(
-            &texture,
-            (0, levels - 1),
-            format::Swizzle::new(),
-        )?;
         // Get the texture as a render target
         let target = self.view_texture_as_depth_stencil_trivial(&texture)?;
 
-        Ok((texture, resource, target))
+        Ok(target)
     }
 }
 
