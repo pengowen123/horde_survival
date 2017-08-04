@@ -12,35 +12,40 @@ use gfx::handle::ShaderResourceView;
 
 use std::io::Cursor;
 
-/// The color format used by this library
-pub type ColorFormat = format::Srgba8;
+pub use image::{PNG, JPEG};
+pub use format::{Rgba8, Srgba8};
 
 /// Loads a texture from the provided data
-///
-/// The data should be in the PNG format.
-pub fn load_texture<F, R>(
+pub fn load_texture<F, R, CF>(
     factory: &mut F,
     data: &[u8],
-) -> Result<ShaderResourceView<R, [f32; 4]>, TextureError>
+    format: image::ImageFormat,
+) -> Result<ShaderResourceView<R, CF::View>, TextureError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
+    CF: format::Formatted,
+    CF::Channel: format::TextureChannel,
+    CF::Surface: format::TextureSurface,
 {
-    let img = image::load(Cursor::new(data), image::PNG)?.to_rgba();
+    let img = image::load(Cursor::new(data), format)?.to_rgba();
     let (w, h) = img.dimensions();
-    load_texture_raw(factory, [w, h], &img.into_vec()).map_err(|e| e.into())
+    load_texture_raw::<_, _, CF>(factory, [w, h], &img.into_vec()).map_err(|e| e.into())
 }
 
 /// Loads a texture from the data, assuming it is the given size and in the format specified by
-/// `ColorFormat`
-pub fn load_texture_raw<F, R>(
+/// `CF`
+pub fn load_texture_raw<F, R, CF>(
     factory: &mut F,
     size: [u32; 2],
     data: &[u8],
-) -> Result<ShaderResourceView<R, [f32; 4]>, gfx::CombinedError>
+) -> Result<ShaderResourceView<R, CF::View>, gfx::CombinedError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
+    CF: format::Formatted,
+    CF::Channel: format::TextureChannel,
+    CF::Surface: format::TextureSurface,
 {
     let kind = texture::Kind::D2(
         size[0] as texture::Size,
@@ -49,7 +54,7 @@ where
     );
 
     factory
-        .create_texture_immutable_u8::<ColorFormat>(kind, &[data])
+        .create_texture_immutable_u8::<CF>(kind, &[data])
         .map(|(_, view)| view)
 }
 
@@ -76,21 +81,21 @@ impl<'a> CubemapData<'a> {
 }
 
 /// Loads a cubemap from the provided data
-///
-/// The data should be in the JPEG format.
-pub fn load_cubemap<F, R>(
+pub fn load_cubemap<F, R, CF>(
     factory: &mut F,
     data: CubemapData,
-) -> Result<gfx::handle::ShaderResourceView<R, [f32; 4]>, TextureError>
+    format: image::ImageFormat,
+) -> Result<gfx::handle::ShaderResourceView<R, CF::View>, TextureError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
+    CF: format::Formatted,
+    CF::Channel: format::TextureChannel,
+    CF::Surface: format::TextureSurface,
 {
     let images = data.as_array()
         .into_iter()
-        .map(|d| {
-            image::load(Cursor::new(d), image::JPEG).map(|i| i.to_rgba())
-        })
+        .map(|d| image::load(Cursor::new(d), format).map(|i| i.to_rgba()))
         .collect::<Result<Vec<_>, _>>()?;
 
     let data: [&[u8]; 6] = [
@@ -104,10 +109,7 @@ where
 
     let kind = texture::Kind::Cube(images[0].dimensions().0 as u16);
 
-    let texture = factory.create_texture_immutable_u8::<ColorFormat>(
-        kind,
-        &data[..],
-    )?;
+    let texture = factory.create_texture_immutable_u8::<CF>(kind, &data[..])?;
 
     Ok(texture.1)
 }
@@ -115,12 +117,12 @@ where
 quick_error! {
     #[derive(Debug)]
     pub enum TextureError {
-        /// An error occured while loading an image
+        // An error occured while loading an image
         Image(err: image::ImageError) {
             display("Image error: {}", err)
             from()
         }
-        /// An error occured while creating a texture
+        // An error occured while creating a texture
         Creation(err: gfx::CombinedError) {
             display("Texture creation error: {}", err)
             from()

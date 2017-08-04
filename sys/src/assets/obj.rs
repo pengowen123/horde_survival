@@ -6,24 +6,23 @@ use image_utils;
 use obj;
 use genmesh;
 
-use std::path::Path;
 use std::io::{self, BufReader};
 
-use graphics::draw::{Vertex, Drawable};
+use graphics::draw::{Vertex, Drawable, Material};
 use super::utils;
 
 /// Loads an OBJ file from the provided path, and creates a `Drawable` component from it
-pub fn create_drawable_from_obj_file<P, R, F>(
-    path: P,
+pub fn create_drawable_from_obj_file<R, F>(
     factory: &mut F,
+    name: &str,
+    material: Material,
 ) -> Result<Drawable<R>, ObjError>
 where
-    P: AsRef<Path>,
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
     // Read data from the file
-    let data = utils::read_bytes(path)?;
+    let data = utils::read_bytes(get_path(name, ".obj"))?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
     let data = obj::Obj::load_buf(&mut buf_reader)?;
@@ -42,7 +41,9 @@ where
                         vertices.push(Vertex::new(pos, uv, normal));
                     }
                 }
-                _ => unimplemented!(),
+                p @ _ => {
+                    println!("unknown polygon: {:?}", p);
+                }
             }
         }
     }
@@ -50,21 +51,25 @@ where
     let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
 
     let mut load_texture = |path| {
-        let data = utils::read_bytes(format!(
-            "{}/assets/models/{}",
-            env!("CARGO_MANIFEST_DIR"),
-            path
-        ))?;
+        let data = utils::read_bytes(path)?;
         let result: Result<_, ObjError> =
-            image_utils::load_texture(factory, &data).map_err(|e| e.into());
+            image_utils::load_texture::<_, _, image_utils::Rgba8>(factory, &data, image_utils::PNG)
+                .map_err(|e| e.into());
         result
     };
 
-    let texture = load_texture("suzanne_texture.png")?;
-    let diffuse = load_texture("suzanne_diffuse.png")?;
-    let specular = load_texture("suzanne_specular.png")?;
+    let texture = load_texture(get_path(name, "_texture.png"))?;
+    let diffuse = load_texture(get_path(name, "_diffuse.png"))?;
+    let specular = load_texture(get_path(name, "_specular.png"))?;
 
-    Ok(Drawable::new(vbuf, slice, texture, diffuse, specular))
+    Ok(Drawable::new(
+        vbuf,
+        slice,
+        texture,
+        diffuse,
+        specular,
+        material,
+    ))
 }
 
 quick_error! {
@@ -79,4 +84,14 @@ quick_error! {
             from()
         }
     }
+}
+
+/// Returns the path to the file given the name of a model and a suffix to attach to it
+fn get_path(name: &str, suffix: &str) -> String {
+    format!(
+        "{}/assets/models/{}{}",
+        env!("CARGO_MANIFEST_DIR"),
+        name,
+        suffix
+    )
 }

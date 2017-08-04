@@ -4,8 +4,8 @@
 //! window.
 
 // TODO: this file is getting a bit large, look into moving some code in new modules
+pub mod components;
 mod pipeline;
-mod components;
 mod param;
 mod init;
 mod types;
@@ -15,7 +15,7 @@ mod utils;
 pub use self::init::init;
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
-pub use self::pipeline::main::Vertex;
+pub use self::pipeline::main::{Vertex, Material};
 pub use self::types::{ColorFormat, DepthFormat};
 //pub use self::pipeline::pipe::init_all as init_pipelines;
 pub use self::components::Drawable;
@@ -152,7 +152,7 @@ where
     ) {
         // Get model-specific transform matrix
         let param = drawable.param();
-        let m = param.translation() * param.rotation();
+        let m = param.translation() * param.rotation() * param.scale();
         let mvp = view_proj * m;
 
         // Update shader parameters
@@ -163,6 +163,10 @@ where
 
         // Update model-specific buffers
         self.encoder.update_constant_buffer(&data.locals, locals);
+        self.encoder.update_constant_buffer(
+            &data.material,
+            &drawable.material(),
+        );
 
         // Update texture and lighting maps
         data.texture.0 = drawable.texture().clone();
@@ -286,12 +290,6 @@ where
             eye_pos,
         };
 
-        // TODO: cleanup material and light initialization when deferred is implemented
-        let material = main::Material::new(
-            // Shininess
-            64.0,
-        );
-
         let light = main::Light::new(
             // Position
             [0.0, 0.0, 10.0, 1.0],
@@ -307,11 +305,6 @@ where
             0.032,
         );
 
-        // Update buffers
-        self.encoder.update_constant_buffer(
-            &self.pipe_main.data.material,
-            &material,
-        );
         self.encoder.update_constant_buffer(
             &self.pipe_main.data.light,
             &light,

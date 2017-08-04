@@ -63,7 +63,7 @@ impl<R: gfx::Resources> Pipeline<R> {
 
         // Create the skybox
         let path = |p| env!("CARGO_MANIFEST_DIR").to_string() + p;
-        let cubemap = image_utils::load_cubemap(
+        let cubemap = image_utils::load_cubemap::<_, _, image_utils::Rgba8>(
             factory,
             image_utils::CubemapData {
                 up: &read_bytes(path("/assets/skybox/top.jpg"))?,
@@ -73,6 +73,7 @@ impl<R: gfx::Resources> Pipeline<R> {
                 left: &read_bytes(path("/assets/skybox/left.jpg"))?,
                 right: &read_bytes(path("/assets/skybox/right.jpg"))?,
             },
+            image_utils::JPEG,
         )?;
 
         let data = pipe::Data {

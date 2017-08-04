@@ -2,6 +2,7 @@
 
 pub mod translation;
 pub mod rotation;
+pub mod scale;
 
 use cgmath::One;
 use specs::{self, DispatcherBuilder, Join};
@@ -9,6 +10,7 @@ use gfx;
 
 use self::translation::Translation;
 use self::rotation::Rotation;
+use self::scale::Scale;
 use graphics::draw::components;
 
 /// A type that stores all individual parameters to pass the the graphics system
@@ -16,13 +18,15 @@ use graphics::draw::components;
 pub struct ShaderParam {
     translation: Translation,
     rotation: Rotation,
+    scale: Scale,
 }
 
 impl ShaderParam {
-    pub fn new(translation: Translation, rotation: Rotation) -> Self {
+    pub fn new(translation: Translation, rotation: Rotation, scale: Scale) -> Self {
         Self {
             translation,
             rotation,
+            scale,
         }
     }
 
@@ -33,12 +37,16 @@ impl ShaderParam {
     pub fn rotation(&self) -> &Rotation {
         &self.rotation
     }
+
+    pub fn scale(&self) -> &Scale {
+        &self.scale
+    }
 }
 
 impl Default for ShaderParam {
     fn default() -> Self {
         // Identity transformations (zero translation, zero rotation)
-        ShaderParam::new(One::one(), One::one())
+        ShaderParam::new(One::one(), One::one(), One::one())
     }
 }
 
@@ -84,4 +92,5 @@ pub fn init<'a, 'b>(
     dispatcher
         .add(translation::System, "shader-param-translation", &[])
         .add(rotation::System, "shader-param-rotation", &[])
+        .add(scale::System, "shader-param-scale", &[])
 }

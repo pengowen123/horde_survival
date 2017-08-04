@@ -8,7 +8,7 @@ use gfx;
 use std::sync::Arc;
 
 use window;
-use super::param;
+use super::{param, components};
 
 /// Initializes rendering-related components and systems
 pub fn init<'a, 'b>(
@@ -44,6 +44,7 @@ pub fn init<'a, 'b>(
 
     // Register components
     register_drawable(world, &factory);
+    world.register::<components::Scale>();
 
     // Add test entities
     // TODO: Remove this when the game has a better initialization system
@@ -59,7 +60,11 @@ pub fn init<'a, 'b>(
         .add(
             param::System::new(draw.factory()),
             "shader-param",
-            &["shader-param-translation", "shader-param-rotation"],
+            &[
+                "shader-param-translation",
+                "shader-param-rotation",
+                "shader-param-scale",
+            ],
         )
         .add_thread_local(draw);
 
@@ -72,5 +77,5 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    world.register::<super::Drawable<R>>();
+    world.register::<components::Drawable<R>>();
 }

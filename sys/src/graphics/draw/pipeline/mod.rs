@@ -1,5 +1,7 @@
 //! Graphics pipeline declaration and creation
 
+// TODO: List here a graph of the whole graphics pipeline
+
 pub mod main;
 pub mod postprocessing;
 pub mod skybox;

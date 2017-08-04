@@ -8,10 +8,11 @@ use super::types::{TextureView, VertexBuffer};
 
 /// A component that stores the information needed to draw an entity
 pub struct Drawable<R: gfx::Resources> {
+    vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
     texture: TextureView<R>,
     diffuse: TextureView<R>,
     specular: TextureView<R>,
-    vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
+    material: pipeline::main::Material,
     slice: gfx::Slice<R>,
     param: param::ShaderParam,
 }
@@ -24,6 +25,7 @@ impl<R: gfx::Resources> Drawable<R> {
         texture: TextureView<R>,
         diffuse: TextureView<R>,
         specular: TextureView<R>,
+        material: pipeline::main::Material,
     ) -> Self {
         Self {
             vertex_buffer,
@@ -31,6 +33,7 @@ impl<R: gfx::Resources> Drawable<R> {
             texture,
             diffuse,
             specular,
+            material,
             param: Default::default(),
         }
     }
@@ -50,14 +53,22 @@ impl<R: gfx::Resources> Drawable<R> {
         &self.specular
     }
 
+    /// Returns a reference to the component's material
+    pub fn material(&self) -> &pipeline::main::Material {
+        &self.material
+    }
+
+    /// Returns a reference to the component's vertex buffer
     pub fn vertex_buffer(&self) -> &VertexBuffer<R, pipeline::main::Vertex> {
         &self.vertex_buffer
     }
 
+    /// Returns a reference to the component's vertex buffer slice
     pub fn slice(&self) -> &gfx::Slice<R> {
         &self.slice
     }
 
+    /// Returns a reference to the component's shader parameters
     pub fn param(&self) -> &param::ShaderParam {
         &self.param
     }
@@ -68,6 +79,12 @@ impl<R: gfx::Resources> Drawable<R> {
     }
 }
 
+pub struct Scale(pub f32);
+
 impl<R: gfx::Resources> specs::Component for Drawable<R> {
+    type Storage = specs::VecStorage<Self>;
+}
+
+impl specs::Component for Scale {
     type Storage = specs::VecStorage<Self>;
 }
