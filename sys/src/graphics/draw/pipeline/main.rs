@@ -1,7 +1,5 @@
 //! Pipeline declaration for the main shaders
 
-// TODO: fix gamma correction when graphics are completed
-
 use gfx::{self, texture, state, handle, format};
 
 use std::path::Path;

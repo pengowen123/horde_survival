@@ -9,7 +9,6 @@ use super::types::{TextureView, VertexBuffer};
 /// A component that stores the information needed to draw an entity
 pub struct Drawable<R: gfx::Resources> {
     vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
-    texture: TextureView<R>,
     diffuse: TextureView<R>,
     specular: TextureView<R>,
     material: pipeline::main::Material,
@@ -22,7 +21,6 @@ impl<R: gfx::Resources> Drawable<R> {
     pub fn new(
         vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
         slice: gfx::Slice<R>,
-        texture: TextureView<R>,
         diffuse: TextureView<R>,
         specular: TextureView<R>,
         material: pipeline::main::Material,
@@ -30,17 +28,11 @@ impl<R: gfx::Resources> Drawable<R> {
         Self {
             vertex_buffer,
             slice,
-            texture,
             diffuse,
             specular,
             material,
             param: Default::default(),
         }
-    }
-
-    /// Returns a reference to the component's texture
-    pub fn texture(&self) -> &TextureView<R> {
-        &self.texture
     }
 
     /// Returns a reference to the component's diffuse map

@@ -58,18 +58,10 @@ where
         result
     };
 
-    let texture = load_texture(get_path(name, "_texture.png"))?;
     let diffuse = load_texture(get_path(name, "_diffuse.png"))?;
     let specular = load_texture(get_path(name, "_specular.png"))?;
 
-    Ok(Drawable::new(
-        vbuf,
-        slice,
-        texture,
-        diffuse,
-        specular,
-        material,
-    ))
+    Ok(Drawable::new(vbuf, slice, diffuse, specular, material))
 }
 
 quick_error! {

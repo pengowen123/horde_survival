@@ -168,8 +168,7 @@ where
             &drawable.material(),
         );
 
-        // Update texture and lighting maps
-        data.texture.0 = drawable.texture().clone();
+        // Update texture maps
         data.texture_diffuse.0 = drawable.diffuse().clone();
         data.texture_specular.0 = drawable.specular().clone();
 
