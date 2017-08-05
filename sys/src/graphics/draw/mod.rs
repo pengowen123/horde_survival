@@ -31,6 +31,7 @@ use self::factory_ext::FactoryExtension;
 use graphics::camera;
 use window;
 
+// NOTE: set this to [0.0; 4] for gbuffer
 const CLEAR_COLOR: [f32; 4] = [1.0; 4];
 
 // TODO: replace these with asset loader struct that hands out paths
@@ -93,17 +94,16 @@ where
         encoder: gfx::Encoder<R, C>,
     ) -> Self {
 
-        // Get the dimensions for the new render target
+        // Get the dimensions for all new render targets
         let (width, height) = window.get_inner_size_pixels().expect(
             "Failed to get window size",
         );
         let (width, height) = (width as u16, height as u16);
 
         // Anti-aliasing mode
-        let aa_mode = texture::AaMode::Multi(8);
+        //let aa_mode = texture::AaMode::Multi(8);
 
         // Create a render target for the main shaders to draw to
-        // Postprocessing will read from this render target as a texture
         let (_, srv, rtv) = factory
             .create_render_target_with_aa::<gfx::format::Rgba8>(width, height, aa_mode)
             .expect("Failed to create render target");
@@ -112,6 +112,7 @@ where
             .create_depth_stencil_view_only_with_aa(width, height, aa_mode)
             .expect("Failed to create depth stencil");
 
+        // Main pipeline
         let pipe_main = pipeline::Pipeline::new_main(
             &mut factory,
             rtv.clone(),
@@ -120,13 +121,15 @@ where
             MAIN_FS_PATH,
         ).unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
 
-        let pipe_post =
-            pipeline::Pipeline::new_post(&mut factory, srv, out_color, POST_VS_PATH, POST_FS_PATH)
-                .unwrap_or_else(|e| panic!("Failed to create postprocessing PSO: {}", e));
-
+        // Skybox pipeline
         let pipe_skybox =
             pipeline::Pipeline::new_skybox(&mut factory, rtv, dsv, SKYBOX_VS_PATH, SKYBOX_FS_PATH)
                 .unwrap_or_else(|e| panic!("Failed to create skybox PSO: {}", e));
+
+        // Postprocessing pipeline
+        let pipe_post =
+            pipeline::Pipeline::new_post(&mut factory, srv, out_color, POST_VS_PATH, POST_FS_PATH)
+                .unwrap_or_else(|e| panic!("Failed to create postprocessing PSO: {}", e));
 
         Self {
             factory,

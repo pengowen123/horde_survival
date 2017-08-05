@@ -1,5 +1,7 @@
 //! Pipeline declaration for the main shaders
 
+pub mod gbuffer;
+
 use gfx::{self, texture, state, handle, format};
 
 use std::path::Path;
@@ -112,7 +114,7 @@ impl<R: gfx::Resources> Pipeline<R> {
     {
         // TODO: maybe enable culling
         let rasterizer = state::Rasterizer {
-            samples: Some(state::MultiSample),
+            //samples: Some(state::MultiSample),
             ..state::Rasterizer::new_fill()
         };
 
