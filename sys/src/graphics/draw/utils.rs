@@ -68,3 +68,16 @@ where
         f([1.0, -1.0, 1.0]),
     ]
 }
+
+macro_rules! clear_targets {
+    (COLOR, $self_:ident, $($target:expr),*,) => {
+        $(
+            $self_.encoder.clear(&$target, CLEAR_COLOR);
+        )*
+    };
+    (DEPTH, $self_:ident, $($target:expr),*,) => {
+        $(
+            $self_.encoder.clear_depth(&$target, 1.0);
+        )*
+    }
+}

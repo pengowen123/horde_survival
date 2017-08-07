@@ -3,15 +3,16 @@
 use specs;
 use gfx;
 
-use super::{param, pipeline};
+use super::param;
+use super::pipeline::main::{geometry_pass, lighting};
 use super::types::{TextureView, VertexBuffer};
 
 /// A component that stores the information needed to draw an entity
 pub struct Drawable<R: gfx::Resources> {
-    vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
+    vertex_buffer: VertexBuffer<R, geometry_pass::Vertex>,
     diffuse: TextureView<R>,
     specular: TextureView<R>,
-    material: pipeline::main::Material,
+    material: lighting::Material,
     slice: gfx::Slice<R>,
     param: param::ShaderParam,
 }
@@ -19,11 +20,11 @@ pub struct Drawable<R: gfx::Resources> {
 impl<R: gfx::Resources> Drawable<R> {
     /// Returns a new `Drawable`, with the provided texture, vertex buffer, and slice
     pub fn new(
-        vertex_buffer: VertexBuffer<R, pipeline::main::Vertex>,
+        vertex_buffer: VertexBuffer<R, geometry_pass::Vertex>,
         slice: gfx::Slice<R>,
         diffuse: TextureView<R>,
         specular: TextureView<R>,
-        material: pipeline::main::Material,
+        material: lighting::Material,
     ) -> Self {
         Self {
             vertex_buffer,
@@ -46,12 +47,12 @@ impl<R: gfx::Resources> Drawable<R> {
     }
 
     /// Returns a reference to the component's material
-    pub fn material(&self) -> &pipeline::main::Material {
+    pub fn material(&self) -> &lighting::Material {
         &self.material
     }
 
     /// Returns a reference to the component's vertex buffer
-    pub fn vertex_buffer(&self) -> &VertexBuffer<R, pipeline::main::Vertex> {
+    pub fn vertex_buffer(&self) -> &VertexBuffer<R, geometry_pass::Vertex> {
         &self.vertex_buffer
     }
 

@@ -80,7 +80,7 @@ where
 
     let physics = Physics::new(body_init, false);
 
-    create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(64.0)).with(physics);
+    create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
 }
 
 fn create_test_entity<'a, R, F>(

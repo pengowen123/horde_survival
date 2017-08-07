@@ -10,39 +10,47 @@ mod param;
 mod init;
 mod types;
 mod factory_ext;
+#[macro_use]
 mod utils;
 
 pub use self::init::init;
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
-pub use self::pipeline::main::{Vertex, Material};
+pub use self::pipeline::main::geometry_pass::Vertex;
+pub use self::pipeline::main::lighting::Material;
 pub use self::types::{ColorFormat, DepthFormat};
-//pub use self::pipeline::pipe::init_all as init_pipelines;
 pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
-use gfx::{self, texture, handle};
+use gfx::{self, handle, format};
 use glutin::{Window, GlContext};
 use specs::{self, Join};
 use cgmath::{Matrix4, SquareMatrix};
 
-use self::pipeline::{main, postprocessing, skybox};
-use self::factory_ext::FactoryExtension;
+use self::pipeline::{postprocessing, skybox};
+use self::pipeline::main::{self, geometry_pass, lighting};
 use graphics::camera;
 use window;
 
-// NOTE: set this to [0.0; 4] for gbuffer
-const CLEAR_COLOR: [f32; 4] = [1.0; 4];
+const CLEAR_COLOR: [f32; 4] = [0.0; 4];
 
 // TODO: replace these with asset loader struct that hands out paths
-const MAIN_VS_PATH: &str = concat!(
+const GEOMETRY_PASS_VS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/assets/shaders/vertex_150.glsl"
+    "/assets/shaders/geometry_pass_vertex_150.glsl"
+);
+const GEOMETRY_PASS_FS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/geometry_pass_fragment_150.glsl"
 );
 
-const MAIN_FS_PATH: &str = concat!(
+const LIGHTING_VS_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/assets/shaders/fragment_150.glsl"
+    "/assets/shaders/lighting_vertex_150.glsl"
+);
+const LIGHTING_FS_PATH: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/assets/shaders/lighting_fragment_150.glsl"
 );
 
 const POST_VS_PATH: &str = concat!(
@@ -74,7 +82,8 @@ where
     encoder: gfx::Encoder<R, C>,
     device: D,
     // Shader pipelines
-    pipe_main: main::Pipeline<R>,
+    pipe_geometry_pass: geometry_pass::Pipeline<R>,
+    pipe_lighting: lighting::Pipeline<R>,
     pipe_post: postprocessing::Pipeline<R>,
     pipe_skybox: skybox::Pipeline<R>,
 }
@@ -103,28 +112,44 @@ where
         // Anti-aliasing mode
         //let aa_mode = texture::AaMode::Multi(8);
 
-        // Create a render target for the main shaders to draw to
-        let (_, srv, rtv) = factory
-            .create_render_target_with_aa::<gfx::format::Rgba8>(width, height, aa_mode)
-            .expect("Failed to create render target");
-        // Create a depth stencil for the render target
-        let dsv = factory
-            .create_depth_stencil_view_only_with_aa(width, height, aa_mode)
-            .expect("Failed to create depth stencil");
+        // Create a geometry buffer
+        let gbuffer = main::gbuffer::create_geometry_buffer(&mut factory, width, height);
 
-        // Main pipeline
-        let pipe_main = pipeline::Pipeline::new_main(
+        // Create an intermediate render target (postprocessing uses the window target)
+        let (_, srv, rtv) = factory
+            .create_render_target::<format::Rgba8>(width, height)
+            .unwrap();
+
+        // Geometry pass pipeline
+        let pipe_geometry_pass =
+            pipeline::Pipeline::new_geometry_pass(
+                &mut factory,
+                gbuffer.position.target,
+                gbuffer.normal.target,
+                gbuffer.color.target,
+                gbuffer.depth.clone(),
+                GEOMETRY_PASS_VS_PATH,
+                GEOMETRY_PASS_FS_PATH,
+            ).unwrap_or_else(|e| panic!("Failed to create geometry pass PSO: {}", e));
+
+        let pipe_lighting = pipeline::Pipeline::new_lighting(
             &mut factory,
+            gbuffer.position.resource,
+            gbuffer.normal.resource,
+            gbuffer.color.resource,
             rtv.clone(),
-            dsv.clone(),
-            MAIN_VS_PATH,
-            MAIN_FS_PATH,
-        ).unwrap_or_else(|e| panic!("Failed to create main PSO: {}", e));
+            LIGHTING_VS_PATH,
+            LIGHTING_FS_PATH,
+        ).unwrap_or_else(|e| panic!("Failed to create lighting PSO: {}", e));
 
         // Skybox pipeline
-        let pipe_skybox =
-            pipeline::Pipeline::new_skybox(&mut factory, rtv, dsv, SKYBOX_VS_PATH, SKYBOX_FS_PATH)
-                .unwrap_or_else(|e| panic!("Failed to create skybox PSO: {}", e));
+        let pipe_skybox = pipeline::Pipeline::new_skybox(
+            &mut factory,
+            rtv,
+            gbuffer.depth,
+            SKYBOX_VS_PATH,
+            SKYBOX_FS_PATH,
+        ).unwrap_or_else(|e| panic!("Failed to create skybox PSO: {}", e));
 
         // Postprocessing pipeline
         let pipe_post =
@@ -134,7 +159,8 @@ where
         Self {
             factory,
             device,
-            pipe_main,
+            pipe_geometry_pass,
+            pipe_lighting,
             pipe_post,
             pipe_skybox,
             encoder,
@@ -147,33 +173,37 @@ where
 
     /// Draws an entity given its `Drawable` component, a set of shader parameters, a `View *
     /// Projection` matrix, and a constant buffer to write shader input to
+    ///
+    /// This function will only write data to the geometry buffer. To see the results,
+    /// `draw_lighting` must be called afer calling this function.
     fn draw_entity(
         &mut self,
         drawable: &components::Drawable<R>,
         view_proj: Matrix4<f32>,
-        locals: &mut main::Locals,
+        locals: &mut geometry_pass::Locals,
     ) {
         // Get model-specific transform matrix
         let param = drawable.param();
         let m = param.translation() * param.rotation() * param.scale();
-        let mvp = view_proj * m;
 
         // Update shader parameters
-        locals.mvp = mvp.into();
         locals.model = m.into();
+        locals.view_proj = view_proj.into();
 
-        let data = &mut self.pipe_main.data;
+        let data = &mut self.pipe_geometry_pass.data;
 
         // Update model-specific buffers
         self.encoder.update_constant_buffer(&data.locals, locals);
-        self.encoder.update_constant_buffer(
-            &data.material,
-            &drawable.material(),
-        );
+
+        // TODO: use the entity's material
+        //self.encoder.update_constant_buffer(
+        //&data.material,
+        //&drawable.material(),
+        //);
 
         // Update texture maps
-        data.texture_diffuse.0 = drawable.diffuse().clone();
-        data.texture_specular.0 = drawable.specular().clone();
+        data.diffuse.0 = drawable.diffuse().clone();
+        data.specular.0 = drawable.specular().clone();
 
         // Update the vertex buffer
         data.vbuf = drawable.vertex_buffer().clone();
@@ -181,8 +211,30 @@ where
         // Draw the model
         self.encoder.draw(
             drawable.slice(),
-            &self.pipe_main.pso,
+            &self.pipe_geometry_pass.pso,
             data,
+        );
+    }
+
+    /// Uses the data in the geometry buffer to calculate lighting
+    fn draw_lighting(&mut self, eye_pos: [f32; 4]) {
+        let lighting_locals = lighting::Locals { eye_pos };
+        let material = lighting::Material::new(32.0);
+
+        let slice = gfx::Slice::new_match_vertex_buffer(&self.pipe_skybox.data.vbuf);
+
+        self.encoder.update_constant_buffer(
+            &self.pipe_lighting.data.locals,
+            &lighting_locals,
+        );
+        self.encoder.update_constant_buffer(
+            &self.pipe_lighting.data.material,
+            &material,
+        );
+        self.encoder.draw(
+            &slice,
+            &self.pipe_lighting.pso,
+            &self.pipe_lighting.data,
         );
     }
 
@@ -204,6 +256,9 @@ where
     }
 
     /// Applies postprocessing effects
+    ///
+    /// This function must be called after all drawing is done so the results will be displayed to
+    /// the window.
     fn draw_postprocessing(&mut self) {
         let slice = gfx::Slice::new_match_vertex_buffer(&self.pipe_post.data.vbuf);
         self.encoder.draw(
@@ -223,22 +278,23 @@ where
         self.device.cleanup();
     }
 
-    /// Clears all render targets
-    fn clear_render_targets(&mut self) {
-        // Main render target
-        self.encoder.clear(
-            &self.pipe_main.data.out_color,
-            CLEAR_COLOR,
-        );
-        self.encoder.clear_depth(
-            &self.pipe_main.data.out_depth,
-            1.0,
+    /// Clears all render and depth targets
+    fn clear_targets(&mut self) {
+        // NOTE: Make sure this is kept up to date as new pipelines are added
+        clear_targets!(
+            COLOR, self,
+            self.pipe_geometry_pass.data.out_pos,
+            self.pipe_geometry_pass.data.out_normal,
+            self.pipe_geometry_pass.data.out_color,
+            self.pipe_lighting.data.out_color,
+            self.pipe_skybox.data.out_color,
+            self.pipe_post.data.screen_color,
         );
 
-        // Window render target
-        self.encoder.clear(
-            &self.pipe_post.data.screen_color,
-            CLEAR_COLOR,
+        clear_targets!(
+            DEPTH, self,
+            self.pipe_geometry_pass.data.out_depth,
+            self.pipe_skybox.data.out_depth,
         );
     }
 
@@ -274,8 +330,8 @@ where
         //eprintln!("Failed to reload shaders: {}", e);
         //});
 
-        // Clear all render targets
-        self.clear_render_targets();
+        // Clear all render and depth targets
+        self.clear_targets();
 
         // Get camera matrix
         let camera = data.camera;
@@ -286,36 +342,18 @@ where
         let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
 
         // Initialize shader uniforms
-        let mut locals = main::Locals {
-            mvp: vp.into(),
+        let mut locals = geometry_pass::Locals {
             model: Matrix4::identity().into(),
-            eye_pos,
+            view_proj: vp.into(),
         };
 
-        let light = main::Light::new(
-            // Position
-            [0.0, 0.0, 10.0, 1.0],
-            // Ambient
-            [0.01, 0.01, 0.01, 1.0],
-            // Diffuse
-            [1.0, 1.0, 1.0, 1.0],
-            // Specular
-            [1.0, 1.0, 1.0, 1.0],
-            // Attenuation constant, linear, and quadratic values
-            1.0,
-            0.09,
-            0.032,
-        );
-
-        self.encoder.update_constant_buffer(
-            &self.pipe_main.data.light,
-            &light,
-        );
-
-        // Draw each entity
+        // Draw each entity (to the geometry buffer)
         for d in (&data.drawable).join() {
             self.draw_entity(d, vp, &mut locals);
         }
+
+        // Apply lighting
+        self.draw_lighting(eye_pos);
 
         // Draw the skybox
         self.draw_skybox(camera.skybox_camera());
