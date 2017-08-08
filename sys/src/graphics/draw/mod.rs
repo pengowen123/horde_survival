@@ -110,6 +110,7 @@ where
         let (width, height) = (width as u16, height as u16);
 
         // Anti-aliasing mode
+        // TODO: learn how to do anti-aliasing with deferred shading
         //let aa_mode = texture::AaMode::Multi(8);
 
         // Create a geometry buffer

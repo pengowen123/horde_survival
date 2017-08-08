@@ -40,6 +40,8 @@ pub struct System;
 pub struct Data<'a> {
     window_info: specs::FetchMut<'a, WindowInfo>,
     window: specs::Fetch<'a, Window>,
+    // TODO: remove when a better way of displaying this info is implemented
+    delta: specs::Fetch<'a, ::delta::Delta>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -47,5 +49,10 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         *data.window_info = WindowInfo::new(&data.window);
+
+        data.window.set_title(&format!(
+            "Horde Survival - {:.4} ms",
+            data.delta.to_float() * 1000.0,
+        ));
     }
 }
