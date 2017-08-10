@@ -8,16 +8,13 @@ use gfx;
 use std::sync::Arc;
 
 use window;
-use super::{param, components};
+use super::{param, components, lighting_data};
 
 /// Initializes rendering-related components and systems
 pub fn init<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> (DispatcherBuilder<'a, 'b>, window::Window, EventsLoop) {
-
-    // Initialize subsystems
-    let dispatcher = param::init(world, dispatcher);
 
     // Initialize window settings
     let (w, h) = (800, 600);
@@ -45,6 +42,13 @@ pub fn init<'a, 'b>(
     // Register components
     register_drawable(world, &factory);
     world.register::<components::Scale>();
+    world.register::<components::DirectionalLight>();
+    world.register::<components::PointLight>();
+    world.register::<components::SpotLight>();
+
+    // Initialize subsystems
+    let dispatcher = param::init(world, dispatcher);
+    let dispatcher = lighting_data::init(world, dispatcher);
 
     // Add test entities
     // TODO: Remove this when the game has a better initialization system

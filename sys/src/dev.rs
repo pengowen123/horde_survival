@@ -9,6 +9,7 @@ use nphysics3d::object::RigidBody;
 use ncollide::shape::{Cuboid, Plane};
 
 use graphics::draw::{self, Material};
+use graphics::draw::components::*;
 use world::components::*;
 use physics::components::*;
 use control::Control;
@@ -72,6 +73,33 @@ where
         Material::new(32.0),
     ).with(direction);
 
+    let light_color = LightColor::new(
+        [0.1, 0.1, 0.1, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [0.5, 0.5, 0.5, 1.0],
+    );
+
+    // Create some lights
+    create_point_light(
+        world,
+        factory,
+        [5.0, 3.0, 6.5],
+        light_color,
+        1.0,
+        0.14,
+        0.07,
+    );
+
+    create_point_light(
+        world,
+        factory,
+        [-5.0, -5.0, 1.5],
+        light_color,
+        1.0,
+        0.1,
+        0.04,
+    );
+
     // Add a plane to test physics on
     let body_init = || {
         let geom = Plane::new(Vector3::new(0.0 as ::Float, 0.0, 1.0));
@@ -106,4 +134,59 @@ where
         .with(scale)
         .with(drawable)
         .with(shader_param)
+}
+
+fn create_dir_light<'a, R, F>(
+    world: &'a mut specs::World,
+    factory: &mut F,
+    pos: [f64; 3],
+    direction: [f32; 3],
+    color: LightColor,
+) -> specs::EntityBuilder<'a>
+where
+    R: gfx::Resources,
+    F: gfx::Factory<R>,
+{
+    let direction = cgmath::Quaternion::from_axis_angle(direction.into(), cgmath::Deg(0.0));
+    let direction = cgmath::Quaternion::from_sv(direction.s as f64, direction.v.cast());
+    create_test_entity(world, factory, "sphere", pos, 0.5, Material::new(0.0))
+        .with(DirectionalLight::new(color))
+        .with(Direction(direction))
+}
+
+fn create_point_light<'a, R, F>(
+    world: &'a mut specs::World,
+    factory: &mut F,
+    pos: [f64; 3],
+    color: LightColor,
+    constant: f32,
+    linear: f32,
+    quadratic: f32,
+) -> specs::EntityBuilder<'a>
+where
+    R: gfx::Resources,
+    F: gfx::Factory<R>,
+{
+    create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0))
+        .with(PointLight::new(color, constant, linear, quadratic))
+}
+
+fn create_spot_light<'a, R, F>(
+    world: &'a mut specs::World,
+    factory: &mut F,
+    pos: [f64; 3],
+    direction: [f32; 3],
+    color: LightColor,
+    angle: cgmath::Deg<f32>,
+    outer_angle: cgmath::Deg<f32>,
+) -> specs::EntityBuilder<'a>
+where
+    R: gfx::Resources,
+    F: gfx::Factory<R>,
+{
+    let direction = cgmath::Quaternion::from_axis_angle(direction.into(), cgmath::Deg(0.0));
+    let direction = cgmath::Quaternion::from_sv(direction.s as f64, direction.v.cast());
+    create_test_entity(world, factory, "sphere", pos, 0.5, Material::new(0.0))
+        .with(SpotLight::new(color, angle.into(), outer_angle.into()))
+        .with(Direction(direction))
 }

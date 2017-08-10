@@ -10,6 +10,10 @@ use graphics::draw::{pipeline, utils};
 use graphics::draw::pipeline::*;
 use super::gbuffer;
 
+/// The maximum number of lights
+// NOTE: Changes to this constant must be also applied to the shaders
+pub const MAX_LIGHTS: usize = 8;
+
 gfx_defines! {
     vertex Vertex {
         pos: Vec2 = "a_Pos",
@@ -20,6 +24,53 @@ gfx_defines! {
         shininess: f32 = "u_Material_shininess",
     }
 
+    #[derive(Default)]
+    constant DirectionalLight {
+        direction: Vec4 = "direction",
+
+        ambient: Vec4 = "ambient",
+        diffuse: Vec4 = "diffuse",
+        specular: Vec4 = "specular",
+
+        enabled: i32 = "enabled",
+
+        _padding0: Vec3 = "_padding0",
+        _padding: Vec3 = "_padding",
+        _padding1: f32 = "_padding1",
+    }
+
+    #[derive(Default)]
+    constant PointLight {
+        position: Vec4 = "position",
+
+        ambient: Vec4 = "ambient",
+        diffuse: Vec4 = "diffuse",
+        specular: Vec4 = "specular",
+
+        constant: f32 = "constant",
+        linear: f32 = "linear",
+        quadratic: f32 = "quadratic",
+
+        enabled: i32 = "enabled",
+    }
+
+    #[derive(Default)]
+    constant SpotLight {
+        position: Vec4 = "position",
+        direction: Vec4 = "direction",
+
+        ambient: Vec4 = "ambient",
+        diffuse: Vec4 = "diffuse",
+        specular: Vec4 = "specular",
+
+        cos_cutoff: f32 = "cutOff",
+        cos_outer_cutoff: f32 = "outerCutOff",
+
+        enabled: i32 = "enabled",
+
+        _padding: f32 = "_padding",
+    }
+
     constant Locals {
         eye_pos: Vec4 = "u_EyePos",
     }
@@ -28,9 +79,15 @@ gfx_defines! {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         locals: gfx::ConstantBuffer<Locals> = "u_Locals",
         material: gfx::ConstantBuffer<Material> = "u_Material",
+        // Light buffers
+        dir_lights: gfx::ConstantBuffer<DirectionalLight> = "u_DirLights",
+        point_lights: gfx::ConstantBuffer<PointLight> = "u_PointLights",
+        spot_lights: gfx::ConstantBuffer<SpotLight> = "u_SpotLights",
+        // G-buffer textures
         g_position: gfx::TextureSampler<Vec4> = "t_Position",
         g_normal: gfx::TextureSampler<Vec4> = "t_Normal",
         g_color: gfx::TextureSampler<Vec4> = "t_Color",
+        // Output color (note that depth is not needed here)
         out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
     }
 }
@@ -65,11 +122,7 @@ impl<R: gfx::Resources> Pipeline<R> {
         F: gfx::Factory<R>,
         P: AsRef<Path>,
     {
-        // TODO: maybe enable culling
-        let rasterizer = state::Rasterizer {
-            //samples: Some(state::MultiSample),
-            ..state::Rasterizer::new_fill()
-        };
+        let rasterizer = state::Rasterizer { ..state::Rasterizer::new_fill() };
 
         let pso = load_pso(
             factory,
@@ -92,6 +145,9 @@ impl<R: gfx::Resources> Pipeline<R> {
             vbuf: vbuf,
             material: factory.create_constant_buffer(1),
             locals: factory.create_constant_buffer(1),
+            dir_lights: factory.create_constant_buffer(MAX_LIGHTS),
+            point_lights: factory.create_constant_buffer(MAX_LIGHTS),
+            spot_lights: factory.create_constant_buffer(MAX_LIGHTS),
             g_position: (srv_pos, factory.create_sampler(sampler_info)),
             g_normal: (srv_normal, factory.create_sampler(sampler_info)),
             g_color: (srv_color, factory.create_sampler(sampler_info)),

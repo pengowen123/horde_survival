@@ -10,6 +10,7 @@ mod param;
 mod init;
 mod types;
 mod factory_ext;
+mod lighting_data;
 #[macro_use]
 mod utils;
 
@@ -217,6 +218,34 @@ where
         );
     }
 
+    /// Writes the provided lights to the light buffer, which is used by the shaders to calculate
+    /// lighting
+    fn update_light_buffers(
+        &mut self,
+        lights: &lighting_data::LightingData,
+    ) -> Result<(), gfx::UpdateError<usize>> {
+        // Update directional lights
+        self.encoder.update_buffer(
+            &self.pipe_lighting.data.dir_lights,
+            lights.dir_lights(),
+            0,
+        )?;
+        // Update point lights
+        self.encoder.update_buffer(
+            &self.pipe_lighting.data.point_lights,
+            lights.point_lights(),
+            0,
+        )?;
+        // Update spot lights
+        self.encoder.update_buffer(
+            &self.pipe_lighting.data.spot_lights,
+            lights.spot_lights(),
+            0,
+        )?;
+
+        Ok(())
+    }
+
     /// Uses the data in the geometry buffer to calculate lighting
     fn draw_lighting(&mut self, eye_pos: [f32; 4]) {
         let lighting_locals = lighting::Locals { eye_pos };
@@ -311,6 +340,7 @@ pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, components::Drawable<R>>,
     window: specs::Fetch<'a, window::Window>,
     camera: specs::Fetch<'a, camera::Camera>,
+    lighting_data: specs::Fetch<'a, lighting_data::LightingData>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -352,6 +382,12 @@ where
         for d in (&data.drawable).join() {
             self.draw_entity(d, vp, &mut locals);
         }
+
+        // Send all lights to the shaders
+        self.update_light_buffers(&data.lighting_data)
+            .unwrap_or_else(|e| {
+                panic!("Failed to update light buffer: {}", e);
+            });
 
         // Apply lighting
         self.draw_lighting(eye_pos);

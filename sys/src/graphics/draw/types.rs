@@ -1,4 +1,4 @@
-//! Type aliases for `gfx` types
+//! Types for graphics
 
 use gfx::{self, format};
 
