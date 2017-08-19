@@ -135,7 +135,7 @@ impl PointLight {
 /// In order to work, an entity must have the `Direction` and `Spatial` components in addition to
 /// this one.
 // NOTE: `cos_cutoff` and `cos_outer_cutoff` must be the cosine of the desired angle, in radians.
-//       This should be enforced by the constructor
+//       This is be enforced by the constructor
 #[derive(Clone, Copy, Debug)]
 pub struct SpotLight {
     pub color: LightColor,

@@ -22,7 +22,7 @@ where
     F: gfx::Factory<R>,
 {
     // Read data from the file
-    let data = utils::read_bytes(get_path(name, ".obj"))?;
+    let data = utils::read_bytes(super::get_model_file_path(name, ".obj"))?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
     let data = obj::Obj::load_buf(&mut buf_reader)?;
@@ -58,8 +58,8 @@ where
         result
     };
 
-    let diffuse = load_texture(get_path(name, "_diffuse.png"))?;
-    let specular = load_texture(get_path(name, "_specular.png"))?;
+    let diffuse = load_texture(super::get_model_file_path(name, "_diffuse.png"))?;
+    let specular = load_texture(super::get_model_file_path(name, "_specular.png"))?;
 
     Ok(Drawable::new(vbuf, slice, diffuse, specular, material))
 }
@@ -76,14 +76,4 @@ quick_error! {
             from()
         }
     }
-}
-
-/// Returns the path to the file given the name of a model and a suffix to attach to it
-fn get_path(name: &str, suffix: &str) -> String {
-    format!(
-        "{}/assets/models/{}{}",
-        env!("CARGO_MANIFEST_DIR"),
-        name,
-        suffix
-    )
 }

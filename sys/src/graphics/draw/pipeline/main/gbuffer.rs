@@ -1,8 +1,9 @@
 //! Geometry-buffer creation for deferred shading
 
-use gfx::{self, texture, format, handle};
+use gfx::{self, texture, handle};
 
 use graphics::draw::types;
+use graphics::draw::render_target::ViewPair;
 
 /// A geometry buffer
 ///
@@ -23,55 +24,34 @@ where
     pub depth: handle::DepthStencilView<R, types::DepthFormat>,
 }
 
-pub struct ViewPair<R, T>
-where
-    R: gfx::Resources,
-    T: format::Formatted,
-{
-    pub resource: handle::ShaderResourceView<R, T::View>,
-    pub target: handle::RenderTargetView<R, T>,
-}
-
 pub type GFormat = [f32; 4];
 
-/// Creates and returns a geometry buffer with the provided dimensions
-pub fn create_geometry_buffer<F, R>(
-    factory: &mut F,
-    width: texture::Size,
-    height: texture::Size,
-) -> GeometryBuffer<R>
-where
-    R: gfx::Resources,
-    F: gfx::Factory<R>,
-{
-    // NOTE: Replace this with RGB textures to save memory if necessary
-    let (position, normal, color) = {
-        let mut create_buffer = || {
-            let (_, srv, rtv) = factory.create_render_target(width, height).unwrap();
-
-            ViewPair {
-                resource: srv,
-                target: rtv,
-            }
-        };
+impl<R: gfx::Resources> GeometryBuffer<R> {
+    /// Creates and returns a geometry buffer with the provided dimensions
+    pub fn new<F>(
+        factory: &mut F,
+        width: texture::Size,
+        height: texture::Size,
+    ) -> Result<GeometryBuffer<R>, gfx::CombinedError>
+    where
+        R: gfx::Resources,
+        F: gfx::Factory<R>,
+    {
+        // NOTE: Replace this with RGB textures to save memory if necessary
 
         // Create buffers
-        let position = create_buffer();
-        let normal = create_buffer();
-        let color = create_buffer();
+        let position = ViewPair::new(factory, width, height)?;
+        let normal = ViewPair::new(factory, width, height)?;
+        let color = ViewPair::new(factory, width, height)?;
 
-        (position, normal, color)
-    };
+        // Create depth target
+        let dsv = factory.create_depth_stencil_view_only(width, height)?;
 
-    // Create depth target
-    let dsv = factory
-        .create_depth_stencil_view_only(width, height)
-        .unwrap();
-
-    GeometryBuffer {
-        position,
-        normal,
-        color,
-        depth: dsv,
+        Ok(GeometryBuffer {
+            position,
+            normal,
+            color,
+            depth: dsv,
+        })
     }
 }

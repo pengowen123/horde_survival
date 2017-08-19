@@ -73,32 +73,52 @@ where
         Material::new(32.0),
     ).with(direction);
 
-    let light_color = LightColor::new(
-        [0.1, 0.1, 0.1, 1.0],
-        [1.0, 1.0, 1.0, 1.0],
-        [0.5, 0.5, 0.5, 1.0],
-    );
-
     // Create some lights
-    create_point_light(
-        world,
-        factory,
-        [5.0, 3.0, 6.5],
-        light_color,
-        1.0,
-        0.14,
-        0.07,
-    );
+    {
+        let light_color = LightColor::new(
+            [0.1, 0.1, 0.1, 1.0],
+            [1.0, 1.0, 1.0, 1.0],
+            [0.5, 0.5, 0.5, 1.0],
+        );
 
-    create_point_light(
-        world,
-        factory,
-        [-5.0, -5.0, 1.5],
-        light_color,
-        1.0,
-        0.1,
-        0.04,
-    );
+        // Create directional lights
+        {
+            let mut dir_light =
+                |x, y, z| { let _ = create_dir_light(world, factory, [x, y, z], light_color); };
+
+            //dir_light(1.0, -1.0, -1.0);
+        }
+
+        // Create point lights
+        {
+            let mut point_light = |x, y, z| {
+                let _ = create_point_light(world, factory, [x, y, z], light_color, 1.0, 0.14, 0.07);
+            };
+
+            point_light(-5.0, -5.0, 1.5);
+            //point_light(5.0, 3.0, 6.5);
+            //point_light(5.0, -5.0, 3.5);
+            //point_light(-3.0, 7.0, 10.0);
+        }
+
+        // Create spot lights
+        {
+            let mut spot_light = |pos, dir| {
+                let _ = create_spot_light(
+                    world,
+                    factory,
+                    pos,
+                    dir,
+                    light_color,
+                    cgmath::Deg(12.5),
+                    cgmath::Deg(17.5),
+                );
+            };
+
+            //spot_light([0.0, 0.0, 10.0], [0.0, 0.0, -1.0]);
+        }
+
+    }
 
     // Add a plane to test physics on
     let body_init = || {
@@ -111,45 +131,50 @@ where
     create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
 }
 
-fn create_test_entity<'a, R, F>(
+fn create_test_entity<'a, R, F, P>(
     world: &'a mut specs::World,
     factory: &mut F,
     name: &str,
-    pos: [::Float; 3],
+    pos: P,
     scale: f32,
     material: Material,
 ) -> specs::EntityBuilder<'a>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
+    P: Into<Option<[::Float; 3]>>,
 {
-    let space = Spatial(cgmath::Point3::new(pos[0], pos[1], pos[2]));
+    let pos = pos.into();
+    let space = pos.map(|p| Spatial(cgmath::Point3::new(p[0], p[1], p[2])));
     let scale = draw::components::Scale(scale);
     let drawable = obj::create_drawable_from_obj_file(factory, name, material).unwrap();
     let shader_param = draw::ShaderParam::default();
 
-    world
-        .create_entity()
-        .with(space)
-        .with(scale)
-        .with(drawable)
-        .with(shader_param)
+    let mut entity = world.create_entity().with(scale).with(drawable).with(
+        shader_param,
+    );
+
+    if let Some(s) = space {
+        entity = entity.with(s);
+    }
+
+    entity
 }
 
 fn create_dir_light<'a, R, F>(
     world: &'a mut specs::World,
     factory: &mut F,
-    pos: [f64; 3],
-    direction: [f32; 3],
+    direction: [f64; 3],
     color: LightColor,
 ) -> specs::EntityBuilder<'a>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    let direction = cgmath::Quaternion::from_axis_angle(direction.into(), cgmath::Deg(0.0));
-    let direction = cgmath::Quaternion::from_sv(direction.s as f64, direction.v.cast());
-    create_test_entity(world, factory, "sphere", pos, 0.5, Material::new(0.0))
+    let direction = dir_vec_to_quaternion(direction);
+
+    world
+        .create_entity()
         .with(DirectionalLight::new(color))
         .with(Direction(direction))
 }
@@ -175,7 +200,7 @@ fn create_spot_light<'a, R, F>(
     world: &'a mut specs::World,
     factory: &mut F,
     pos: [f64; 3],
-    direction: [f32; 3],
+    direction: [f64; 3],
     color: LightColor,
     angle: cgmath::Deg<f32>,
     outer_angle: cgmath::Deg<f32>,
@@ -184,9 +209,16 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    let direction = cgmath::Quaternion::from_axis_angle(direction.into(), cgmath::Deg(0.0));
-    let direction = cgmath::Quaternion::from_sv(direction.s as f64, direction.v.cast());
-    create_test_entity(world, factory, "sphere", pos, 0.5, Material::new(0.0))
+    let direction = dir_vec_to_quaternion(direction);
+
+    create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0))
         .with(SpotLight::new(color, angle.into(), outer_angle.into()))
         .with(Direction(direction))
+}
+
+fn dir_vec_to_quaternion(vec: [f64; 3]) -> cgmath::Quaternion<f64> {
+    let d: cgmath::Vector3<f64> = vec.into();
+    let d = d.normalize();
+
+    cgmath::Quaternion::from_arc(cgmath::Vector3::unit_z(), d, None)
 }

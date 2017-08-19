@@ -1,6 +1,6 @@
 //! Declaration of the lighting pass pipeline
 //!
-//! This pass calculates lighting using the data calculated by the geometry pass.
+//! Uses the data in the geometry buffer to calculate lighting.
 
 use gfx::{self, format, handle, state, texture};
 
@@ -9,10 +9,6 @@ use std::path::Path;
 use graphics::draw::{pipeline, utils};
 use graphics::draw::pipeline::*;
 use super::gbuffer;
-
-/// The maximum number of lights
-// NOTE: Changes to this constant must be also applied to the shaders
-pub const MAX_LIGHTS: usize = 8;
 
 gfx_defines! {
     vertex Vertex {
@@ -74,22 +70,6 @@ gfx_defines! {
     constant Locals {
         eye_pos: Vec4 = "u_EyePos",
     }
-
-    pipeline pipe {
-        vbuf: gfx::VertexBuffer<Vertex> = (),
-        locals: gfx::ConstantBuffer<Locals> = "u_Locals",
-        material: gfx::ConstantBuffer<Material> = "u_Material",
-        // Light buffers
-        dir_lights: gfx::ConstantBuffer<DirectionalLight> = "u_DirLights",
-        point_lights: gfx::ConstantBuffer<PointLight> = "u_PointLights",
-        spot_lights: gfx::ConstantBuffer<SpotLight> = "u_SpotLights",
-        // G-buffer textures
-        g_position: gfx::TextureSampler<Vec4> = "t_Position",
-        g_normal: gfx::TextureSampler<Vec4> = "t_Normal",
-        g_color: gfx::TextureSampler<Vec4> = "t_Color",
-        // Output color (note that depth is not needed here)
-        out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
-    }
 }
 
 impl Vertex {
@@ -104,56 +84,29 @@ impl Material {
     }
 }
 
-pub type Pipeline<R> = pipeline::Pipeline<R, pipe::Data<R>>;
+// These macros will create new pipelines for each type of light
+// This is necessary because `gfx_defines` doesn't support generics
+//
+// Each pipeline takes in a single light, calculates lighting and shadows for it, and adds the
+// result to the result of the previous iteration
 
-impl<R: gfx::Resources> Pipeline<R> {
-    /// Returns a new main `Pipeline`, created from the provided shaders and pipeline initialization
-    /// data
-    pub fn new_lighting<F, P>(
-        factory: &mut F,
-        srv_pos: handle::ShaderResourceView<R, gbuffer::GFormat>,
-        srv_normal: handle::ShaderResourceView<R, gbuffer::GFormat>,
-        srv_color: handle::ShaderResourceView<R, gbuffer::GFormat>,
-        rtv: handle::RenderTargetView<R, format::Rgba8>,
-        vs_path: P,
-        fs_path: P,
-    ) -> Result<Self, PsoError>
-    where
-        F: gfx::Factory<R>,
-        P: AsRef<Path>,
-    {
-        let rasterizer = state::Rasterizer { ..state::Rasterizer::new_fill() };
+create_light_pipeline!(
+    pipe_dir_light,
+    PipelineDirLight,
+    new_dir_light,
+    DirectionalLight
+);
 
-        let pso = load_pso(
-            factory,
-            vs_path,
-            fs_path,
-            gfx::Primitive::TriangleList,
-            rasterizer,
-            pipe::new(),
-        )?;
+create_light_pipeline!(
+    pipe_point_light,
+    PipelinePointLight,
+    new_point_light,
+    PointLight
+);
 
-        // Create a screen quad
-        let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
-        let vbuf = factory.create_vertex_buffer(&vertices);
-
-        // Create texture sampler info
-        let sampler_info =
-            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
-
-        let data = pipe::Data {
-            vbuf: vbuf,
-            material: factory.create_constant_buffer(1),
-            locals: factory.create_constant_buffer(1),
-            dir_lights: factory.create_constant_buffer(MAX_LIGHTS),
-            point_lights: factory.create_constant_buffer(MAX_LIGHTS),
-            spot_lights: factory.create_constant_buffer(MAX_LIGHTS),
-            g_position: (srv_pos, factory.create_sampler(sampler_info)),
-            g_normal: (srv_normal, factory.create_sampler(sampler_info)),
-            g_color: (srv_color, factory.create_sampler(sampler_info)),
-            out_color: rtv,
-        };
-
-        Ok(Pipeline::new(pso, data))
-    }
-}
+create_light_pipeline!(
+    pipe_spot_light,
+    PipelineSpotLight,
+    new_spot_light,
+    SpotLight
+);

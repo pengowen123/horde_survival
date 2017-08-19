@@ -43,8 +43,8 @@ impl Vertex {
 pub type Pipeline<R> = pipeline::Pipeline<R, pipe::Data<R>>;
 
 impl<R: gfx::Resources> Pipeline<R> {
-    /// Returns a new main `Pipeline`, created from the provided shaders and pipeline initialization
-    /// data
+    /// Returns a new geometry pass `Pipeline`, created from the provided shaders and pipeline
+    /// initialization data
     pub fn new_geometry_pass<F, P>(
         factory: &mut F,
         rtv_pos: handle::RenderTargetView<R, gbuffer::GFormat>,

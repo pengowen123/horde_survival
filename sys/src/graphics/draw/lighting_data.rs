@@ -10,9 +10,9 @@ use world::components::{Direction, Spatial};
 /// Data for every light in the world
 #[derive(Default)]
 pub struct LightingData {
-    dir_lights: [lighting::DirectionalLight; lighting::MAX_LIGHTS],
-    point_lights: [lighting::PointLight; lighting::MAX_LIGHTS],
-    spot_lights: [lighting::SpotLight; lighting::MAX_LIGHTS],
+    dir_lights: Vec<lighting::DirectionalLight>,
+    point_lights: Vec<lighting::PointLight>,
+    spot_lights: Vec<lighting::SpotLight>,
 }
 
 impl LightingData {
@@ -46,33 +46,17 @@ impl<'a> specs::System<'a> for System {
     fn run(&mut self, data: Self::SystemData) {
         let mut light_info = data.light_info;
 
-        // Disable all lights (essentially removing them)
-        for light in &mut light_info.dir_lights {
-            light.enabled = 0;
-        }
-
-        for light in &mut light_info.point_lights {
-            light.enabled = 0;
-        }
-
-        for light in &mut light_info.spot_lights {
-            light.enabled = 0;
-        }
+        // Clear all lights
+        light_info.dir_lights.clear();
+        light_info.point_lights.clear();
+        light_info.spot_lights.clear();
 
         // Collect all directional light entities
-        for (i, (l, d)) in (&data.dir_light, &data.direction).join().enumerate() {
-            if i >= lighting::MAX_LIGHTS {
-                warn!(
-                    "Maximum directional lights reached: {}",
-                    lighting::MAX_LIGHTS
-                );
-                break;
-            }
-
+        for (l, d) in (&data.dir_light, &data.direction).join() {
             let dir: [f32; 3] = (d.0 * cgmath::Vector3::unit_z()).cast().into();
             let direction = [dir[0], dir[1], dir[2], 0.0];
 
-            light_info.dir_lights[i] = lighting::DirectionalLight {
+            let light = lighting::DirectionalLight {
                 direction,
                 ambient: l.color.ambient,
                 diffuse: l.color.diffuse,
@@ -82,19 +66,16 @@ impl<'a> specs::System<'a> for System {
                 _padding0: Default::default(),
                 _padding1: Default::default(),
             };
+
+            light_info.dir_lights.push(light);
         }
 
         // Collect all point light entities
-        for (i, (l, s)) in (&data.point_light, &data.space).join().enumerate() {
-            if i >= lighting::MAX_LIGHTS {
-                warn!("Maximum point lights reached: {}", lighting::MAX_LIGHTS);
-                break;
-            }
-
+        for (l, s) in (&data.point_light, &data.space).join() {
             let pos: [f32; 3] = s.0.cast().into();
             let position = [pos[0], pos[1], pos[2], 1.0];
 
-            light_info.point_lights[i] = lighting::PointLight {
+            let light = lighting::PointLight {
                 position,
                 ambient: l.color.ambient,
                 diffuse: l.color.diffuse,
@@ -104,25 +85,19 @@ impl<'a> specs::System<'a> for System {
                 quadratic: l.quadratic,
                 enabled: 1,
             };
+
+            light_info.point_lights.push(light);
         }
 
         // Collect all spot light entities
-        for (i, (l, d, s)) in (&data.spot_light, &data.direction, &data.space)
-            .join()
-            .enumerate()
-        {
-            if i >= lighting::MAX_LIGHTS {
-                warn!("Maximum spot lights reached: {}", lighting::MAX_LIGHTS);
-                break;
-            }
-
+        for (l, d, s) in (&data.spot_light, &data.direction, &data.space).join() {
             let pos: [f32; 3] = s.0.cast().into();
             let position = [pos[0], pos[1], pos[2], 1.0];
 
             let dir: [f32; 3] = (d.0 * cgmath::Vector3::unit_z()).cast().into();
             let direction = [dir[0], dir[1], dir[2], 0.0];
 
-            light_info.spot_lights[i] = lighting::SpotLight {
+            let light = lighting::SpotLight {
                 position,
                 direction,
                 ambient: l.color.ambient,
@@ -133,6 +108,8 @@ impl<'a> specs::System<'a> for System {
                 enabled: 1,
                 _padding: Default::default(),
             };
+
+            light_info.spot_lights.push(light)
         }
     }
 }
