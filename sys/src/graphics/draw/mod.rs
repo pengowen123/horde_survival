@@ -27,15 +27,24 @@ pub use self::param::ShaderParam;
 use gfx::{self, handle, texture};
 use glutin::{Window, GlContext};
 use specs::{self, Join};
-use cgmath::{Matrix4, SquareMatrix};
+use cgmath::{self, Matrix4, SquareMatrix};
 
-use self::pipeline::{postprocessing, skybox};
+use self::pipeline::{postprocessing, skybox, dir_shadow};
 use self::pipeline::main::{self, geometry_pass, lighting};
+use self::pipeline::main::lighting::LightShadowInfo;
 use graphics::camera;
 use assets;
 use window;
 
 const CLEAR_COLOR: [f32; 4] = [0.0; 4];
+
+/// A `specs::Storage` for the `Drawable` component
+type DrawableStorage<'a, R> =
+    specs::Storage<
+        'a,
+        components::Drawable<R>,
+        specs::Fetch<'a, specs::MaskedStorage<components::Drawable<R>>>,
+    >;
 
 pub struct System<F, C, R, D>
 where
@@ -55,6 +64,7 @@ where
     pipe_dir_light: lighting::PipelineDirLight<R>,
     pipe_point_light: lighting::PipelinePointLight<R>,
     pipe_spot_light: lighting::PipelineSpotLight<R>,
+    pipe_dir_shadow: dir_shadow::Pipeline<R>,
     pipe_post: postprocessing::Pipeline<R>,
     pipe_skybox: skybox::Pipeline<R>,
 }
@@ -111,10 +121,23 @@ where
                 assets::get_shader_path("geometry_pass_fragment"),
             ).unwrap_or_else(|e| panic!("Failed to create geometry pass PSO: {}", e));
 
+        // Directional light shadow pipeline
+        let shadow_map_size = 1024;
+
+        let (pipe_dir_shadow, dir_shadow_map) = pipeline::Pipeline::new_dir_shadow(
+            &mut factory,
+            shadow_map_size,
+            assets::get_shader_path("dir_shadow_vertex"),
+            assets::get_shader_path("dir_shadow_fragment"),
+        ).unwrap_or_else(|e| {
+            panic!("Failed to create directional light shadow PSO: {}", e)
+        });
+
         // Directional light pipeline
         let pipe_dir_light =
             pipeline::Pipeline::new_dir_light(
                 &mut factory,
+                dir_shadow_map,
                 gbuffer.position.srv().clone(),
                 gbuffer.normal.srv().clone(),
                 gbuffer.color.srv().clone(),
@@ -128,6 +151,8 @@ where
         let pipe_point_light =
             pipeline::Pipeline::new_point_light(
                 &mut factory,
+                // TODO: Use a shadow map instead of this srv
+                srv.clone(),
                 gbuffer.position.srv().clone(),
                 gbuffer.normal.srv().clone(),
                 gbuffer.color.srv().clone(),
@@ -141,6 +166,8 @@ where
         let pipe_spot_light =
             pipeline::Pipeline::new_spot_light(
                 &mut factory,
+                // TODO: Use a shadow map instead of this srv
+                srv.clone(),
                 gbuffer.position.srv().clone(),
                 gbuffer.normal.srv().clone(),
                 gbuffer.color.srv().clone(),
@@ -177,6 +204,7 @@ where
             pipe_dir_light,
             pipe_point_light,
             pipe_spot_light,
+            pipe_dir_shadow,
             pipe_post,
             pipe_skybox,
         }
@@ -191,18 +219,17 @@ where
     ///
     /// This function will only write data to the geometry buffer. To see the results,
     /// `draw_lighting` must be called afer calling this function.
-    fn draw_entity(
+    fn draw_entity_to_gbuffer(
         &mut self,
         drawable: &components::Drawable<R>,
         view_proj: Matrix4<f32>,
         locals: &mut geometry_pass::Locals,
     ) {
         // Get model-specific transform matrix
-        let param = drawable.param();
-        let m = param.translation() * param.rotation() * param.scale();
+        let model = drawable.param().get_model_matrix();
 
         // Update shader parameters
-        locals.model = m.into();
+        locals.model = model.into();
         locals.view_proj = view_proj.into();
 
         let data = &mut self.pipe_geometry_pass.data;
@@ -232,8 +259,23 @@ where
     }
 
     /// Uses the data in the geometry buffer to calculate lighting from the provided lights
-    fn draw_lighting(&mut self, lighting_data: &lighting_data::LightingData, eye_pos: [f32; 4]) {
-        let lighting_locals = lighting::Locals { eye_pos };
+    ///
+    /// To draw shadows for lights that have them enabled, all entities must be redrawn to a shadow
+    /// map.
+    fn draw_lighting<'a>(
+        &mut self,
+        drawable: &DrawableStorage<'a, R>,
+        lighting_data: &lighting_data::LightingData,
+        camera: &camera::Camera,
+    ) {
+        // Get camera position
+        let eye_pos: [f32; 3] = camera.eye_position().into();
+        let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
+
+        let mut lighting_locals = lighting::Locals {
+            eye_pos,
+            light_space_matrix: cgmath::Matrix4::identity().into(),
+        };
         let material = lighting::Material::new(32.0);
 
         // NOTE: This slice is shared by all light pipelines, because they all just use screen
@@ -242,6 +284,7 @@ where
 
         let encoder = &mut self.encoder;
         let dir_light = &mut self.pipe_dir_light;
+        let dir_shadow = &mut self.pipe_dir_shadow;
         let point_light = &mut self.pipe_point_light;
         let spot_light = &mut self.pipe_spot_light;
 
@@ -258,7 +301,10 @@ where
         encoder.update_constant_buffer(&spot_light.data.material, &material);
 
         // Draw all directional lights lights
-        for light in lighting_data.dir_lights() {
+        for l in lighting_data.dir_lights() {
+            let light = l.light;
+            let shadows = l.shadows;
+
             encoder.update_constant_buffer(&dir_light.data.light, &light);
 
             // Use the active render target
@@ -269,6 +315,41 @@ where
                 dir_light.data.out_color = active.rtv().clone();
             }
 
+            // TODO: Factor this out into a function
+            // Clear the shadow map
+            encoder.clear_depth(&dir_shadow.data.out_depth, 1.0);
+
+            // Draw shadows if the light has them enabled
+            if let components::ShadowSettings::Enabled = shadows {
+                let light_space_matrix = light.get_light_space_transform();
+
+                // Update the light's transform matrix
+                let mut shadow_locals = dir_shadow::Locals {
+                    light_space_matrix: light_space_matrix.into(),
+                    model: cgmath::Matrix4::identity().into(),
+                };
+
+                lighting_locals.light_space_matrix = light_space_matrix.into();
+                encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
+
+                // Draw each entity to the shadow map
+                for d in drawable.join() {
+                    // Get model matrix
+                    let model = d.param().get_model_matrix();
+                    shadow_locals.model = model.into();
+
+                    // Update shader uniforms
+                    encoder.update_constant_buffer(&dir_shadow.data.locals, &shadow_locals);
+
+                    dir_shadow.data.vbuf = d.vertex_buffer().clone();
+                    encoder.draw(d.slice(), &dir_shadow.pso, &dir_shadow.data);
+                }
+            } else {
+                // Reset the light space matrix
+                lighting_locals.light_space_matrix = cgmath::Matrix4::identity().into();
+                encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
+            }
+
             // Swap render targets
             self.render_targets.swap_render_targets();
 
@@ -276,7 +357,10 @@ where
         }
 
         // Draw all point lights
-        for light in lighting_data.point_lights() {
+        for l in lighting_data.point_lights() {
+            let light = l.light;
+            let shadows = l.shadows;
+
             encoder.update_constant_buffer(&point_light.data.light, &light);
 
             // Use the active render target
@@ -294,7 +378,10 @@ where
         }
 
         // Draw all spot lights
-        for light in lighting_data.spot_lights() {
+        for l in lighting_data.spot_lights() {
+            let light = l.light;
+            let shadows = l.shadows;
+
             encoder.update_constant_buffer(&spot_light.data.light, &light);
 
             // Use the active render target
@@ -393,7 +480,7 @@ where
     }
 
     /// Reloads the shaders
-    fn reload_shaders(&mut self) -> Result<(), pipeline::PsoError> {
+    fn reload_shaders(&mut self) -> Result<(), pipeline::PipelineError> {
         // TODO: remake this with multisampling and other graphics settings applied
         Ok(())
     }
@@ -432,10 +519,6 @@ where
         let camera = data.camera;
         let vp = camera.projection() * camera.view();
 
-        // Get camera position
-        let eye_pos: [f32; 3] = camera.eye_position().into();
-        let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
-
         // Initialize shader uniforms
         let mut locals = geometry_pass::Locals {
             model: Matrix4::identity().into(),
@@ -443,12 +526,14 @@ where
         };
 
         // Draw each entity (to the geometry buffer)
-        for d in (&data.drawable).join() {
-            self.draw_entity(d, vp, &mut locals);
+        let entities = (&data.drawable).join();
+
+        for d in entities {
+            self.draw_entity_to_gbuffer(d, vp, &mut locals);
         }
 
         // Apply lighting
-        self.draw_lighting(&data.lighting_data, eye_pos);
+        self.draw_lighting(&data.drawable, &data.lighting_data, &camera);
 
         // Draw the skybox
         self.draw_skybox(camera.skybox_camera());

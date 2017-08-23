@@ -18,7 +18,6 @@ impl format::Formatted for DepthFormat {
     }
 }
 
-
 /// A view into a texture
 pub type TextureView<R> = gfx::handle::ShaderResourceView<R, [f32; 4]>;
 

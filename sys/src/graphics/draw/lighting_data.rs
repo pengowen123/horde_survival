@@ -7,22 +7,29 @@ use super::pipeline::main::lighting;
 use super::components;
 use world::components::{Direction, Spatial};
 
+pub struct Light<T> {
+    pub light: T,
+    pub shadows: components::ShadowSettings,
+}
+
 /// Data for every light in the world
 #[derive(Default)]
 pub struct LightingData {
-    dir_lights: Vec<lighting::DirectionalLight>,
-    point_lights: Vec<lighting::PointLight>,
-    spot_lights: Vec<lighting::SpotLight>,
+    dir_lights: Vec<Light<lighting::DirectionalLight>>,
+    point_lights: Vec<Light<lighting::PointLight>>,
+    spot_lights: Vec<Light<lighting::SpotLight>>,
 }
 
 impl LightingData {
-    pub fn dir_lights(&self) -> &[lighting::DirectionalLight] {
+    pub fn dir_lights(&self) -> &[Light<lighting::DirectionalLight>] {
         &self.dir_lights
     }
-    pub fn point_lights(&self) -> &[lighting::PointLight] {
+
+    pub fn point_lights(&self) -> &[Light<lighting::PointLight>] {
         &self.point_lights
     }
-    pub fn spot_lights(&self) -> &[lighting::SpotLight] {
+
+    pub fn spot_lights(&self) -> &[Light<lighting::SpotLight>] {
         &self.spot_lights
     }
 }
@@ -67,7 +74,10 @@ impl<'a> specs::System<'a> for System {
                 _padding1: Default::default(),
             };
 
-            light_info.dir_lights.push(light);
+            light_info.dir_lights.push(Light {
+                light,
+                shadows: l.shadows,
+            });
         }
 
         // Collect all point light entities
@@ -86,7 +96,10 @@ impl<'a> specs::System<'a> for System {
                 enabled: 1,
             };
 
-            light_info.point_lights.push(light);
+            light_info.point_lights.push(Light {
+                light,
+                shadows: l.shadows,
+            });
         }
 
         // Collect all spot light entities
@@ -109,7 +122,10 @@ impl<'a> specs::System<'a> for System {
                 _padding: Default::default(),
             };
 
-            light_info.spot_lights.push(light)
+            light_info.spot_lights.push(Light {
+                light,
+                shadows: l.shadows,
+            })
         }
     }
 }

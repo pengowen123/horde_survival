@@ -43,8 +43,9 @@ impl Vertex {
 pub type Pipeline<R> = pipeline::Pipeline<R, pipe::Data<R>>;
 
 impl<R: gfx::Resources> Pipeline<R> {
-    /// Returns a new geometry pass `Pipeline`, created from the provided shaders and pipeline
-    /// initialization data
+    /// Returns a new geometry pass `Pipeline`, created from the provided shaders
+    ///
+    /// The pipeline will use `rtv` as its render target, and `dsv` as its depth target.
     pub fn new_geometry_pass<F, P>(
         factory: &mut F,
         rtv_pos: handle::RenderTargetView<R, gbuffer::GFormat>,
@@ -53,7 +54,7 @@ impl<R: gfx::Resources> Pipeline<R> {
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
         vs_path: P,
         fs_path: P,
-    ) -> Result<Self, PsoError>
+    ) -> Result<Self, PipelineError>
     where
         F: gfx::Factory<R>,
         P: AsRef<Path>,

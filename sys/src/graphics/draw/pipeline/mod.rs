@@ -5,6 +5,7 @@
 pub mod main;
 pub mod postprocessing;
 pub mod skybox;
+pub mod dir_shadow;
 
 use gfx::{self, pso};
 use gfx::traits::FactoryExt;
@@ -52,7 +53,7 @@ pub fn load_pso<R, F, P, I>(
     primitive: gfx::Primitive,
     rasterizer: gfx::state::Rasterizer,
     init: I,
-) -> Result<pso::PipelineState<R, I::Meta>, PsoError>
+) -> Result<pso::PipelineState<R, I::Meta>, PipelineError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
@@ -69,9 +70,9 @@ where
 }
 
 quick_error! {
-    /// An error while loading a PSO from a file
+    /// An error while creating a pipeline
     #[derive(Debug)]
-    pub enum PsoError {
+    pub enum PipelineError {
         Io(err: io::Error) {
             display("Io error: {}", err)
             from()
@@ -86,6 +87,10 @@ quick_error! {
         }
         Texture(err: image_utils::TextureError) {
             display("Texture creation error: {}", err)
+            from()
+        }
+        GfxCombined(err: gfx::CombinedError) {
+            display("gfx error: {}", err)
             from()
         }
     }

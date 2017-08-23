@@ -28,15 +28,16 @@ impl Vertex {
 pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
 
 impl<R: gfx::Resources> Pipeline<R> {
-    /// Returns a new postprocessing `Pipeline`, created from the provided shaders and pipeline
-    /// initialization data
+    /// Returns a new postprocessing `Pipeline`, created from the provided shaders
+    ///
+    /// The pipeline will use `rtv` as its render target, and `dsv` as its depth target.
     pub fn new_post<F, P>(
         factory: &mut F,
         srv: types::TextureView<R>,
         rtv: handle::RenderTargetView<R, types::ColorFormat>,
         vs_path: P,
         fs_path: P,
-    ) -> Result<Self, PsoError>
+    ) -> Result<Self, PipelineError>
     where
         F: gfx::Factory<R>,
         P: AsRef<Path>,

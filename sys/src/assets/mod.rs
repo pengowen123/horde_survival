@@ -9,7 +9,7 @@ pub use self::utils::read_bytes;
 /// Returns the path to the shader with the provided name
 pub fn get_shader_path(name: &str) -> String {
     format!(
-        "{}/assets/shaders/{}_150.glsl",
+        "{}/assets/shaders/{}.glsl",
         env!("CARGO_MANIFEST_DIR"),
         name
     )

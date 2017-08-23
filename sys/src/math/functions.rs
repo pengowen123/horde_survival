@@ -1,6 +1,6 @@
 //! Various math-related functions
 
-use cgmath;
+use cgmath::{self, InnerSpace};
 
 use std::ops;
 
@@ -69,6 +69,18 @@ where
     }.into()
 }
 
+/// Returns the direction vector represented as a quaternion rotation from the unit `z` vector
+pub fn dir_vec_to_quaternion<T, N>(vec: T) -> cgmath::Quaternion<N>
+where
+    T: Into<cgmath::Vector3<N>>,
+    N: cgmath::BaseFloat,
+{
+    let d: cgmath::Vector3<N> = vec.into();
+    let d = d.normalize();
+
+    cgmath::Quaternion::from_arc(cgmath::Vector3::unit_z(), d, None)
+}
+
 #[cfg(test)]
 mod tests {
     use cgmath::*;
@@ -129,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    fn test() {
+    fn test_remove_translation() {
         let rotate = Matrix4::from_angle_y(Deg(180.0));
         let translate = Matrix4::from_translation(Vector3::new(0.0, 0.0, 10.0));
 
@@ -144,5 +156,24 @@ mod tests {
         // With the translation removed, the vector should only be rotated 180 degrees
         let removed = remove_translation(transform);
         assert_relative_eq!(removed * vec, Vector4::new(-1.0, 0.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn test_dir_vec_to_quaternion() {
+        let vectors = [
+            (1.0, 0.0, 0.0),
+            (0.0, 1.0, 0.0),
+            (0.0, 0.0, 1.0),
+            (0.5, 0.3, 1.0),
+            (0.1, 0.6, 1.2),
+        ];
+
+        for vec in &vectors {
+            let vec = Vector3::new(vec.0, vec.1, vec.2).normalize();
+            let quat = dir_vec_to_quaternion(vec);
+
+            // The quaternion turned into a vector should equal the original direction vector
+            assert_relative_eq!(quat * Vector3::unit_z(), vec);
+        }
     }
 }

@@ -4,7 +4,7 @@ pub mod translation;
 pub mod rotation;
 pub mod scale;
 
-use cgmath::One;
+use cgmath::{self, One};
 use specs::{self, DispatcherBuilder, Join};
 use gfx;
 
@@ -30,16 +30,9 @@ impl ShaderParam {
         }
     }
 
-    pub fn translation(&self) -> &Translation {
-        &self.translation
-    }
-
-    pub fn rotation(&self) -> &Rotation {
-        &self.rotation
-    }
-
-    pub fn scale(&self) -> &Scale {
-        &self.scale
+    /// Returns the model matrix, created from the stored translation, rotation, and scale matrices
+    pub fn get_model_matrix(&self) -> cgmath::Matrix4<f32> {
+        self.translation * self.rotation * self.scale
     }
 }
 

@@ -14,6 +14,7 @@ use world::components::*;
 use physics::components::*;
 use control::Control;
 use assets::obj;
+use math::functions::dir_vec_to_quaternion;
 use player;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
@@ -68,7 +69,7 @@ where
         world,
         factory,
         "box",
-        [5.0, -3.0, 1.66],
+        [-5.0, 7.0, 1.66],
         2.0,
         Material::new(32.0),
     ).with(direction);
@@ -84,9 +85,9 @@ where
         // Create directional lights
         {
             let mut dir_light =
-                |x, y, z| { let _ = create_dir_light(world, factory, [x, y, z], light_color); };
+                |x, y, z| { let _ = create_dir_light(world, [x, y, z], light_color); };
 
-            //dir_light(1.0, -1.0, -1.0);
+            dir_light(1.0, -1.0, -1.0);
         }
 
         // Create point lights
@@ -95,7 +96,7 @@ where
                 let _ = create_point_light(world, factory, [x, y, z], light_color, 1.0, 0.14, 0.07);
             };
 
-            point_light(-5.0, -5.0, 1.5);
+            //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
             //point_light(-3.0, 7.0, 10.0);
@@ -161,21 +162,16 @@ where
     entity
 }
 
-fn create_dir_light<'a, R, F>(
+fn create_dir_light<'a>(
     world: &'a mut specs::World,
-    factory: &mut F,
     direction: [f64; 3],
     color: LightColor,
-) -> specs::EntityBuilder<'a>
-where
-    R: gfx::Resources,
-    F: gfx::Factory<R>,
-{
+) -> specs::EntityBuilder<'a> {
     let direction = dir_vec_to_quaternion(direction);
 
     world
         .create_entity()
-        .with(DirectionalLight::new(color))
+        .with(DirectionalLight::new(color, ShadowSettings::Enabled))
         .with(Direction(direction))
 }
 
@@ -192,8 +188,13 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0))
-        .with(PointLight::new(color, constant, linear, quadratic))
+    create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0)).with(PointLight::new(
+        color,
+        ShadowSettings::Enabled,
+        constant,
+        linear,
+        quadratic,
+    ))
 }
 
 fn create_spot_light<'a, R, F>(
@@ -212,13 +213,13 @@ where
     let direction = dir_vec_to_quaternion(direction);
 
     create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0))
-        .with(SpotLight::new(color, angle.into(), outer_angle.into()))
+        .with(
+            SpotLight::new(
+                color,
+                ShadowSettings::Enabled,
+                angle.into(),
+                outer_angle.into(),
+            ).unwrap(),
+        )
         .with(Direction(direction))
-}
-
-fn dir_vec_to_quaternion(vec: [f64; 3]) -> cgmath::Quaternion<f64> {
-    let d: cgmath::Vector3<f64> = vec.into();
-    let d = d.normalize();
-
-    cgmath::Quaternion::from_arc(cgmath::Vector3::unit_z(), d, None)
 }

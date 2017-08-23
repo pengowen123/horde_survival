@@ -91,17 +91,25 @@ impl LightColor {
     }
 }
 
+/// Settings for shadows for a light
+#[derive(Clone, Copy, Debug)]
+pub enum ShadowSettings {
+    Enabled,
+    Disabled,
+}
+
 /// A directional light
 ///
 /// In order to work, an entity must have the `Direction` component in addition to this one.
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalLight {
     pub color: LightColor,
+    pub shadows: ShadowSettings,
 }
 
 impl DirectionalLight {
-    pub fn new(color: LightColor) -> Self {
-        Self { color }
+    pub fn new(color: LightColor, shadows: ShadowSettings) -> Self {
+        Self { color, shadows }
     }
 }
 
@@ -111,6 +119,7 @@ impl DirectionalLight {
 #[derive(Clone, Copy, Debug)]
 pub struct PointLight {
     pub color: LightColor,
+    pub shadows: ShadowSettings,
     pub constant: f32,
     pub linear: f32,
     pub quadratic: f32,
@@ -120,12 +129,29 @@ impl PointLight {
     /// Creates a new `PointLight` with the provided properties
     ///
     /// `constant`, `linear` and `quadratic` are the attenuation properties of the light.
-    pub fn new(color: LightColor, constant: f32, linear: f32, quadratic: f32) -> Self {
+    pub fn new(
+        color: LightColor,
+        shadows: ShadowSettings,
+        constant: f32,
+        linear: f32,
+        quadratic: f32,
+    ) -> Self {
         Self {
             color,
+            shadows,
             constant,
             linear,
             quadratic,
+        }
+    }
+}
+
+quick_error! {
+    /// An error while creating a light
+    #[derive(Debug)]
+    pub enum LightError {
+        SpotLightAngle(cutoff: cgmath::Rad<f32>, outer_cutoff: cgmath::Rad<f32>) {
+            display("Spot light cutoff angle was larger than the outer cutoff angle: {:?} > {:?}", cutoff, outer_cutoff)
         }
     }
 }
@@ -139,6 +165,7 @@ impl PointLight {
 #[derive(Clone, Copy, Debug)]
 pub struct SpotLight {
     pub color: LightColor,
+    pub shadows: ShadowSettings,
     pub cos_cutoff: f32,
     pub cos_outer_cutoff: f32,
 }
@@ -154,20 +181,19 @@ impl SpotLight {
     /// Panics if `outer_cutoff` is a smaller angle than `cutoff`
     pub fn new(
         color: LightColor,
+        shadows: ShadowSettings,
         cutoff: cgmath::Rad<f32>,
         outer_cutoff: cgmath::Rad<f32>,
-    ) -> Self {
-        assert!(
-            cutoff < outer_cutoff,
-            "`cutoff` ({}) must be smaller than `outer_cutoff` ({})",
-            cutoff.0,
-            outer_cutoff.0
-        );
-
-        Self {
-            color,
-            cos_cutoff: cutoff.cos(),
-            cos_outer_cutoff: outer_cutoff.cos(),
+    ) -> Result<Self, LightError> {
+        if cutoff > outer_cutoff {
+            Err(LightError::SpotLightAngle(cutoff, outer_cutoff))
+        } else {
+            Ok(Self {
+                color,
+                shadows,
+                cos_cutoff: cutoff.cos(),
+                cos_outer_cutoff: outer_cutoff.cos(),
+            })
         }
     }
 }

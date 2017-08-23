@@ -35,15 +35,16 @@ impl Vertex {
 pub type Pipeline<R> = super::Pipeline<R, pipe::Data<R>>;
 
 impl<R: gfx::Resources> Pipeline<R> {
-    /// Returns a new skybox `Pipeline`, created from the provided shaders and pipeline
-    /// initialization data
+    /// Returns a new skybox `Pipeline`, created from the provided shaders
+    ///
+    /// The pipeline will use `rtv` as its render target, and `dsv` as its depth target.
     pub fn new_skybox<F, P>(
         factory: &mut F,
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
         vs_path: P,
         fs_path: P,
-    ) -> Result<Self, PsoError>
+    ) -> Result<Self, PipelineError>
     where
         F: gfx::Factory<R>,
         P: AsRef<Path>,
