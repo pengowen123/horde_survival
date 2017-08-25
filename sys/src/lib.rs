@@ -37,6 +37,9 @@ extern crate bitflags;
 #[macro_use]
 extern crate quick_error;
 extern crate genmesh;
+extern crate regex;
+#[macro_use]
+extern crate lazy_static;
 
 // Dev dependencies
 #[cfg(test)]

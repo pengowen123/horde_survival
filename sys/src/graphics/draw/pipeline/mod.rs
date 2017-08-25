@@ -93,5 +93,9 @@ quick_error! {
             display("gfx error: {}", err)
             from()
         }
+        ShaderLoadingError(err: shader::ShaderLoadingError) {
+            display("Shader error: {}", err)
+            from()
+        }
     }
 }
