@@ -81,16 +81,27 @@ pub fn run() {
     // Build the dispatcher
     let mut dispatcher = dispatcher.build();
 
+    let mut running = true;
+
     // Run systems
-    loop {
+    while running {
         let mut latest_mouse_move = None;
 
         events.poll_events(|e| match e {
             glutin::Event::WindowEvent { event, .. } => {
+                // Collect the latest mouse event
                 if let glutin::WindowEvent::MouseMoved { .. } = event {
                     latest_mouse_move = Some(event);
                     return;
+                // Test if `Escape` was pressed, and if so, end the event loop
+                } else if let glutin::WindowEvent::KeyboardInput { input, .. } = event {
+                    if let Some(glutin::VirtualKeyCode::Escape) = input.virtual_keycode {
+                        if let glutin::ElementState::Pressed = input.state {
+                            running = false;
+                        }
+                    }
                 }
+
                 sender.process_window_event(&window, event);
             }
             _ => {}

@@ -5,7 +5,7 @@
 pub mod main;
 pub mod postprocessing;
 pub mod skybox;
-pub mod dir_shadow;
+pub mod shadow;
 
 use gfx::{self, pso};
 use gfx::traits::FactoryExt;
@@ -15,15 +15,6 @@ use std::path::Path;
 use std::io;
 
 use assets::shader;
-
-/// A GLSL `vec2`
-pub type Vec2 = [f32; 2];
-/// A GLSL `vec3`
-pub type Vec3 = [f32; 3];
-/// A GLSL `vec4`
-pub type Vec4 = [f32; 4];
-/// A GLSL `mat4`
-pub type Mat4 = [Vec4; 4];
 
 /// A PSO and its `Data` struct
 pub struct Pipeline<R, D>
@@ -40,6 +31,10 @@ where
     R: gfx::Resources,
     D: gfx::pso::PipelineData<R>,
 {
+    /// Creates a new `Pipeline` from its PSO and data struct
+    ///
+    /// Pipeline-specific functions such as `Pipeline::new_skybox` should be used instead of this
+    /// one, as this does not handle any initialization.
     pub fn new(pso: pso::PipelineState<R, D::Meta>, data: D) -> Self {
         Self { pso, data }
     }
@@ -63,6 +58,32 @@ where
     let vs = shader::load_shader_file(vs_path)?;
     let fs = shader::load_shader_file(fs_path)?;
     let set = factory.create_shader_set(&vs, &fs)?;
+
+    factory
+        .create_pipeline_state(&set, primitive, rasterizer, init)
+        .map_err(|e| e.into())
+}
+
+/// Like `load_pso`, but also loads a geometry shader
+pub fn load_pso_geometry<R, F, P, I>(
+    factory: &mut F,
+    vs_path: P,
+    gs_path: P,
+    fs_path: P,
+    primitive: gfx::Primitive,
+    rasterizer: gfx::state::Rasterizer,
+    init: I,
+) -> Result<pso::PipelineState<R, I::Meta>, PipelineError>
+where
+    R: gfx::Resources,
+    F: gfx::Factory<R>,
+    P: AsRef<Path>,
+    I: pso::PipelineInit,
+{
+    let vs = shader::load_shader_file(vs_path)?;
+    let gs = shader::load_shader_file(gs_path)?;
+    let fs = shader::load_shader_file(fs_path)?;
+    let set = factory.create_shader_set_geometry(&vs, &gs, &fs)?;
 
     factory
         .create_pipeline_state(&set, primitive, rasterizer, init)

@@ -3,8 +3,8 @@
 
 use specs;
 use gfx;
-use cgmath::{self, Rotation3, InnerSpace};
-use na::{Vector3, Translation3};
+use cgmath::*;
+use na::{self, Translation3};
 use nphysics3d::object::RigidBody;
 use ncollide::shape::{Cuboid, Plane};
 
@@ -23,15 +23,15 @@ where
     F: gfx::Factory<R>,
 {
     let body_init = || {
-        let geom = Cuboid::new(Vector3::new(1.0, 1.0, 2.0));
+        let geom = Cuboid::new(na::Vector3::new(1.0, 1.0, 2.0));
         let mut body = RigidBody::new_dynamic(geom, 100.0, 0.0, 100.0);
         body.append_translation(&Translation3::new(5.0, 5.0, 15.0));
         body
     };
 
     let physics = Physics::new(body_init, true);
-    let space = Spatial(cgmath::Point3::new(0.0, 0.0, 0.0));
-    let direction = Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)));
+    let space = Spatial(Point3::new(0.0, 0.0, 0.0));
+    let direction = Direction(Quaternion::from_angle_y(Deg(0.0)));
     let control = Control::default();
 
     // Add player entity
@@ -45,34 +45,34 @@ where
         .with(player::components::Player);
 
     // Create test entities
-    create_test_entity(
-        world,
-        factory,
-        "box",
-        [0.0, 0.0, 1.0],
-        2.0,
-        Material::new(32.0),
-    );
-    create_test_entity(
-        world,
-        factory,
-        "box",
-        [3.0, 2.0, 5.0],
-        2.0,
-        Material::new(32.0),
-    );
-    let direction = Direction(cgmath::Quaternion::from_axis_angle(
-        cgmath::vec3(1.0, 1.0, 1.0).normalize(),
-        cgmath::Deg(60.0),
-    ));
-    create_test_entity(
-        world,
-        factory,
-        "box",
-        [-5.0, 7.0, 1.66],
-        2.0,
-        Material::new(32.0),
-    ).with(direction);
+    //create_test_entity(
+    //world,
+    //factory,
+    //"box",
+    //[0.0, 0.0, 1.0],
+    //2.0,
+    //Material::new(32.0),
+    //);
+    //create_test_entity(
+    //world,
+    //factory,
+    //"box",
+    //[3.0, 2.0, 5.0],
+    //2.0,
+    //Material::new(32.0),
+    //);
+    //let direction = Direction(Quaternion::from_axis_angle(
+    //vec3(1.0, 1.0, 1.0).normalize(),
+    //Deg(60.0),
+    //));
+    //create_test_entity(
+    //world,
+    //factory,
+    //"box",
+    //[-5.0, 7.0, 1.66],
+    //2.0,
+    //Material::new(32.0),
+    //).with(direction);
 
     // Create some lights
     {
@@ -84,18 +84,26 @@ where
 
         // Create directional lights
         {
-            let mut dir_light =
-                |x, y, z| { let _ = create_dir_light(world, [x, y, z], light_color); };
+            let mut dir_light = |x, y, z, pos| {
+                let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
+            };
 
-            dir_light(1.0, -1.0, -1.0);
+            //dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
         }
 
         // Create point lights
         {
             let mut point_light = |x, y, z| {
-                let _ = create_point_light(world, factory, [x, y, z], light_color, 1.0, 0.14, 0.07);
+                let _ = create_point_light(
+                    world,
+                    factory,
+                    [x, y, z],
+                    light_color,
+                    LightAttenuation::new(1.0, 0.14, 0.07),
+                );
             };
 
+            point_light(3.0, 2.0, 7.5);
             //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
@@ -105,15 +113,8 @@ where
         // Create spot lights
         {
             let mut spot_light = |pos, dir| {
-                let _ = create_spot_light(
-                    world,
-                    factory,
-                    pos,
-                    dir,
-                    light_color,
-                    cgmath::Deg(12.5),
-                    cgmath::Deg(17.5),
-                );
+                let _ =
+                    create_spot_light(world, factory, pos, dir, light_color, Deg(12.5), Deg(17.5));
             };
 
             //spot_light([0.0, 0.0, 10.0], [0.0, 0.0, -1.0]);
@@ -123,13 +124,13 @@ where
 
     // Add a plane to test physics on
     let body_init = || {
-        let geom = Plane::new(Vector3::new(0.0 as ::Float, 0.0, 1.0));
+        let geom = Plane::new(na::Vector3::new(0.0 as ::Float, 0.0, 1.0));
         RigidBody::new_static(geom, 1.0, 1.0)
     };
 
     let physics = Physics::new(body_init, false);
 
-    create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
+    //create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
 }
 
 fn create_test_entity<'a, R, F, P>(
@@ -146,7 +147,7 @@ where
     P: Into<Option<[::Float; 3]>>,
 {
     let pos = pos.into();
-    let space = pos.map(|p| Spatial(cgmath::Point3::new(p[0], p[1], p[2])));
+    let space = pos.map(|p| Spatial(Point3::new(p[0], p[1], p[2])));
     let scale = draw::components::Scale(scale);
     let drawable = obj::create_drawable_from_obj_file(factory, name, material).unwrap();
     let shader_param = draw::ShaderParam::default();
@@ -165,14 +166,28 @@ where
 fn create_dir_light<'a>(
     world: &'a mut specs::World,
     direction: [f64; 3],
+    pos: [f64; 3],
     color: LightColor,
+    ortho_size: f32,
 ) -> specs::EntityBuilder<'a> {
     let direction = dir_vec_to_quaternion(direction);
 
     world
         .create_entity()
-        .with(DirectionalLight::new(color, ShadowSettings::Enabled))
+        .with(DirectionalLight::new(
+            color,
+            ShadowSettings::Enabled,
+            Ortho {
+                left: -ortho_size,
+                right: ortho_size,
+                bottom: -ortho_size,
+                top: ortho_size,
+                near: 1.0,
+                far: ortho_size * 10.0,
+            },
+        ))
         .with(Direction(direction))
+        .with(Spatial(pos.into()))
 }
 
 fn create_point_light<'a, R, F>(
@@ -180,9 +195,7 @@ fn create_point_light<'a, R, F>(
     factory: &mut F,
     pos: [f64; 3],
     color: LightColor,
-    constant: f32,
-    linear: f32,
-    quadratic: f32,
+    attenuation: LightAttenuation,
 ) -> specs::EntityBuilder<'a>
 where
     R: gfx::Resources,
@@ -191,9 +204,11 @@ where
     create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0)).with(PointLight::new(
         color,
         ShadowSettings::Enabled,
-        constant,
-        linear,
-        quadratic,
+        attenuation,
+        ProjectionData::new(
+            1.0,
+            25.0,
+        ),
     ))
 }
 
@@ -203,8 +218,8 @@ fn create_spot_light<'a, R, F>(
     pos: [f64; 3],
     direction: [f64; 3],
     color: LightColor,
-    angle: cgmath::Deg<f32>,
-    outer_angle: cgmath::Deg<f32>,
+    angle: Deg<f32>,
+    outer_angle: Deg<f32>,
 ) -> specs::EntityBuilder<'a>
 where
     R: gfx::Resources,

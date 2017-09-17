@@ -99,6 +99,7 @@ impl<'a> Replacer for &'a mut IncludeReplacer {
 fn replace_include(caps: &Captures, recurses: usize) -> Result<Vec<u8>, ShaderLoadingError> {
     let name = caps[1].to_vec();
     let name = String::from_utf8(name)?;
+    // TODO: Use a function here when proper asset paths are implemented
     let path = format!("{}/assets/shaders/{}", env!("CARGO_MANIFEST_DIR"), name);
 
     load_shader_file_impl(&Path::new(&path), recurses + 1)

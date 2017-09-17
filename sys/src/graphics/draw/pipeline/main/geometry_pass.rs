@@ -3,11 +3,12 @@
 //! This pass calculates position, normal, color, and specular data for each fragment.
 
 use gfx::{self, handle, state, texture};
+use gfx::traits::FactoryExt;
 
 use std::path::Path;
 
 use graphics::draw::{pipeline, types};
-use graphics::draw::pipeline::*;
+use graphics::draw::glsl::{Vec2, Vec3, Vec4, Mat4};
 use super::gbuffer;
 
 gfx_defines! {
@@ -54,7 +55,7 @@ impl<R: gfx::Resources> Pipeline<R> {
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
         vs_path: P,
         fs_path: P,
-    ) -> Result<Self, PipelineError>
+    ) -> Result<Self, pipeline::PipelineError>
     where
         F: gfx::Factory<R>,
         P: AsRef<Path>,
@@ -65,7 +66,7 @@ impl<R: gfx::Resources> Pipeline<R> {
             ..state::Rasterizer::new_fill()
         };
 
-        let pso = load_pso(
+        let pso = pipeline::load_pso(
             factory,
             vs_path,
             fs_path,
@@ -100,6 +101,6 @@ impl<R: gfx::Resources> Pipeline<R> {
             out_depth: dsv,
         };
 
-        Ok(Pipeline::new(pso, data))
+        Ok(pipeline::Pipeline::new(pso, data))
     }
 }

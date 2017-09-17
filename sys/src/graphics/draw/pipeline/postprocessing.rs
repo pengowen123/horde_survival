@@ -1,9 +1,12 @@
 //! Pipeline declaration for postprocessing
 
 use gfx::{self, texture, state, handle};
+use gfx::traits::FactoryExt;
 
-use super::*;
-use graphics::draw::{types, utils};
+use std::path::Path;
+
+use graphics::draw::{types, utils, pipeline};
+use graphics::draw::glsl::{Vec2, Vec4};
 
 gfx_defines! {
     vertex Vertex {
@@ -37,12 +40,12 @@ impl<R: gfx::Resources> Pipeline<R> {
         rtv: handle::RenderTargetView<R, types::ColorFormat>,
         vs_path: P,
         fs_path: P,
-    ) -> Result<Self, PipelineError>
+    ) -> Result<Self, pipeline::PipelineError>
     where
         F: gfx::Factory<R>,
         P: AsRef<Path>,
     {
-        let pso = load_pso(
+        let pso = pipeline::load_pso(
             factory,
             vs_path,
             fs_path,

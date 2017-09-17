@@ -32,13 +32,18 @@ impl<'a> specs::System<'a> for System {
         let delta = data.delta.to_float();
 
         for p in (&mut data.physics).join() {
+            let mut new_handle = None;
+
             match *p.handle() {
                 handle::Handle::Body(_) => {}
-                handle::Handle::Init(f) => {
+                handle::Handle::Init(ref f) => {
                     let body = f();
-                    let handle = self.world.add_rigid_body(body);
-                    p.set_handle(handle);
+                    new_handle = Some(self.world.add_rigid_body(body));
                 }
+            }
+
+            if let Some(handle) = new_handle {
+                p.set_handle(handle);
             }
         }
 

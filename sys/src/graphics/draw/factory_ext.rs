@@ -72,6 +72,45 @@ pub trait FactoryExtension<R: gfx::Resources>: Factory<R> {
 
         Ok(target)
     }
+
+    /// Creates a depth stencil with a cubemap texture
+    fn create_depth_stencil_cubemap<DF>(
+        &mut self,
+        size: texture::Size,
+    ) -> Result<
+        (handle::ShaderResourceView<R, DF::View>, handle::DepthStencilView<R, DF>),
+        gfx::CombinedError,
+    >
+    where
+        DF: format::DepthFormat + format::TextureFormat,
+    {
+        // Get texture info
+        let kind = texture::Kind::Cube(size);
+        let levels = 1;
+        let bind = gfx::DEPTH_STENCIL | gfx::SHADER_RESOURCE;
+        let channel_type = <DF::Channel as format::ChannelTyped>::get_channel_type();
+
+        // Create texture
+        let texture = self.create_texture(
+            kind,
+            levels,
+            bind,
+            memory::Usage::Data,
+            Some(channel_type),
+        )?;
+
+        // Get the texture as a shader resource
+        let srv = self.view_texture_as_shader_resource::<DF>(
+            &texture,
+            (0, 0),
+            format::Swizzle::new(),
+        )?;
+
+        // Get the texture as a depth stencil
+        let dsv = self.view_texture_as_depth_stencil_trivial(&texture)?;
+
+        Ok((srv, dsv))
+    }
 }
 
 impl<R, T> FactoryExtension<R> for T

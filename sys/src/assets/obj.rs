@@ -1,12 +1,13 @@
 //! OBJ loading
 
 use gfx::traits::FactoryExt;
-use gfx;
+use gfx::{self, handle, format};
 use image_utils;
 use obj;
 use genmesh;
 
 use std::io::{self, BufReader};
+use std::path::Path;
 
 use graphics::draw::{Vertex, Drawable, Material};
 use super::utils;
@@ -50,21 +51,21 @@ where
 
     let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
 
-    let mut load_texture = |path| {
-        let data = utils::read_bytes(path)?;
-        let result: Result<_, ObjError> =
-            image_utils::load_texture::<_, _, image_utils::Rgba8>(factory, &data, image_utils::PNG)
-                .map_err(|e| e.into());
-        result
-    };
+    let diffuse = load_texture::<_, image_utils::Srgba8, _, _>(
+        factory,
+        &super::get_model_file_path(name, "_diffuse.png"),
+    )?;
 
-    let diffuse = load_texture(super::get_model_file_path(name, "_diffuse.png"))?;
-    let specular = load_texture(super::get_model_file_path(name, "_specular.png"))?;
+    let specular = load_texture::<_, image_utils::Srgba8, _, _>(
+        factory,
+        &super::get_model_file_path(name, "_specular.png"),
+    )?;
 
     Ok(Drawable::new(vbuf, slice, diffuse, specular, material))
 }
 
 quick_error! {
+    /// An error while loading an OBJ file
     #[derive(Debug)]
     pub enum ObjError {
         Io(err: io::Error) {
@@ -76,4 +77,24 @@ quick_error! {
             from()
         }
     }
+}
+
+/// Loads a texture from the file at the provided path
+///
+/// The file should be in the PNG format.
+fn load_texture<P, CF, R, F>(
+    factory: &mut F,
+    path: P,
+) -> Result<handle::ShaderResourceView<R, CF::View>, ObjError>
+where
+    R: gfx::Resources,
+    F: gfx::Factory<R>,
+    P: AsRef<Path>,
+    CF: format::Formatted,
+    CF::Channel: format::TextureChannel,
+    CF::Surface: format::TextureSurface,
+{
+    let data = utils::read_bytes(path)?;
+
+    image_utils::load_texture::<_, _, CF>(factory, &data, image_utils::PNG).map_err(|e| e.into())
 }

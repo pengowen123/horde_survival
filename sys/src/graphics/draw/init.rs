@@ -48,7 +48,7 @@ pub fn init<'a, 'b>(
 
     // Initialize subsystems
     let dispatcher = param::init(world, dispatcher);
-    let dispatcher = lighting_data::init(world, dispatcher);
+    let (dispatcher, point_send, spot_send) = lighting_data::init(world, dispatcher);
 
     // Add test entities
     // TODO: Remove this when the game has a better initialization system
@@ -57,7 +57,10 @@ pub fn init<'a, 'b>(
     ::dev::add_test_entities(world, &mut factory);
 
     // Initialize systems
-    let draw = super::System::new(factory, &*window, device, main_color, encoder);
+    let draw = super::System::new(factory, &*window, device, main_color, encoder, (
+        point_send,
+        spot_send,
+    ));
 
     // Add systems
     let dispatcher = dispatcher

@@ -14,6 +14,7 @@ mod types;
 mod factory_ext;
 mod lighting_data;
 mod render_target;
+mod glsl;
 
 pub use self::init::init;
 
@@ -29,9 +30,12 @@ use glutin::{Window, GlContext};
 use specs::{self, Join};
 use cgmath::{self, Matrix4, SquareMatrix};
 
-use self::pipeline::{postprocessing, skybox, dir_shadow};
+use std::sync::mpsc;
+
+use self::pipeline::{postprocessing, skybox};
 use self::pipeline::main::{self, geometry_pass, lighting};
-use self::pipeline::main::lighting::LightShadowInfo;
+use self::pipeline::shadow;
+use self::pipeline::shadow::traits::{LightShadows, AspectRatio};
 use graphics::camera;
 use assets;
 use window;
@@ -39,7 +43,7 @@ use window;
 const CLEAR_COLOR: [f32; 4] = [0.0; 4];
 
 /// A `specs::Storage` for the `Drawable` component
-type DrawableStorage<'a, R> =
+pub type DrawableStorage<'a, R> =
     specs::Storage<
         'a,
         components::Drawable<R>,
@@ -64,9 +68,12 @@ where
     pipe_dir_light: lighting::PipelineDirLight<R>,
     pipe_point_light: lighting::PipelinePointLight<R>,
     pipe_spot_light: lighting::PipelineSpotLight<R>,
-    pipe_dir_shadow: dir_shadow::Pipeline<R>,
+    pipe_dir_shadow: shadow::directional::Pipeline<R>,
+    pipe_point_shadow: shadow::point::Pipeline<R>,
     pipe_post: postprocessing::Pipeline<R>,
     pipe_skybox: skybox::Pipeline<R>,
+    aspect_ratio_point: mpsc::Sender<AspectRatio>,
+    aspect_ratio_spot: mpsc::Sender<AspectRatio>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -83,6 +90,7 @@ where
         device: D,
         out_color: handle::RenderTargetView<R, types::ColorFormat>,
         encoder: gfx::Encoder<R, C>,
+        aspect_ratios: (mpsc::Sender<AspectRatio>, mpsc::Sender<AspectRatio>),
     ) -> Self {
 
         // Get the dimensions for all new render targets
@@ -133,6 +141,15 @@ where
             panic!("Failed to create directional light shadow PSO: {}", e)
         });
 
+        let (pipe_point_shadow, point_shadow_map) =
+            pipeline::Pipeline::new_point_shadow(
+                &mut factory,
+                shadow_map_size,
+                assets::get_shader_path("point_shadow_vertex"),
+                assets::get_shader_path("point_shadow_geometry"),
+                assets::get_shader_path("point_shadow_fragment"),
+            ).unwrap_or_else(|e| panic!("Failed to create point light shadow PSO: {}", e));
+
         // Directional light pipeline
         let pipe_dir_light =
             pipeline::Pipeline::new_dir_light(
@@ -178,13 +195,16 @@ where
             ).unwrap_or_else(|e| panic!("Failed to create spot light PSO: {}", e));
 
         // Skybox pipeline
-        let pipe_skybox = pipeline::Pipeline::new_skybox(
+        let mut pipe_skybox = pipeline::Pipeline::new_skybox(
             &mut factory,
             rtv.clone(),
             gbuffer.depth,
+            point_shadow_map,
             assets::get_shader_path("skybox_vertex"),
             assets::get_shader_path("skybox_fragment"),
         ).unwrap_or_else(|e| panic!("Failed to create skybox PSO: {}", e));
+
+        //pipe_skybox.data.skybox.0 = point_shadow_map;
 
         // Postprocessing pipeline
         let pipe_post = pipeline::Pipeline::new_post(
@@ -205,8 +225,11 @@ where
             pipe_point_light,
             pipe_spot_light,
             pipe_dir_shadow,
+            pipe_point_shadow,
             pipe_post,
             pipe_skybox,
+            aspect_ratio_point: aspect_ratios.0,
+            aspect_ratio_spot: aspect_ratios.1,
         }
     }
 
@@ -286,6 +309,7 @@ where
         let dir_light = &mut self.pipe_dir_light;
         let dir_shadow = &mut self.pipe_dir_shadow;
         let point_light = &mut self.pipe_point_light;
+        let point_shadow = &mut self.pipe_point_shadow;
         let spot_light = &mut self.pipe_spot_light;
 
         // Update constant buffers for the directional light pipeline
@@ -304,6 +328,7 @@ where
         for l in lighting_data.dir_lights() {
             let light = l.light;
             let shadows = l.shadows;
+            let light_space_matrix = l.transform;
 
             encoder.update_constant_buffer(&dir_light.data.light, &light);
 
@@ -315,51 +340,46 @@ where
                 dir_light.data.out_color = active.rtv().clone();
             }
 
-            // TODO: Factor this out into a function
             // Clear the shadow map
             encoder.clear_depth(&dir_shadow.data.out_depth, 1.0);
+            // Reset the light space matrix
+            lighting_locals.light_space_matrix = cgmath::Matrix4::identity().into();
 
             // Draw shadows if the light has them enabled
             if let components::ShadowSettings::Enabled = shadows {
-                let light_space_matrix = light.get_light_space_transform();
-
-                // Update the light's transform matrix
-                let mut shadow_locals = dir_shadow::Locals {
-                    light_space_matrix: light_space_matrix.into(),
-                    model: cgmath::Matrix4::identity().into(),
-                };
-
                 lighting_locals.light_space_matrix = light_space_matrix.into();
-                encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
 
-                // Draw each entity to the shadow map
-                for d in drawable.join() {
-                    // Get model matrix
-                    let model = d.param().get_model_matrix();
-                    shadow_locals.model = model.into();
+                components::DirectionalLight::render_shadow_map(
+                    drawable,
+                    light_space_matrix,
+                    |slice, vbuf, locals| {
+                        dir_shadow.data.vbuf = vbuf;
+                        encoder.update_constant_buffer(&dir_shadow.data.locals, locals);
 
-                    // Update shader uniforms
-                    encoder.update_constant_buffer(&dir_shadow.data.locals, &shadow_locals);
-
-                    dir_shadow.data.vbuf = d.vertex_buffer().clone();
-                    encoder.draw(d.slice(), &dir_shadow.pso, &dir_shadow.data);
-                }
-            } else {
-                // Reset the light space matrix
-                lighting_locals.light_space_matrix = cgmath::Matrix4::identity().into();
-                encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
+                        encoder.draw(slice, &dir_shadow.pso, &dir_shadow.data);
+                    },
+                );
             }
+
+            // Update uniforms for the lighting shader
+            encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
+
+            // Draw the light
+            encoder.draw(&slice, &dir_light.pso, &dir_light.data);
 
             // Swap render targets
             self.render_targets.swap_render_targets();
-
-            encoder.draw(&slice, &dir_light.pso, &dir_light.data);
         }
+
+        // Reset the light space matrix
+        // It is not used for point lights so it is just the identity matrix
+        lighting_locals.light_space_matrix = cgmath::Matrix4::identity().into();
 
         // Draw all point lights
         for l in lighting_data.point_lights() {
             let light = l.light;
             let shadows = l.shadows;
+            let transform = l.transform;
 
             encoder.update_constant_buffer(&point_light.data.light, &light);
 
@@ -371,10 +391,34 @@ where
                 point_light.data.out_color = active.rtv().clone();
             }
 
-            // Swap render targets
-            self.render_targets.swap_render_targets();
+            // Clear the shadow map
+            encoder.clear_depth(&dir_shadow.data.out_depth, 1.0);
+
+            if let components::ShadowSettings::Enabled = shadows {
+                components::PointLight::render_shadow_map(
+                    drawable,
+                    transform,
+                    |slice, vbuf, locals| {
+                        point_shadow.data.vbuf = vbuf;
+                        point_shadow.data.light_pos = locals.light_pos;
+                        point_shadow.data.far_plane = locals.far_plane;
+                        encoder
+                            .update_buffer(
+                                &point_shadow.data.view_matrices,
+                                &locals.view_matrices,
+                                0,
+                            )
+                            .unwrap();
+
+                        encoder.draw(slice, &point_shadow.pso, &point_shadow.data);
+                    },
+                );
+            }
 
             encoder.draw(&slice, &point_light.pso, &point_light.data);
+
+            // Swap render targets
+            self.render_targets.swap_render_targets();
         }
 
         // Draw all spot lights
@@ -392,10 +436,10 @@ where
                 spot_light.data.out_color = active.rtv().clone();
             }
 
+            encoder.draw(&slice, &spot_light.pso, &spot_light.data);
+
             // Swap render targets
             self.render_targets.swap_render_targets();
-
-            encoder.draw(&slice, &spot_light.pso, &spot_light.data);
         }
 
         // Swap render targets so the next pipeline gets an unused one
@@ -431,6 +475,7 @@ where
     fn draw_postprocessing(&mut self) {
         // Use the active render target
         self.pipe_post.data.texture.0 = self.render_targets.get_active().srv().clone();
+        //self.pipe_post.data.texture.0 = self.pipe_dir_light.data.shadow_map.0.clone();
 
         let slice = gfx::Slice::new_match_vertex_buffer(&self.pipe_post.data.vbuf);
         self.encoder.draw(
@@ -479,6 +524,15 @@ where
         );
     }
 
+    fn update_shadow_map_aspect_ratios(&self) {
+        self.aspect_ratio_point
+            .send(AspectRatio::from_depth_stencil(
+                &self.pipe_dir_shadow.data.out_depth,
+            ))
+            .unwrap();
+        // XXX: send spot shadow ratio here
+    }
+
     /// Reloads the shaders
     fn reload_shaders(&mut self) -> Result<(), pipeline::PipelineError> {
         // TODO: remake this with multisampling and other graphics settings applied
@@ -511,6 +565,8 @@ where
         //self.reload_shaders().unwrap_or_else(|e| {
         //eprintln!("Failed to reload shaders: {}", e);
         //});
+
+        self.update_shadow_map_aspect_ratios();
 
         // Clear all render and depth targets
         self.clear_targets();

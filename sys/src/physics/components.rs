@@ -1,7 +1,7 @@
 //! Components related to the physics system
 
 use specs;
-use nphysics3d::object::RigidBodyHandle;
+use nphysics3d::object::{RigidBody, RigidBodyHandle};
 
 use super::handle;
 
@@ -18,9 +18,12 @@ pub struct Physics {
 impl Physics {
     /// Returns a new `Physics`, using `body_init` to create the physics body.
     /// If `lock_orientation` is true, the body will have its orientation locked
-    pub fn new(body_init: handle::BodyInit, lock_rotation: bool) -> Self {
+    pub fn new<I>(body_init: I, lock_rotation: bool) -> Self
+    where
+        I: Fn() -> RigidBody<::Float> + Send + Sync + 'static,
+    {
         Physics {
-            handle: handle::Handle::Init(body_init),
+            handle: handle::Handle::Init(Box::new(body_init) as handle::BodyInit),
             lock_rotation,
         }
     }

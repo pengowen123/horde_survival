@@ -91,6 +91,26 @@ impl LightColor {
     }
 }
 
+/// Attenuation properties of a light
+#[derive(Clone, Copy, Debug)]
+pub struct LightAttenuation {
+    pub constant: f32,
+    pub linear: f32,
+    pub quadratic: f32,
+}
+
+impl LightAttenuation {
+    pub fn new(constant: f32, linear: f32, quadratic: f32) -> Self {
+        LightAttenuation {
+            constant,
+            linear,
+            quadratic,
+        }
+    }
+
+    // TODO: Maybe provide constructor that takes only a light radius as an argument
+}
+
 /// Settings for shadows for a light
 #[derive(Clone, Copy, Debug)]
 pub enum ShadowSettings {
@@ -98,18 +118,51 @@ pub enum ShadowSettings {
     Disabled,
 }
 
+/// Info for a projection matrix
+#[derive(Clone, Copy, Debug)]
+pub struct ProjectionData {
+    near: f32,
+    far: f32,
+}
+
+impl ProjectionData {
+    pub fn new(near: f32, far: f32) -> Self {
+        Self { near, far }
+    }
+
+    pub fn near(&self) -> f32 {
+        self.near
+    }
+
+    pub fn far(&self) -> f32 {
+        self.far
+    }
+}
+
 /// A directional light
 ///
-/// In order to work, an entity must have the `Direction` component in addition to this one.
+/// In order to work, an entity must have the `Spatial` and `Direction` components in addition to
+/// this one. The `Spatial` component will be used for rendering a shadow map from the perspective
+/// of the light if shadows are enabled.
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalLight {
     pub color: LightColor,
     pub shadows: ShadowSettings,
+    pub projection_matrix: cgmath::Ortho<f32>,
 }
 
 impl DirectionalLight {
-    pub fn new(color: LightColor, shadows: ShadowSettings) -> Self {
-        Self { color, shadows }
+    /// Creates a new `DirectionalLight` with the provided properties
+    pub fn new(
+        color: LightColor,
+        shadows: ShadowSettings,
+        projection_matrix: cgmath::Ortho<f32>,
+    ) -> Self {
+        Self {
+            color,
+            shadows,
+            projection_matrix,
+        }
     }
 }
 
@@ -120,38 +173,23 @@ impl DirectionalLight {
 pub struct PointLight {
     pub color: LightColor,
     pub shadows: ShadowSettings,
-    pub constant: f32,
-    pub linear: f32,
-    pub quadratic: f32,
+    pub attenuation: LightAttenuation,
+    pub projection: ProjectionData,
 }
 
 impl PointLight {
     /// Creates a new `PointLight` with the provided properties
-    ///
-    /// `constant`, `linear` and `quadratic` are the attenuation properties of the light.
     pub fn new(
         color: LightColor,
         shadows: ShadowSettings,
-        constant: f32,
-        linear: f32,
-        quadratic: f32,
+        attenuation: LightAttenuation,
+        projection: ProjectionData,
     ) -> Self {
         Self {
             color,
             shadows,
-            constant,
-            linear,
-            quadratic,
-        }
-    }
-}
-
-quick_error! {
-    /// An error while creating a light
-    #[derive(Debug)]
-    pub enum LightError {
-        SpotLightAngle(cutoff: cgmath::Rad<f32>, outer_cutoff: cgmath::Rad<f32>) {
-            display("Spot light cutoff angle was larger than the outer cutoff angle: {:?} > {:?}", cutoff, outer_cutoff)
+            attenuation,
+            projection,
         }
     }
 }
@@ -176,9 +214,7 @@ impl SpotLight {
     /// `cutoff` is the angle the spotlight will cover. The light will fade between this angle and
     /// the `outer_cutoff` angle.
     ///
-    /// # Panics
-    ///
-    /// Panics if `outer_cutoff` is a smaller angle than `cutoff`
+    /// Returns `Err` if `outer_cutoff` is a smaller angle than `cutoff`
     pub fn new(
         color: LightColor,
         shadows: ShadowSettings,
@@ -194,6 +230,16 @@ impl SpotLight {
                 cos_cutoff: cutoff.cos(),
                 cos_outer_cutoff: outer_cutoff.cos(),
             })
+        }
+    }
+}
+
+quick_error! {
+    /// An error while creating a light
+    #[derive(Debug)]
+    pub enum LightError {
+        SpotLightAngle(cutoff: cgmath::Rad<f32>, outer_cutoff: cgmath::Rad<f32>) {
+            display("Spot light cutoff angle was larger than the outer cutoff angle: {:?} > {:?}", cutoff, outer_cutoff)
         }
     }
 }

@@ -3,12 +3,12 @@
 //! Uses the data in the geometry buffer to calculate lighting.
 
 use gfx::{self, format, handle, state, texture};
-use cgmath;
+use gfx::traits::FactoryExt;
 
 use std::path::Path;
 
-use graphics::draw::{pipeline, utils};
-use graphics::draw::pipeline::*;
+use graphics::draw::{pipeline, components, utils};
+use graphics::draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
 use super::gbuffer;
 
 gfx_defines! {
@@ -29,11 +29,8 @@ gfx_defines! {
         diffuse: Vec4 = "diffuse",
         specular: Vec4 = "specular",
 
-        enabled: i32 = "enabled",
-
-        _padding0: Vec3 = "_padding0",
-        _padding: Vec3 = "_padding",
-        _padding1: f32 = "_padding1",
+        _padding0: Vec4 = "_padding0",
+        _padding1: Vec4 = "_padding1",
     }
 
     #[derive(Default)]
@@ -48,7 +45,7 @@ gfx_defines! {
         linear: f32 = "linear",
         quadratic: f32 = "quadratic",
 
-        enabled: i32 = "enabled",
+        _padding0: f32 = "_padding0",
     }
 
     #[derive(Default)]
@@ -63,9 +60,7 @@ gfx_defines! {
         cos_cutoff: f32 = "cutOff",
         cos_outer_cutoff: f32 = "outerCutOff",
 
-        enabled: i32 = "enabled",
-
-        _padding: f32 = "_padding",
+        _padding0: Vec2 = "_padding0",
     }
 
     constant Locals {
@@ -86,26 +81,46 @@ impl Material {
     }
 }
 
-/// A trait implemented by all light types, used for getting the transform matrix for calculating
-/// a shadow map from the light's perspective
-pub trait LightShadowInfo {
-    fn get_light_space_transform(&self) -> cgmath::Matrix4<f32>;
+impl DirectionalLight {
+    pub fn from_components(light: components::DirectionalLight, direction: Vec3) -> Self {
+        Self {
+            direction: vec4(direction, 0.0),
+            ambient: light.color.ambient,
+            diffuse: light.color.diffuse,
+            specular: light.color.specular,
+            _padding0: Default::default(),
+            _padding1: Default::default(),
+        }
+    }
 }
 
-impl LightShadowInfo for DirectionalLight {
-    fn get_light_space_transform(&self) -> cgmath::Matrix4<f32> {
-        // TODO: find a better way to get position of directional light
-        let light_pos = cgmath::Point3::new(-15.0, 15.0, 7.5);
-        let direction: cgmath::Vector3<f32> =
-            [self.direction[0], self.direction[1], self.direction[2]].into();
+impl PointLight {
+    pub fn from_components(light: components::PointLight, position: Vec3) -> Self {
+        Self {
+            position: vec4(position, 1.0),
+            ambient: light.color.ambient,
+            diffuse: light.color.diffuse,
+            specular: light.color.specular,
+            constant: light.attenuation.constant,
+            linear: light.attenuation.linear,
+            quadratic: light.attenuation.quadratic,
+            _padding0: Default::default(),
+        }
+    }
+}
 
-        let view =
-            cgmath::Matrix4::look_at(light_pos, light_pos + direction, cgmath::Vector3::unit_z());
-
-        // TODO: decide on the best values here
-        let proj = cgmath::ortho(-20.0, 20.0, -20.0, 20.0, 1.0, 70.0);
-
-        (proj * view)
+impl SpotLight {
+    pub fn from_components(light: components::SpotLight, position: Vec3, direction: Vec3) -> Self {
+        Self {
+            position: vec4(position, 1.0),
+            direction: vec4(direction, 0.0),
+            ambient: light.color.ambient,
+            diffuse: light.color.diffuse,
+            specular: light.color.specular,
+            cos_cutoff: light.cos_cutoff,
+            cos_outer_cutoff: light.cos_outer_cutoff,
+            _padding0: Default::default(),
+        }
     }
 }
 
@@ -148,7 +163,7 @@ macro_rules! create_light_pipeline {
                 rtv: handle::RenderTargetView<R, format::Rgba8>,
                 vs_path: P,
                 fs_path: P,
-            ) -> Result<Self, PipelineError>
+            ) -> Result<Self, pipeline::PipelineError>
             where
                 F: gfx::Factory<R>,
                 P: AsRef<Path>,
@@ -185,7 +200,7 @@ macro_rules! create_light_pipeline {
                     out_color: rtv,
                 };
 
-                Ok(Pipeline::new(pso, data))
+                Ok(pipeline::Pipeline::new(pso, data))
             }
         }
     }

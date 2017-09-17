@@ -3,6 +3,8 @@
 use gfx::{self, format};
 
 /// The color format for graphics
+// FIXME: Manually gamma correct in shaders when glutin actually uses the provided color format
+//        blocked on gfx/#1350
 pub type ColorFormat = gfx::format::Srgba8;
 
 /// The depth format for graphics
