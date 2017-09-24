@@ -89,13 +89,16 @@ impl LightTransform for components::DirectionalLight {
     }
 }
 
+/// 6 view matrices, required for rendering to a cubemap
+pub type ViewMatrices = [cgmath::Matrix4<f32>; 6];
+
 /// The transform data for `PointLight`
 ///
 /// Point light shadow mapping is more complex than shadow mapping for other light types, so this
 /// struct groups the additional data required.
 #[derive(Clone, Copy)]
 pub struct PointLightTransform {
-    pub matrices: [cgmath::Matrix4<f32>; 6],
+    pub matrices: ViewMatrices,
     pub light_pos: cgmath::Point3<f32>,
     pub far_plane: f32,
 }
@@ -109,7 +112,7 @@ impl LightTransform for components::PointLight {
 
         use cgmath::{Matrix4, vec3};
 
-        let (position, aspect_ratio) = data;
+        let (pos, aspect_ratio) = data;
 
         // The projection matrix is constant for each transform matrix
         let proj = cgmath::perspective(
@@ -119,48 +122,23 @@ impl LightTransform for components::PointLight {
             self.projection.far(),
         );
 
-        let transforms = [
-            proj *
-                Matrix4::look_at(
-                    position,
-                    position + vec3(1.0, 0.0, 0.0),
-                    vec3(0.0, -1.0, 0.0),
-                ),
-            proj *
-                Matrix4::look_at(
-                    position,
-                    position + vec3(-1.0, 0.0, 0.0),
-                    vec3(0.0, -1.0, 0.0),
-                ),
-            proj *
-                Matrix4::look_at(
-                    position,
-                    position + vec3(0.0, 1.0, 0.0),
-                    vec3(0.0, 0.0, 1.0),
-                ),
-            proj *
-                Matrix4::look_at(
-                    position,
-                    position + vec3(0.0, -1.0, 0.0),
-                    vec3(0.0, 0.0, -1.0),
-                ),
-            proj *
-                Matrix4::look_at(
-                    position,
-                    position + vec3(0.0, 0.0, 1.0),
-                    vec3(0.0, -1.0, 0.0),
-                ),
-            proj *
-                Matrix4::look_at(
-                    position,
-                    position + vec3(1.0, 0.0, -1.0),
-                    vec3(0.0, -1.0, 0.0),
-                ),
-        ];
+        let mut transforms =
+            [
+                Matrix4::look_at(pos, pos + vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0)),
+                Matrix4::look_at(pos, pos + vec3(-1.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0)),
+                Matrix4::look_at(pos, pos + vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0)),
+                Matrix4::look_at(pos, pos + vec3(0.0, 0.0, -1.0), vec3(0.0, -1.0, 0.0)),
+                Matrix4::look_at(pos, pos + vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0)),
+                Matrix4::look_at(pos, pos + vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, -1.0)),
+            ];
+
+        for t in &mut transforms {
+            *t = proj * *t;
+        }
 
         PointLightTransform {
             matrices: transforms,
-            light_pos: position,
+            light_pos: pos,
             far_plane: self.projection.far(),
         }
     }
@@ -216,7 +194,7 @@ impl LightShadows for components::DirectionalLight {
 }
 
 impl LightShadows for components::PointLight {
-    type Locals = shadow::point::Locals;
+    type Locals = (shadow::point::Locals, [shadow::point::ShadowMatrix; 6]);
 
     fn render_shadow_map<R, F>(
         drawable: &draw::DrawableStorage<R>,
@@ -241,7 +219,6 @@ impl LightShadows for components::PointLight {
             model: cgmath::Matrix4::identity().into(),
             light_pos: transform.light_pos.into(),
             far_plane: transform.far_plane,
-            view_matrices: matrices,
         };
 
         // Draw each entity to the shadow map
@@ -250,7 +227,7 @@ impl LightShadows for components::PointLight {
             let model = d.param().get_model_matrix();
             locals.model = model.into();
 
-            draw_entity(d.slice(), d.vertex_buffer().clone(), &locals);
+            draw_entity(d.slice(), d.vertex_buffer().clone(), &(locals, matrices));
         }
     }
 }

@@ -45,34 +45,34 @@ where
         .with(player::components::Player);
 
     // Create test entities
-    //create_test_entity(
-    //world,
-    //factory,
-    //"box",
-    //[0.0, 0.0, 1.0],
-    //2.0,
-    //Material::new(32.0),
-    //);
-    //create_test_entity(
-    //world,
-    //factory,
-    //"box",
-    //[3.0, 2.0, 5.0],
-    //2.0,
-    //Material::new(32.0),
-    //);
-    //let direction = Direction(Quaternion::from_axis_angle(
-    //vec3(1.0, 1.0, 1.0).normalize(),
-    //Deg(60.0),
-    //));
-    //create_test_entity(
-    //world,
-    //factory,
-    //"box",
-    //[-5.0, 7.0, 1.66],
-    //2.0,
-    //Material::new(32.0),
-    //).with(direction);
+    create_test_entity(
+        world,
+        factory,
+        "box",
+        [0.0, 0.0, 1.0],
+        2.0,
+        Material::new(32.0),
+    );
+    create_test_entity(
+        world,
+        factory,
+        "box",
+        [3.0, 2.0, 5.0],
+        2.0,
+        Material::new(32.0),
+    );
+    let direction = Direction(Quaternion::from_axis_angle(
+        vec3(1.0, 1.0, 1.0).normalize(),
+        Deg(60.0),
+    ));
+    create_test_entity(
+        world,
+        factory,
+        "box",
+        [-5.0, 7.0, 1.66],
+        2.0,
+        Material::new(32.0),
+    ).with(direction);
 
     // Create some lights
     {
@@ -88,7 +88,7 @@ where
                 let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
             };
 
-            //dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
+            dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
         }
 
         // Create point lights
@@ -103,7 +103,7 @@ where
                 );
             };
 
-            point_light(3.0, 2.0, 7.5);
+            //point_light(3.0, 2.0, 7.5);
             //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
@@ -130,7 +130,7 @@ where
 
     let physics = Physics::new(body_init, false);
 
-    //create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
+    create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
 }
 
 fn create_test_entity<'a, R, F, P>(

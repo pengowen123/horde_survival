@@ -45,7 +45,6 @@ impl<R: gfx::Resources> Pipeline<R> {
         factory: &mut F,
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
-        srv: handle::ShaderResourceView<R, [f32; 4]>,
         vs_path: P,
         fs_path: P,
     ) -> Result<Self, pipeline::PipelineError>
@@ -70,22 +69,22 @@ impl<R: gfx::Resources> Pipeline<R> {
         // TODO: load this from individual map files
         let path = |p| env!("CARGO_MANIFEST_DIR").to_string() + p;
 
-        //let cubemap = image_utils::load_cubemap::<_, _, image_utils::Srgba8>(
-        //factory,
-        //image_utils::CubemapData {
-        //up: &read_bytes(path("/assets/skybox/top.jpg"))?,
-        //down: &read_bytes(path("/assets/skybox/bottom.jpg"))?,
-        //front: &read_bytes(path("/assets/skybox/front.jpg"))?,
-        //back: &read_bytes(path("/assets/skybox/back.jpg"))?,
-        //left: &read_bytes(path("/assets/skybox/left.jpg"))?,
-        //right: &read_bytes(path("/assets/skybox/right.jpg"))?,
-        //},
-        //image_utils::JPEG,
-        //)?;
+        let cubemap = image_utils::load_cubemap::<_, _, image_utils::Srgba8>(
+            factory,
+            image_utils::CubemapData {
+                up: &read_bytes(path("/assets/skybox/top.jpg"))?,
+                down: &read_bytes(path("/assets/skybox/bottom.jpg"))?,
+                front: &read_bytes(path("/assets/skybox/front.jpg"))?,
+                back: &read_bytes(path("/assets/skybox/back.jpg"))?,
+                left: &read_bytes(path("/assets/skybox/left.jpg"))?,
+                right: &read_bytes(path("/assets/skybox/right.jpg"))?,
+            },
+            image_utils::JPEG,
+        )?;
 
         let data = pipe::Data {
             vbuf,
-            skybox: (srv, factory.create_sampler_linear()),
+            skybox: (cubemap, factory.create_sampler_linear()),
             locals: factory.create_constant_buffer(1),
             out_color: rtv,
             out_depth: dsv,

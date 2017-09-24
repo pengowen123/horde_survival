@@ -141,6 +141,7 @@ where
             panic!("Failed to create directional light shadow PSO: {}", e)
         });
 
+        // Point light shadow pipeline
         let (pipe_point_shadow, point_shadow_map) =
             pipeline::Pipeline::new_point_shadow(
                 &mut factory,
@@ -159,6 +160,7 @@ where
                 gbuffer.normal.srv().clone(),
                 gbuffer.color.srv().clone(),
                 srv.clone(),
+                gbuffer.depth.clone(),
                 rtv.clone(),
                 assets::get_shader_path("light_vertex"),
                 assets::get_shader_path("dir_light_fragment"),
@@ -168,12 +170,12 @@ where
         let pipe_point_light =
             pipeline::Pipeline::new_point_light(
                 &mut factory,
-                // TODO: Use a shadow map instead of this srv
-                srv.clone(),
+                point_shadow_map,
                 gbuffer.position.srv().clone(),
                 gbuffer.normal.srv().clone(),
                 gbuffer.color.srv().clone(),
                 srv.clone(),
+                gbuffer.depth.clone(),
                 rtv.clone(),
                 assets::get_shader_path("light_vertex"),
                 assets::get_shader_path("point_light_fragment"),
@@ -189,22 +191,20 @@ where
                 gbuffer.normal.srv().clone(),
                 gbuffer.color.srv().clone(),
                 srv.clone(),
+                gbuffer.depth.clone(),
                 rtv.clone(),
                 assets::get_shader_path("light_vertex"),
                 assets::get_shader_path("spot_light_fragment"),
             ).unwrap_or_else(|e| panic!("Failed to create spot light PSO: {}", e));
 
         // Skybox pipeline
-        let mut pipe_skybox = pipeline::Pipeline::new_skybox(
+        let pipe_skybox = pipeline::Pipeline::new_skybox(
             &mut factory,
             rtv.clone(),
             gbuffer.depth,
-            point_shadow_map,
             assets::get_shader_path("skybox_vertex"),
             assets::get_shader_path("skybox_fragment"),
         ).unwrap_or_else(|e| panic!("Failed to create skybox PSO: {}", e));
-
-        //pipe_skybox.data.skybox.0 = point_shadow_map;
 
         // Postprocessing pipeline
         let pipe_post = pipeline::Pipeline::new_post(
@@ -237,8 +237,8 @@ where
         &self.factory
     }
 
-    /// Draws an entity given its `Drawable` component, a set of shader parameters, a `View *
-    /// Projection` matrix, and a constant buffer to write shader input to
+    /// Draws an entity given its `Drawable` component, a `View * Projection` matrix, and a
+    /// constant buffer to write shader input to
     ///
     /// This function will only write data to the geometry buffer. To see the results,
     /// `draw_lighting` must be called afer calling this function.
@@ -282,9 +282,6 @@ where
     }
 
     /// Uses the data in the geometry buffer to calculate lighting from the provided lights
-    ///
-    /// To draw shadows for lights that have them enabled, all entities must be redrawn to a shadow
-    /// map.
     fn draw_lighting<'a>(
         &mut self,
         drawable: &DrawableStorage<'a, R>,
@@ -330,8 +327,6 @@ where
             let shadows = l.shadows;
             let light_space_matrix = l.transform;
 
-            encoder.update_constant_buffer(&dir_light.data.light, &light);
-
             // Use the active render target
             {
                 let active = self.render_targets.get_active();
@@ -354,14 +349,18 @@ where
                     light_space_matrix,
                     |slice, vbuf, locals| {
                         dir_shadow.data.vbuf = vbuf;
+
+                        // Update locals
                         encoder.update_constant_buffer(&dir_shadow.data.locals, locals);
 
+                        // Render the shadow map
                         encoder.draw(slice, &dir_shadow.pso, &dir_shadow.data);
                     },
                 );
             }
 
             // Update uniforms for the lighting shader
+            encoder.update_constant_buffer(&dir_light.data.light, &light);
             encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
 
             // Draw the light
@@ -381,8 +380,6 @@ where
             let shadows = l.shadows;
             let transform = l.transform;
 
-            encoder.update_constant_buffer(&point_light.data.light, &light);
-
             // Use the active render target
             {
                 let active = self.render_targets.get_active();
@@ -392,29 +389,34 @@ where
             }
 
             // Clear the shadow map
-            encoder.clear_depth(&dir_shadow.data.out_depth, 1.0);
+            encoder.clear_depth(&point_shadow.data.out_depth, 1.0);
 
             if let components::ShadowSettings::Enabled = shadows {
                 components::PointLight::render_shadow_map(
                     drawable,
                     transform,
-                    |slice, vbuf, locals| {
+                    |slice, vbuf, &(locals, view_matrices)| {
                         point_shadow.data.vbuf = vbuf;
-                        point_shadow.data.light_pos = locals.light_pos;
-                        point_shadow.data.far_plane = locals.far_plane;
+
+                        // Update locals
+                        encoder.update_constant_buffer(&point_shadow.data.locals, &locals);
+
+                        // Update shadow matrices
                         encoder
-                            .update_buffer(
-                                &point_shadow.data.view_matrices,
-                                &locals.view_matrices,
-                                0,
-                            )
+                            .update_buffer(&point_shadow.data.view_matrices, &view_matrices, 0)
                             .unwrap();
 
+                        // Render the cubemap
                         encoder.draw(slice, &point_shadow.pso, &point_shadow.data);
                     },
                 );
             }
 
+            // Update uniforms for the lighting shader
+            encoder.update_constant_buffer(&point_light.data.light, &light);
+            encoder.update_constant_buffer(&point_light.data.locals, &lighting_locals);
+
+            // Draw the light
             encoder.draw(&slice, &point_light.pso, &point_light.data);
 
             // Swap render targets
@@ -442,7 +444,7 @@ where
             self.render_targets.swap_render_targets();
         }
 
-        // Swap render targets so the next pipeline gets an unused one
+        // Swap active render targets so the next pipeline gets an unused one
         self.render_targets.swap_render_targets();
     }
 
@@ -475,7 +477,6 @@ where
     fn draw_postprocessing(&mut self) {
         // Use the active render target
         self.pipe_post.data.texture.0 = self.render_targets.get_active().srv().clone();
-        //self.pipe_post.data.texture.0 = self.pipe_dir_light.data.shadow_map.0.clone();
 
         let slice = gfx::Slice::new_match_vertex_buffer(&self.pipe_post.data.vbuf);
         self.encoder.draw(
@@ -521,6 +522,8 @@ where
             DEPTH, self,
             self.pipe_geometry_pass.data.out_depth,
             self.pipe_skybox.data.out_depth,
+            self.pipe_dir_shadow.data.out_depth,
+            self.pipe_point_shadow.data.out_depth,
         );
     }
 
@@ -582,9 +585,7 @@ where
         };
 
         // Draw each entity (to the geometry buffer)
-        let entities = (&data.drawable).join();
-
-        for d in entities {
+        for d in (&data.drawable).join() {
             self.draw_entity_to_gbuffer(d, vp, &mut locals);
         }
 

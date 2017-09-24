@@ -7,7 +7,7 @@ use gfx::traits::FactoryExt;
 
 use std::path::Path;
 
-use graphics::draw::{pipeline, components, utils};
+use graphics::draw::{pipeline, types, components, utils};
 use graphics::draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
 use super::gbuffer;
 
@@ -28,9 +28,6 @@ gfx_defines! {
         ambient: Vec4 = "ambient",
         diffuse: Vec4 = "diffuse",
         specular: Vec4 = "specular",
-
-        _padding0: Vec4 = "_padding0",
-        _padding1: Vec4 = "_padding1",
     }
 
     #[derive(Default)]
@@ -44,8 +41,6 @@ gfx_defines! {
         constant: f32 = "constant",
         linear: f32 = "linear",
         quadratic: f32 = "quadratic",
-
-        _padding0: f32 = "_padding0",
     }
 
     #[derive(Default)]
@@ -59,8 +54,6 @@ gfx_defines! {
 
         cos_cutoff: f32 = "cutOff",
         cos_outer_cutoff: f32 = "outerCutOff",
-
-        _padding0: Vec2 = "_padding0",
     }
 
     constant Locals {
@@ -88,8 +81,6 @@ impl DirectionalLight {
             ambient: light.color.ambient,
             diffuse: light.color.diffuse,
             specular: light.color.specular,
-            _padding0: Default::default(),
-            _padding1: Default::default(),
         }
     }
 }
@@ -104,7 +95,6 @@ impl PointLight {
             constant: light.attenuation.constant,
             linear: light.attenuation.linear,
             quadratic: light.attenuation.quadratic,
-            _padding0: Default::default(),
         }
     }
 }
@@ -119,7 +109,6 @@ impl SpotLight {
             specular: light.color.specular,
             cos_cutoff: light.cos_cutoff,
             cos_outer_cutoff: light.cos_outer_cutoff,
-            _padding0: Default::default(),
         }
     }
 }
@@ -142,8 +131,9 @@ macro_rules! create_light_pipeline {
                 g_normal: gfx::TextureSampler<Vec4> = "t_Normal",
                 g_color: gfx::TextureSampler<Vec4> = "t_Color",
                 target_color: gfx::TextureSampler<Vec4> = "t_Target",
-                // Output color (note that depth is not needed here)
                 out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
+                // NOTE: This is `LESS_EQUAL_TEST` instead of `LESS_EQUAL_WRITE`
+                out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_TEST,
             }
         }
 
@@ -160,6 +150,7 @@ macro_rules! create_light_pipeline {
                 srv_normal: handle::ShaderResourceView<R, gbuffer::GFormat>,
                 srv_color: handle::ShaderResourceView<R, gbuffer::GFormat>,
                 srv_previous: handle::ShaderResourceView<R, [f32; 4]>,
+                dsv: handle::DepthStencilView<R, types::DepthFormat>,
                 rtv: handle::RenderTargetView<R, format::Rgba8>,
                 vs_path: P,
                 fs_path: P,
@@ -192,12 +183,14 @@ macro_rules! create_light_pipeline {
                     material: factory.create_constant_buffer(1),
                     locals: factory.create_constant_buffer(1),
                     light: factory.create_constant_buffer(1),
+                    // FIXME: This sampler info may cause problems for cubemap shadow map textures
                     shadow_map: (shadow_map, factory.create_sampler(sampler_info)),
                     g_position: (srv_pos, factory.create_sampler(sampler_info)),
                     g_normal: (srv_normal, factory.create_sampler(sampler_info)),
                     g_color: (srv_color, factory.create_sampler(sampler_info)),
                     target_color: (srv_previous, factory.create_sampler(sampler_info)),
                     out_color: rtv,
+                    out_depth: dsv,
                 };
 
                 Ok(pipeline::Pipeline::new(pso, data))

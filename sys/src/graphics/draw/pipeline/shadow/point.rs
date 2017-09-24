@@ -2,7 +2,6 @@
 
 use gfx::{self, state, handle, texture};
 use gfx::traits::FactoryExt;
-use cgmath::{self, SquareMatrix};
 
 use std::path::Path;
 
@@ -14,27 +13,20 @@ use graphics::draw::pipeline::main::geometry_pass;
 // The number of faces on a cubemap
 const CUBE_FACES: usize = 6;
 
-/// Locals for the point light shadow pipeline
-///
-/// Individual globals are used in `pipe::Data`, so there is no constant buffer. Instead, this
-/// struct is passes around.
-pub struct Locals {
-    pub model: Mat4,
-    pub light_pos: Vec3,
-    pub far_plane: f32,
-    pub view_matrices: [ShadowMatrix; 6],
-}
-
 gfx_defines! {
     constant ShadowMatrix {
         matrix: Mat4 = "matrix",
     }
+    
+    constant Locals {
+        model: Mat4 = "model",
+        light_pos: Vec3 = "lightPos",
+        far_plane: f32 = "farPlane",
+    }
 
     pipeline pipe {
         vbuf: gfx::VertexBuffer<geometry_pass::Vertex> = (),
-        model: gfx::Global<Mat4> = "model",
-        light_pos: gfx::Global<Vec3> = "lightPos",
-        far_plane: gfx::Global<f32> = "farPlane",
+        locals: gfx::ConstantBuffer<Locals> = "u_Locals",
         view_matrices: gfx::ConstantBuffer<ShadowMatrix> = "u_ShadowMatrices",
         out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
     }
@@ -77,13 +69,13 @@ impl<R: gfx::Resources> Pipeline<R> {
         let vbuf = factory.create_vertex_buffer(&[]);
 
         // Create a shadow map
-        let (srv, dsv) = factory.create_depth_stencil_cubemap(shadow_map_size)?;
+        let (srv, dsv) = factory.create_depth_stencil_cubemap::<types::DepthFormat>(
+            shadow_map_size,
+        )?;
 
         let data = pipe::Data {
             vbuf,
-            model: cgmath::Matrix4::identity().into(),
-            light_pos: [0.0; 3],
-            far_plane: 1.0,
+            locals: factory.create_constant_buffer(1),
             view_matrices: factory.create_constant_buffer(CUBE_FACES),
             out_depth: dsv,
         };

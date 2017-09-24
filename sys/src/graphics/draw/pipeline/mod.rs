@@ -87,6 +87,7 @@ where
 
     factory
         .create_pipeline_state(&set, primitive, rasterizer, init)
+        // FIXME: Is this necessary
         .map_err(|e| e.into())
 }
 
