@@ -292,10 +292,21 @@ where
         let eye_pos: [f32; 3] = camera.eye_position().into();
         let eye_pos = [eye_pos[0], eye_pos[1], eye_pos[2], 1.0];
 
-        let mut lighting_locals = lighting::Locals {
+        let mut dir_locals = lighting::DirectionalLocals {
             eye_pos,
             light_space_matrix: cgmath::Matrix4::identity().into(),
         };
+
+        let mut point_locals = lighting::PointLocals {
+            eye_pos,
+            far_plane: 1.0,
+        };
+
+        let mut spot_locals = lighting::SpotLocals {
+            eye_pos,
+            light_space_matrix: cgmath::Matrix4::identity().into(),
+        };
+
         let material = lighting::Material::new(32.0);
 
         // NOTE: This slice is shared by all light pipelines, because they all just use screen
@@ -310,15 +321,15 @@ where
         let spot_light = &mut self.pipe_spot_light;
 
         // Update constant buffers for the directional light pipeline
-        encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
+        encoder.update_constant_buffer(&dir_light.data.locals, &dir_locals);
         encoder.update_constant_buffer(&dir_light.data.material, &material);
 
         // Update constant buffers for the point light pipeline
-        encoder.update_constant_buffer(&point_light.data.locals, &lighting_locals);
+        encoder.update_constant_buffer(&point_light.data.locals, &point_locals);
         encoder.update_constant_buffer(&point_light.data.material, &material);
 
         // Update constant buffers for the spot light pipeline
-        encoder.update_constant_buffer(&spot_light.data.locals, &lighting_locals);
+        encoder.update_constant_buffer(&spot_light.data.locals, &spot_locals);
         encoder.update_constant_buffer(&spot_light.data.material, &material);
 
         // Draw all directional lights lights
@@ -337,12 +348,13 @@ where
 
             // Clear the shadow map
             encoder.clear_depth(&dir_shadow.data.out_depth, 1.0);
+
             // Reset the light space matrix
-            lighting_locals.light_space_matrix = cgmath::Matrix4::identity().into();
+            dir_locals.light_space_matrix = cgmath::Matrix4::identity().into();
 
             // Draw shadows if the light has them enabled
             if let components::ShadowSettings::Enabled = shadows {
-                lighting_locals.light_space_matrix = light_space_matrix.into();
+                dir_locals.light_space_matrix = light_space_matrix.into();
 
                 components::DirectionalLight::render_shadow_map(
                     drawable,
@@ -361,7 +373,7 @@ where
 
             // Update uniforms for the lighting shader
             encoder.update_constant_buffer(&dir_light.data.light, &light);
-            encoder.update_constant_buffer(&dir_light.data.locals, &lighting_locals);
+            encoder.update_constant_buffer(&dir_light.data.locals, &dir_locals);
 
             // Draw the light
             encoder.draw(&slice, &dir_light.pso, &dir_light.data);
@@ -369,10 +381,6 @@ where
             // Swap render targets
             self.render_targets.swap_render_targets();
         }
-
-        // Reset the light space matrix
-        // It is not used for point lights so it is just the identity matrix
-        lighting_locals.light_space_matrix = cgmath::Matrix4::identity().into();
 
         // Draw all point lights
         for l in lighting_data.point_lights() {
@@ -391,7 +399,12 @@ where
             // Clear the shadow map
             encoder.clear_depth(&point_shadow.data.out_depth, 1.0);
 
+            // Reset the far plane
+            point_locals.far_plane = 1.0;
+
             if let components::ShadowSettings::Enabled = shadows {
+                point_locals.far_plane = transform.far_plane;
+
                 components::PointLight::render_shadow_map(
                     drawable,
                     transform,
@@ -414,7 +427,7 @@ where
 
             // Update uniforms for the lighting shader
             encoder.update_constant_buffer(&point_light.data.light, &light);
-            encoder.update_constant_buffer(&point_light.data.locals, &lighting_locals);
+            encoder.update_constant_buffer(&point_light.data.locals, &point_locals);
 
             // Draw the light
             encoder.draw(&slice, &point_light.pso, &point_light.data);

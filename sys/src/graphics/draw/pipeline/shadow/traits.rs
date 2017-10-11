@@ -124,12 +124,13 @@ impl LightTransform for components::PointLight {
 
         let mut transforms =
             [
-                Matrix4::look_at(pos, pos + vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0)),
+                // FIXME: Remove the sign flip on X and Z directions
                 Matrix4::look_at(pos, pos + vec3(-1.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0)),
+                Matrix4::look_at(pos, pos + vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, -1.0)),
                 Matrix4::look_at(pos, pos + vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0)),
                 Matrix4::look_at(pos, pos + vec3(0.0, 0.0, -1.0), vec3(0.0, -1.0, 0.0)),
-                Matrix4::look_at(pos, pos + vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0)),
                 Matrix4::look_at(pos, pos + vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, -1.0)),
+                Matrix4::look_at(pos, pos + vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, -1.0)),
             ];
 
         for t in &mut transforms {

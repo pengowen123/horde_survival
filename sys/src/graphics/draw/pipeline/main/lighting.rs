@@ -56,7 +56,17 @@ gfx_defines! {
         cos_outer_cutoff: f32 = "outerCutOff",
     }
 
-    constant Locals {
+    constant DirectionalLocals {
+        eye_pos: Vec4 = "u_EyePos",
+        light_space_matrix: Mat4 = "u_LightSpaceMatrix",
+    }
+
+    constant PointLocals {
+        eye_pos: Vec4 = "u_EyePos",
+        far_plane: f32 = "u_FarPlane",
+    }
+
+    constant SpotLocals {
         eye_pos: Vec4 = "u_EyePos",
         light_space_matrix: Mat4 = "u_LightSpaceMatrix",
     }
@@ -116,11 +126,17 @@ impl SpotLight {
 /// Expands to a pipeline declaration for the provided light type, a type alias for the pipeline,
 /// and a constructor for the pipeline.
 macro_rules! create_light_pipeline {
-    ($name:ident, $alias_name:ident, $constructor_name:ident, $light_type:path, ($filtering:ident, $wrap_mode:ident),) => {
+    ($name:ident,
+     $alias_name:ident,
+     $constructor_name:ident,
+     $light_type:path,
+     $locals_type:path,
+     ($filtering:ident, $wrap_mode:ident),
+    ) => {
         gfx_defines! {
             pipeline $name {
                 vbuf: gfx::VertexBuffer<Vertex> = (),
-                locals: gfx::ConstantBuffer<Locals> = "u_Locals",
+                locals: gfx::ConstantBuffer<$locals_type> = "u_Locals",
                 material: gfx::ConstantBuffer<Material> = "u_Material",
                 // The light to process
                 light: gfx::ConstantBuffer<$light_type> = "u_Light",
@@ -142,7 +158,7 @@ macro_rules! create_light_pipeline {
         impl<R: gfx::Resources> $alias_name<R> {
             /// Returns a new lighting `Pipeline`, created from the provided shaders
             ///
-            /// The pipeline will use `rtv` as its render target.
+            /// The pipeline will use `rtv` as its render target, and `dsv` as its depth target.
             pub fn $constructor_name<F, P>(
                 factory: &mut F,
                 shadow_map: handle::ShaderResourceView<R, [f32; 4]>,
@@ -211,6 +227,7 @@ create_light_pipeline!(
     PipelineDirLight,
     new_dir_light,
     DirectionalLight,
+    DirectionalLocals,
     (Bilinear, Clamp),
 );
 
@@ -219,6 +236,7 @@ create_light_pipeline!(
     PipelinePointLight,
     new_point_light,
     PointLight,
+    PointLocals,
     (Trilinear, Clamp),
 );
 
@@ -227,5 +245,6 @@ create_light_pipeline!(
     PipelineSpotLight,
     new_spot_light,
     SpotLight,
+    SpotLocals,
     (Trilinear, Clamp),
 );

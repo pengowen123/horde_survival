@@ -63,6 +63,7 @@ impl<R: gfx::Resources> Pipeline<R> {
         // TODO: maybe enable culling
         let rasterizer = state::Rasterizer {
             //samples: Some(state::MultiSample),
+            //cull_face: state::CullFace::Back,
             ..state::Rasterizer::new_fill()
         };
 

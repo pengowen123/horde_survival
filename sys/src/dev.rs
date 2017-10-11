@@ -25,7 +25,7 @@ where
     let body_init = || {
         let geom = Cuboid::new(na::Vector3::new(1.0, 1.0, 2.0));
         let mut body = RigidBody::new_dynamic(geom, 100.0, 0.0, 100.0);
-        body.append_translation(&Translation3::new(5.0, 5.0, 15.0));
+        body.append_translation(&Translation3::new(0.0, 0.0, 15.0));
         body
     };
 
@@ -44,35 +44,26 @@ where
         .with(PhysicsTiedPosition)
         .with(player::components::Player);
 
+    // Add a plane to test physics on
+    let body_init = || {
+        let geom = Plane::new(na::Vector3::new(0.0 as ::Float, 0.0, 1.0));
+        RigidBody::new_static(geom, 1.0, 1.0)
+    };
+
+    let physics = Physics::new(body_init, false);
+
+    create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
+
     // Create test entities
-    create_test_entity(
-        world,
-        factory,
-        "box",
-        [0.0, 0.0, 1.0],
-        2.0,
-        Material::new(32.0),
-    );
-    create_test_entity(
-        world,
-        factory,
-        "box",
-        [3.0, 2.0, 5.0],
-        2.0,
-        Material::new(32.0),
-    );
-    let direction = Direction(Quaternion::from_axis_angle(
-        vec3(1.0, 1.0, 1.0).normalize(),
-        Deg(60.0),
-    ));
-    create_test_entity(
-        world,
-        factory,
-        "box",
-        [-5.0, 7.0, 1.66],
-        2.0,
-        Material::new(32.0),
-    ).with(direction);
+    {
+        let mut cube = |pos, size| {
+            let _ = create_test_entity(world, factory, "box", pos, size, Material::new(32.0));
+        };
+
+        cube([-4.0, 0.0, 5.0], 2.0);
+        cube([2.0, 4.0, 1.0], 2.0);
+        cube([3.0, -1.0, 3.0], 2.0);
+    }
 
     // Create some lights
     {
@@ -88,7 +79,7 @@ where
                 let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
             };
 
-            dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
+            //dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
         }
 
         // Create point lights
@@ -103,7 +94,7 @@ where
                 );
             };
 
-            //point_light(3.0, 2.0, 7.5);
+            point_light(0.0, 0.0, 10.0);
             //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
@@ -121,16 +112,6 @@ where
         }
 
     }
-
-    // Add a plane to test physics on
-    let body_init = || {
-        let geom = Plane::new(na::Vector3::new(0.0 as ::Float, 0.0, 1.0));
-        RigidBody::new_static(geom, 1.0, 1.0)
-    };
-
-    let physics = Physics::new(body_init, false);
-
-    create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
 }
 
 fn create_test_entity<'a, R, F, P>(
@@ -201,12 +182,12 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0)).with(PointLight::new(
+    create_test_entity(world, factory, "light", pos, 0.2, Material::new(0.0)).with(PointLight::new(
         color,
         ShadowSettings::Enabled,
         attenuation,
         ProjectionData::new(
-            1.0,
+            0.15,
             25.0,
         ),
     ))
