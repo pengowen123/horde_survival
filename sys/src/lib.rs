@@ -59,6 +59,8 @@ mod control;
 mod window;
 mod graphics;
 
+use shred::RunNow;
+
 /// The floating point type used in this crate
 pub type Float = f64;
 
@@ -74,8 +76,7 @@ pub fn run() {
     let dispatcher = control::init(&mut world, dispatcher);
     let dispatcher = delta::init(&mut world, dispatcher);
     let dispatcher = world::init(&mut world, dispatcher);
-    // NOTE: This should be called before `graphics::init` so physics runs first
-    let dispatcher = physics::init::init(&mut world, dispatcher);
+    let (dispatcher, mut physics) = physics::init::init(&mut world, dispatcher);
     let (dispatcher, window, mut events) = graphics::init(&mut world, dispatcher);
 
     // Build the dispatcher
@@ -113,6 +114,10 @@ pub fn run() {
         }
 
         dispatcher.dispatch(&mut world.res);
+
+        // nphysics world is not threadsafe so the system is run manually
+        physics.run_now(&mut world.res);
+
         // NOTE: Running this after dispatch may be a problem (but so is running it before dispatch)
         world.maintain();
     }
