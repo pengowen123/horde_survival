@@ -114,9 +114,10 @@ impl<'a> specs::System<'a> for System {
         for (l, d, s) in (&data.spot_light, &data.direction, &data.space).join() {
             let pos: [f32; 3] = s.0.cast().into();
             let dir: cgmath::Vector3<f32> = d.into_vector().cast();
-            let light = lighting::SpotLight::from_components(*l, dir.into(), pos);
+            let light = lighting::SpotLight::from_components(*l, pos, dir.into());
 
-            let transform = l.get_light_space_transform((s.0.cast(), dir));
+            let transform =
+                l.get_light_space_transform((s.0.cast(), dir, self.aspect_ratio_spot.0));
 
             light_info.spot_lights.push(Light::new(
                 light,
