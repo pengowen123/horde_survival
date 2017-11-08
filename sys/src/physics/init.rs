@@ -10,7 +10,7 @@ use physics::{System, components, output};
 pub fn init<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
-) -> DispatcherBuilder<'a, 'b> {
+) -> (DispatcherBuilder<'a, 'b>, System) {
 
     // Register components
     world.register::<components::Physics>();
@@ -22,9 +22,9 @@ pub fn init<'a, 'b>(
     let system = System { world: physics_world };
 
     // Add systems
-    // TODO: Make this parallel, look into the recursion error
-    let dispatcher = dispatcher.add_thread_local(system);
 
     // Initialize subsystems
-    output::init(world, dispatcher)
+    let dispatcher = output::init(world, dispatcher);
+
+    (dispatcher, system)
 }

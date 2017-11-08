@@ -70,6 +70,7 @@ where
     pipe_spot_light: lighting::PipelineSpotLight<R>,
     pipe_dir_shadow: shadow::directional::Pipeline<R>,
     pipe_point_shadow: shadow::point::Pipeline<R>,
+    pipe_spot_shadow: shadow::spot::Pipeline<R>,
     pipe_post: postprocessing::Pipeline<R>,
     pipe_skybox: skybox::Pipeline<R>,
     aspect_ratio_point: mpsc::Sender<AspectRatio>,
@@ -130,11 +131,11 @@ where
             ).unwrap_or_else(|e| panic!("Failed to create geometry pass PSO: {}", e));
 
         // Directional light shadow pipeline
-        let shadow_map_size = 1024;
+        let dir_shadow_map_size = 1024;
 
         let (pipe_dir_shadow, dir_shadow_map) = pipeline::Pipeline::new_dir_shadow(
             &mut factory,
-            shadow_map_size,
+            dir_shadow_map_size,
             assets::get_shader_path("dir_shadow_vertex"),
             assets::get_shader_path("dir_shadow_fragment"),
         ).unwrap_or_else(|e| {
@@ -142,14 +143,27 @@ where
         });
 
         // Point light shadow pipeline
+        let point_shadow_map_size = 1024;
+
         let (pipe_point_shadow, point_shadow_map) =
             pipeline::Pipeline::new_point_shadow(
                 &mut factory,
-                shadow_map_size,
+                point_shadow_map_size,
                 assets::get_shader_path("point_shadow_vertex"),
                 assets::get_shader_path("point_shadow_geometry"),
                 assets::get_shader_path("point_shadow_fragment"),
             ).unwrap_or_else(|e| panic!("Failed to create point light shadow PSO: {}", e));
+
+        // Spot light shadow pipeline
+        let spot_shadow_map_size = 1024;
+
+        let (pipe_spot_shadow, spot_shadow_map) =
+            pipeline::Pipeline::new_spot_shadow(
+                &mut factory,
+                spot_shadow_map_size,
+                assets::get_shader_path("spot_shadow_vertex"),
+                assets::get_shader_path("spot_shadow_fragment"),
+            ).unwrap_or_else(|e| panic!("Failed to create spot light shadow PSO: {}", e));
 
         // Directional light pipeline
         let pipe_dir_light =
@@ -185,8 +199,7 @@ where
         let pipe_spot_light =
             pipeline::Pipeline::new_spot_light(
                 &mut factory,
-                // TODO: Use a shadow map instead of this srv
-                srv.clone(),
+                spot_shadow_map,
                 gbuffer.position.srv().clone(),
                 gbuffer.normal.srv().clone(),
                 gbuffer.color.srv().clone(),
@@ -226,6 +239,7 @@ where
             pipe_spot_light,
             pipe_dir_shadow,
             pipe_point_shadow,
+            pipe_spot_shadow,
             pipe_post,
             pipe_skybox,
             aspect_ratio_point: aspect_ratios.0,
@@ -304,6 +318,7 @@ where
 
         let mut spot_locals = lighting::SpotLocals {
             eye_pos,
+            far_plane: 1.0,
             light_space_matrix: cgmath::Matrix4::identity().into(),
         };
 
@@ -319,6 +334,7 @@ where
         let point_light = &mut self.pipe_point_light;
         let point_shadow = &mut self.pipe_point_shadow;
         let spot_light = &mut self.pipe_spot_light;
+        let spot_shadow = &mut self.pipe_spot_shadow;
 
         // Update constant buffers for the directional light pipeline
         encoder.update_constant_buffer(&dir_light.data.locals, &dir_locals);
@@ -440,8 +456,7 @@ where
         for l in lighting_data.spot_lights() {
             let light = l.light;
             let shadows = l.shadows;
-
-            encoder.update_constant_buffer(&spot_light.data.light, &light);
+            let light_space_matrix = l.transform;
 
             // Use the active render target
             {
@@ -451,6 +466,36 @@ where
                 spot_light.data.out_color = active.rtv().clone();
             }
 
+            // Clear the shadow map
+            encoder.clear_depth(&spot_shadow.data.out_depth, 1.0);
+
+            // Reset the light space matrix
+            spot_locals.light_space_matrix = cgmath::Matrix4::identity().into();
+
+            // Draw shadows if the light has them enabled
+            if let components::ShadowSettings::Enabled = shadows {
+                spot_locals.light_space_matrix = light_space_matrix.into();
+
+                components::SpotLight::render_shadow_map(
+                    drawable,
+                    light_space_matrix,
+                    |slice, vbuf, locals| {
+                        spot_shadow.data.vbuf = vbuf;
+
+                        // Update locals
+                        encoder.update_constant_buffer(&spot_shadow.data.locals, locals);
+
+                        // Render the shadow map
+                        encoder.draw(slice, &spot_shadow.pso, &spot_shadow.data);
+                    },
+                );
+            }
+
+            // Update uniforms for the lighting shader
+            encoder.update_constant_buffer(&spot_light.data.light, &light);
+            encoder.update_constant_buffer(&spot_light.data.locals, &spot_locals);
+
+            // Draw the light
             encoder.draw(&slice, &spot_light.pso, &spot_light.data);
 
             // Swap render targets
@@ -537,6 +582,7 @@ where
             self.pipe_skybox.data.out_depth,
             self.pipe_dir_shadow.data.out_depth,
             self.pipe_point_shadow.data.out_depth,
+            self.pipe_spot_shadow.data.out_depth,
         );
     }
 
@@ -546,7 +592,11 @@ where
                 &self.pipe_dir_shadow.data.out_depth,
             ))
             .unwrap();
-        // XXX: send spot shadow ratio here
+        self.aspect_ratio_spot
+            .send(AspectRatio::from_depth_stencil(
+                &self.pipe_spot_shadow.data.out_depth,
+            ))
+            .unwrap();
     }
 
     /// Reloads the shaders

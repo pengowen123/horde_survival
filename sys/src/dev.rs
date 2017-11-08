@@ -60,9 +60,10 @@ where
             let _ = create_test_entity(world, factory, "box", pos, size, Material::new(32.0));
         };
 
-        cube([-4.0, 0.0, 5.0], 2.0);
-        cube([2.0, 4.0, 1.0], 2.0);
-        cube([3.0, -1.0, 3.0], 2.0);
+        //cube([-4.0, 0.0, 5.0], 2.0);
+        //cube([2.0, 4.0, 1.0], 2.0);
+        //cube([3.0, -1.0, 3.0], 2.0);
+        cube([1.0, 1.0, 3.5], 1.5);
     }
 
     // Create some lights
@@ -94,7 +95,7 @@ where
                 );
             };
 
-            point_light(0.0, 0.0, 10.0);
+            //point_light(0.0, 0.0, 10.0);
             //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
@@ -105,10 +106,10 @@ where
         {
             let mut spot_light = |pos, dir| {
                 let _ =
-                    create_spot_light(world, factory, pos, dir, light_color, Deg(12.5), Deg(17.5));
+                    create_spot_light(world, factory, pos, dir, light_color, Deg(20.0), Deg(27.5));
             };
 
-            //spot_light([0.0, 0.0, 10.0], [0.0, 0.0, -1.0]);
+            spot_light([0.0, 0.0, 10.0], [0.0, 0.0, -1.0]);
         }
 
     }
@@ -187,7 +188,7 @@ where
         ShadowSettings::Enabled,
         attenuation,
         ProjectionData::new(
-            0.15,
+            1.0,
             25.0,
         ),
     ))
@@ -215,6 +216,7 @@ where
                 ShadowSettings::Enabled,
                 angle.into(),
                 outer_angle.into(),
+                ProjectionData::new(1.0, 25.0),
             ).unwrap(),
         )
         .with(Direction(direction))

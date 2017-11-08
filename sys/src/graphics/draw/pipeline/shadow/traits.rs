@@ -1,6 +1,6 @@
 //! Traits for working with shadows for different light types
 
-use cgmath::{self, SquareMatrix};
+use cgmath::{self, SquareMatrix, Angle};
 use gfx::{self, handle};
 use specs::Join;
 
@@ -147,26 +147,33 @@ impl LightTransform for components::PointLight {
 
 impl LightTransform for components::SpotLight {
     type Transform = cgmath::Matrix4<f32>;
-    type RequiredData = (cgmath::Point3<f32>, cgmath::Vector3<f32>);
+    type RequiredData = (cgmath::Point3<f32>, cgmath::Vector3<f32>, AspectRatio);
     type ShaderStruct = lighting::SpotLight;
 
     fn get_light_space_transform(&self, data: Self::RequiredData) -> Self::Transform {
-        let (position, direction) = data;
+        let (position, direction, aspect_ratio) = data;
 
-        // FIXME: store this in a field on SpotLight
-        let proj = cgmath::perspective(cgmath::Deg(45.0), 1.0, 1.0, 100.0);
+        let outer_cutoff: cgmath::Rad<f32> = Angle::acos(self.cos_outer_cutoff().0);
+        let fov = outer_cutoff * 2.0;
+
+        let proj = cgmath::perspective(
+            fov,
+            aspect_ratio.0,
+            self.projection.near(),
+            self.projection.far(),
+        );
 
         let view =
             cgmath::Matrix4::look_at(position, position + direction, cgmath::Vector3::unit_z());
 
-        (proj * view)
+        proj * view
     }
 }
 
 // LightShadows impls
 
 impl LightShadows for components::DirectionalLight {
-    type Locals = shadow::Locals;
+    type Locals = shadow::directional::Locals;
 
     fn render_shadow_map<R, F>(
         drawable: &draw::DrawableStorage<R>,
@@ -178,7 +185,7 @@ impl LightShadows for components::DirectionalLight {
               handle::Buffer<R, geometry_pass::Vertex>,
               &Self::Locals),
     {
-        let mut locals = shadow::Locals {
+        let mut locals = shadow::directional::Locals {
             light_space_matrix: transform.into(),
             model: cgmath::Matrix4::identity().into(),
         };
@@ -229,6 +236,35 @@ impl LightShadows for components::PointLight {
             locals.model = model.into();
 
             draw_entity(d.slice(), d.vertex_buffer().clone(), &(locals, matrices));
+        }
+    }
+}
+
+impl LightShadows for components::SpotLight {
+    type Locals = shadow::spot::Locals;
+
+    fn render_shadow_map<R, F>(
+        drawable: &draw::DrawableStorage<R>,
+        transform: Self::Transform,
+        mut draw_entity: F,
+    ) where
+        R: gfx::Resources,
+        F: FnMut(&gfx::Slice<R>,
+              handle::Buffer<R, geometry_pass::Vertex>,
+              &Self::Locals),
+    {
+        let mut locals = shadow::spot::Locals {
+            light_space_matrix: transform.into(),
+            model: cgmath::Matrix4::identity().into(),
+        };
+
+        // Draw each entity to the shadow map
+        for d in drawable.join() {
+            // Get model matrix
+            let model = d.param().get_model_matrix();
+            locals.model = model.into();
+
+            draw_entity(d.slice(), d.vertex_buffer().clone(), &locals);
         }
     }
 }

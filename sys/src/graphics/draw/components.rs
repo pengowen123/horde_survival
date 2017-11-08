@@ -199,13 +199,14 @@ impl PointLight {
 /// In order to work, an entity must have the `Direction` and `Spatial` components in addition to
 /// this one.
 // NOTE: `cos_cutoff` and `cos_outer_cutoff` must be the cosine of the desired angle, in radians.
-//       This is be enforced by the constructor
+//       This is enforced by the constructor
 #[derive(Clone, Copy, Debug)]
 pub struct SpotLight {
     pub color: LightColor,
     pub shadows: ShadowSettings,
-    pub cos_cutoff: f32,
-    pub cos_outer_cutoff: f32,
+    cos_cutoff: cgmath::Rad<f32>,
+    cos_outer_cutoff: cgmath::Rad<f32>,
+    pub projection: ProjectionData,
 }
 
 impl SpotLight {
@@ -220,6 +221,7 @@ impl SpotLight {
         shadows: ShadowSettings,
         cutoff: cgmath::Rad<f32>,
         outer_cutoff: cgmath::Rad<f32>,
+        projection: ProjectionData,
     ) -> Result<Self, LightError> {
         if cutoff > outer_cutoff {
             Err(LightError::SpotLightAngle(cutoff, outer_cutoff))
@@ -227,10 +229,21 @@ impl SpotLight {
             Ok(Self {
                 color,
                 shadows,
-                cos_cutoff: cutoff.cos(),
-                cos_outer_cutoff: outer_cutoff.cos(),
+                cos_cutoff: cgmath::Rad(cutoff.cos()),
+                cos_outer_cutoff: cgmath::Rad(outer_cutoff.cos()),
+                projection,
             })
         }
+    }
+
+    /// Returns the cosine of the cutoff angle of the spot light
+    pub fn cos_cutoff(&self) -> cgmath::Rad<f32> {
+        self.cos_cutoff
+    }
+
+    /// Returns the cosine of the outer cutoff angle of the spot light
+    pub fn cos_outer_cutoff(&self) -> cgmath::Rad<f32> {
+        self.cos_outer_cutoff
     }
 }
 

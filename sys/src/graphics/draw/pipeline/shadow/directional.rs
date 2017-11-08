@@ -7,12 +7,18 @@ use std::path::Path;
 
 use graphics::draw::{types, pipeline};
 use graphics::draw::pipeline::main::geometry_pass;
+use graphics::draw::glsl::Mat4;
 
 gfx_defines! {
     pipeline pipe {
         vbuf: gfx::VertexBuffer<geometry_pass::Vertex> = (),
-        locals: gfx::ConstantBuffer<pipeline::shadow::Locals> = "u_Locals",
+        locals: gfx::ConstantBuffer<Locals> = "u_Locals",
         out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
+    }
+
+    constant Locals {
+        light_space_matrix: Mat4 = "lightSpaceMatrix",
+        model: Mat4 = "model",
     }
 }
 

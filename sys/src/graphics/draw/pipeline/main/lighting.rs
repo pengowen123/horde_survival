@@ -69,6 +69,7 @@ gfx_defines! {
     constant SpotLocals {
         eye_pos: Vec4 = "u_EyePos",
         light_space_matrix: Mat4 = "u_LightSpaceMatrix",
+        far_plane: f32 = "u_FarPlane",
     }
 }
 
@@ -117,8 +118,8 @@ impl SpotLight {
             ambient: light.color.ambient,
             diffuse: light.color.diffuse,
             specular: light.color.specular,
-            cos_cutoff: light.cos_cutoff,
-            cos_outer_cutoff: light.cos_outer_cutoff,
+            cos_cutoff: light.cos_cutoff().0,
+            cos_outer_cutoff: light.cos_outer_cutoff().0,
         }
     }
 }
@@ -228,6 +229,7 @@ create_light_pipeline!(
     new_dir_light,
     DirectionalLight,
     DirectionalLocals,
+    // TODO: Make a border color of 1.0
     (Bilinear, Clamp),
 );
 
@@ -246,5 +248,6 @@ create_light_pipeline!(
     new_spot_light,
     SpotLight,
     SpotLocals,
+    // TODO: Make a border color of 1.0
     (Trilinear, Clamp),
 );
