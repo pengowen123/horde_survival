@@ -52,7 +52,7 @@ where
 
     let physics = Physics::new(body_init, false);
 
-    create_test_entity(world, factory, "floor", [0.0; 3], 15.0, Material::new(32.0)).with(physics);
+    create_test_entity(world, factory, "floor", [0.0; 3], 70.0, Material::new(32.0)).with(physics);
 
     // Create test entities
     {
@@ -63,7 +63,7 @@ where
         //cube([-4.0, 0.0, 5.0], 2.0);
         //cube([2.0, 4.0, 1.0], 2.0);
         //cube([3.0, -1.0, 3.0], 2.0);
-        cube([1.0, 1.0, 3.5], 1.5);
+        cube([5.0, 5.0, 3.5], 1.5);
     }
 
     // Create some lights
@@ -80,7 +80,7 @@ where
                 let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
             };
 
-            //dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
+            dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
         }
 
         // Create point lights
@@ -99,17 +99,26 @@ where
             //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
-            //point_light(-3.0, 7.0, 10.0);
+            point_light(-3.0, 7.0, 10.0);
         }
 
         // Create spot lights
         {
             let mut spot_light = |pos, dir| {
-                let _ =
-                    create_spot_light(world, factory, pos, dir, light_color, Deg(20.0), Deg(27.5));
+                let _ = create_spot_light(
+                    world,
+                    factory,
+                    pos,
+                    dir,
+                    light_color,
+                    LightAttenuation::new(1.0, 0.14, 0.07),
+                    Deg(30.0),
+                    Deg(45.0),
+                );
             };
 
-            spot_light([0.0, 0.0, 10.0], [0.0, 0.0, -1.0]);
+            spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
+            spot_light([16.0, 16.0, 20.0], [-1.0, -1.0, -1.0]);
         }
 
     }
@@ -189,7 +198,7 @@ where
         attenuation,
         ProjectionData::new(
             1.0,
-            25.0,
+            50.0,
         ),
     ))
 }
@@ -200,6 +209,7 @@ fn create_spot_light<'a, R, F>(
     pos: [f64; 3],
     direction: [f64; 3],
     color: LightColor,
+    attenuation: LightAttenuation,
     angle: Deg<f32>,
     outer_angle: Deg<f32>,
 ) -> specs::EntityBuilder<'a>
@@ -216,7 +226,8 @@ where
                 ShadowSettings::Enabled,
                 angle.into(),
                 outer_angle.into(),
-                ProjectionData::new(1.0, 25.0),
+                attenuation,
+                ProjectionData::new(1.0, 50.0),
             ).unwrap(),
         )
         .with(Direction(direction))

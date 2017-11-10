@@ -15,6 +15,7 @@ where
 {
     resource: handle::ShaderResourceView<R, T::View>,
     target: handle::RenderTargetView<R, T>,
+    pub id: usize,
 }
 
 impl<R, T> ViewPair<R, T>
@@ -29,6 +30,7 @@ where
         factory: &mut F,
         width: texture::Size,
         height: texture::Size,
+        id: usize,
     ) -> Result<Self, gfx::CombinedError> {
 
         let (_, srv, rtv) = factory.create_render_target(width, height)?;
@@ -36,6 +38,7 @@ where
         Ok(ViewPair {
             resource: srv,
             target: rtv,
+            id,
         })
     }
 
@@ -48,6 +51,11 @@ where
 /// a texture)
     pub fn srv(&self) -> &handle::ShaderResourceView<R, T::View> {
         &self.resource
+    }
+
+/// Returns this view pair's id
+    pub fn id(&self) -> usize {
+        self.id
     }
 }
 
@@ -66,8 +74,8 @@ impl<R: gfx::Resources> RenderTargets<R> {
         height: texture::Size,
     ) -> Result<Self, gfx::CombinedError> {
 
-        let mut active = ViewPair::new(factory, width, height)?;
-        let mut extra = ViewPair::new(factory, width, height)?;
+        let mut active = ViewPair::new(factory, width, height, 0)?;
+        let mut extra = ViewPair::new(factory, width, height, 1)?;
 
         // This is so the view pair returns by `get_active` returns a render target to write to, and
         // the texture from the other render target to read from
@@ -76,9 +84,20 @@ impl<R: gfx::Resources> RenderTargets<R> {
         Ok(RenderTargets { active, extra })
     }
 
-    /// Returns a reference to the active view paair
+    /// Returns a reference to the active view pair
     pub fn get_active(&self) -> &ViewPair<R, ColorFormat> {
         &self.active
+    }
+
+    /// Sets the provided RTV and SRV to the active pair
+    pub fn use_active(
+        &self,
+        rtv: &mut handle::RenderTargetView<R, ColorFormat>,
+        srv: &mut handle::ShaderResourceView<R, <ColorFormat as format::Formatted>::View>,
+    ) {
+        let pair = self.get_active();
+        *rtv = pair.rtv().clone();
+        *srv = pair.srv().clone();
     }
 
     /// Returns a reference to all render targets, in a tuple

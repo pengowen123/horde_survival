@@ -355,12 +355,10 @@ where
             let light_space_matrix = l.transform;
 
             // Use the active render target
-            {
-                let active = self.render_targets.get_active();
-
-                dir_light.data.target_color.0 = active.srv().clone();
-                dir_light.data.out_color = active.rtv().clone();
-            }
+            self.render_targets.use_active(
+                &mut dir_light.data.out_color,
+                &mut dir_light.data.target_color.0,
+            );
 
             // Clear the shadow map
             encoder.clear_depth(&dir_shadow.data.out_depth, 1.0);
@@ -405,12 +403,10 @@ where
             let transform = l.transform;
 
             // Use the active render target
-            {
-                let active = self.render_targets.get_active();
-
-                point_light.data.target_color.0 = active.srv().clone();
-                point_light.data.out_color = active.rtv().clone();
-            }
+            self.render_targets.use_active(
+                &mut point_light.data.out_color,
+                &mut point_light.data.target_color.0,
+            );
 
             // Clear the shadow map
             encoder.clear_depth(&point_shadow.data.out_depth, 1.0);
@@ -459,12 +455,10 @@ where
             let light_space_matrix = l.transform;
 
             // Use the active render target
-            {
-                let active = self.render_targets.get_active();
-
-                spot_light.data.target_color.0 = active.srv().clone();
-                spot_light.data.out_color = active.rtv().clone();
-            }
+            self.render_targets.use_active(
+                &mut spot_light.data.out_color,
+                &mut spot_light.data.target_color.0,
+            );
 
             // Clear the shadow map
             encoder.clear_depth(&spot_shadow.data.out_depth, 1.0);
@@ -501,13 +495,14 @@ where
             // Swap render targets
             self.render_targets.swap_render_targets();
         }
-
-        // Swap active render targets so the next pipeline gets an unused one
-        self.render_targets.swap_render_targets();
     }
 
     /// Draws the skybox given the `View * Projection` matrix of the camera
     fn draw_skybox(&mut self, camera: Matrix4<f32>) {
+        // The skybox should render to the most recently used target
+        // After drawing the last light, the render targets are swapped. This undoes that swap.
+        self.render_targets.swap_render_targets();
+
         // Use the active render target
         self.pipe_skybox.data.out_color = self.render_targets.get_active().rtv().clone();
 

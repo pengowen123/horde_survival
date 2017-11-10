@@ -40,9 +40,9 @@ impl<R: gfx::Resources> GeometryBuffer<R> {
         // NOTE: Replace this with RGB textures to save memory if necessary
 
         // Create buffers
-        let position = ViewPair::new(factory, width, height)?;
-        let normal = ViewPair::new(factory, width, height)?;
-        let color = ViewPair::new(factory, width, height)?;
+        let position = ViewPair::new(factory, width, height, 2)?;
+        let normal = ViewPair::new(factory, width, height, 3)?;
+        let color = ViewPair::new(factory, width, height, 4)?;
 
         // Create depth target
         let dsv = factory.create_depth_stencil_view_only(width, height)?;

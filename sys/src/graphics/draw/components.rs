@@ -144,6 +144,8 @@ impl ProjectionData {
 /// In order to work, an entity must have the `Spatial` and `Direction` components in addition to
 /// this one. The `Spatial` component will be used for rendering a shadow map from the perspective
 /// of the light if shadows are enabled.
+// FIXME: Allow directional lights to be rendered even with no Spatial component (just don't render
+//        shadows)
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalLight {
     pub color: LightColor,
@@ -206,6 +208,7 @@ pub struct SpotLight {
     pub shadows: ShadowSettings,
     cos_cutoff: cgmath::Rad<f32>,
     cos_outer_cutoff: cgmath::Rad<f32>,
+    pub attenuation: LightAttenuation,
     pub projection: ProjectionData,
 }
 
@@ -221,6 +224,7 @@ impl SpotLight {
         shadows: ShadowSettings,
         cutoff: cgmath::Rad<f32>,
         outer_cutoff: cgmath::Rad<f32>,
+        attenuation: LightAttenuation,
         projection: ProjectionData,
     ) -> Result<Self, LightError> {
         if cutoff > outer_cutoff {
@@ -231,6 +235,7 @@ impl SpotLight {
                 shadows,
                 cos_cutoff: cgmath::Rad(cutoff.cos()),
                 cos_outer_cutoff: cgmath::Rad(outer_cutoff.cos()),
+                attenuation,
                 projection,
             })
         }

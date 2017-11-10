@@ -52,6 +52,10 @@ gfx_defines! {
         diffuse: Vec4 = "diffuse",
         specular: Vec4 = "specular",
 
+        constant: f32 = "constant",
+        linear: f32 = "linear",
+        quadratic: f32 = "quadratic",
+
         cos_cutoff: f32 = "cutOff",
         cos_outer_cutoff: f32 = "outerCutOff",
     }
@@ -118,6 +122,9 @@ impl SpotLight {
             ambient: light.color.ambient,
             diffuse: light.color.diffuse,
             specular: light.color.specular,
+            constant: light.attenuation.constant,
+            linear: light.attenuation.linear,
+            quadratic: light.attenuation.quadratic,
             cos_cutoff: light.cos_cutoff().0,
             cos_outer_cutoff: light.cos_outer_cutoff().0,
         }
@@ -192,15 +199,16 @@ macro_rules! create_light_pipeline {
                 let vbuf = factory.create_vertex_buffer(&vertices);
 
                 // Create texture sampler info
-                let sampler_info =
-                    texture::SamplerInfo::new(texture::FilterMethod::$filtering, texture::WrapMode::$wrap_mode);
+                let sampler_info = texture::SamplerInfo {
+                    border: texture::PackedColor::from([1.0; 4]),
+                    ..texture::SamplerInfo::new(texture::FilterMethod::$filtering, texture::WrapMode::$wrap_mode)
+                };
 
                 let data = $name::Data {
                     vbuf: vbuf,
                     material: factory.create_constant_buffer(1),
                     locals: factory.create_constant_buffer(1),
                     light: factory.create_constant_buffer(1),
-                    // FIXME: This sampler info may cause problems for cubemap shadow map textures
                     shadow_map: (shadow_map, factory.create_sampler(sampler_info)),
                     g_position: (srv_pos, factory.create_sampler(sampler_info)),
                     g_normal: (srv_normal, factory.create_sampler(sampler_info)),
@@ -229,8 +237,7 @@ create_light_pipeline!(
     new_dir_light,
     DirectionalLight,
     DirectionalLocals,
-    // TODO: Make a border color of 1.0
-    (Bilinear, Clamp),
+    (Bilinear, Border),
 );
 
 create_light_pipeline!(
@@ -248,6 +255,5 @@ create_light_pipeline!(
     new_spot_light,
     SpotLight,
     SpotLocals,
-    // TODO: Make a border color of 1.0
     (Trilinear, Clamp),
 );
