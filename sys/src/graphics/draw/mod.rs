@@ -318,7 +318,6 @@ where
 
         let mut spot_locals = lighting::SpotLocals {
             eye_pos,
-            far_plane: 1.0,
             light_space_matrix: cgmath::Matrix4::identity().into(),
         };
 

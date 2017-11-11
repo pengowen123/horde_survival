@@ -73,7 +73,6 @@ gfx_defines! {
     constant SpotLocals {
         eye_pos: Vec4 = "u_EyePos",
         light_space_matrix: Mat4 = "u_LightSpaceMatrix",
-        far_plane: f32 = "u_FarPlane",
     }
 }
 

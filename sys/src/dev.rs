@@ -80,7 +80,7 @@ where
                 let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
             };
 
-            dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
+            //dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
         }
 
         // Create point lights
@@ -99,7 +99,7 @@ where
             //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
-            point_light(-3.0, 7.0, 10.0);
+            //point_light(-3.0, 7.0, 10.0);
         }
 
         // Create spot lights
@@ -111,14 +111,14 @@ where
                     pos,
                     dir,
                     light_color,
-                    LightAttenuation::new(1.0, 0.14, 0.07),
+                    LightAttenuation::new(1.0, 0.0, 0.0),
                     Deg(30.0),
                     Deg(45.0),
                 );
             };
 
-            spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
-            spot_light([16.0, 16.0, 20.0], [-1.0, -1.0, -1.0]);
+            //spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
+            spot_light([0.0, 0.0, 65.0], [0.0, 0.0, -1.0]);
         }
 
     }
