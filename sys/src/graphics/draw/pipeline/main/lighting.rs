@@ -228,8 +228,6 @@ macro_rules! create_light_pipeline {
 // Each pipeline takes in a single light, calculates lighting and shadows for it, and adds the
 // result to the result of the previous iteration
 
-// TODO: Think about sampler info creation settings
-
 create_light_pipeline!(
     pipe_dir_light,
     PipelineDirLight,

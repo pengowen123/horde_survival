@@ -3,12 +3,12 @@
 use nphysics3d::object::{RigidBody, RigidBodyHandle};
 
 /// A function that creates and returns physics body
-pub type BodyInit = Box<Fn() -> RigidBody<::Float> + Send + Sync + 'static>;
+pub type BodyInit = Box<FnMut() -> RigidBody<::Float> + Send + Sync + 'static>;
 
 /// Either a handle to a physics body, or a function to initialize one
 pub enum Handle {
     Body(RigidBodyHandle<::Float>),
-    Init(BodyInit),
+    Init(Option<BodyInit>),
 }
 
 impl Handle {

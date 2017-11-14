@@ -2,22 +2,28 @@
 
 use gfx::traits::FactoryExt;
 use gfx::{self, handle, format};
+use ncollide::shape;
+use na;
 use image_utils;
 use obj;
 use genmesh;
 
 use std::io::{self, BufReader};
 use std::path::Path;
+use std::sync::Arc;
 
 use graphics::draw::{Vertex, Drawable, Material};
 use super::utils;
 
-/// Loads an OBJ file from the provided path, and creates a `Drawable` component from it
-pub fn create_drawable_from_obj_file<R, F>(
+type Polygon = genmesh::Polygon<obj::IndexTuple>;
+
+/// Loads an OBJ file from the provided path, and creates a `Drawable` and `TriMesh` for each object
+/// from it
+pub fn load_obj<R, F>(
     factory: &mut F,
     name: &str,
     material: Material,
-) -> Result<Drawable<R>, ObjError>
+) -> Result<Vec<(Drawable<R>, shape::TriMesh<na::Point3<f64>>)>, ObjError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
@@ -26,42 +32,67 @@ where
     let data = utils::read_bytes(super::get_model_file_path(name, ".obj"))?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
-    let data = obj::Obj::load_buf(&mut buf_reader)?;
+    let obj = obj::Obj::load_buf(&mut buf_reader)?;
 
+    obj.objects
+        .iter()
+        .map(|o| {
+            let vertices = load_object(&obj, o);
+            let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
+
+            let diffuse = load_texture::<_, image_utils::Srgba8, _, _>(
+                factory,
+                &super::get_model_file_path(name, "_diffuse.png"),
+            )?;
+
+            let specular = load_texture::<_, image_utils::Srgba8, _, _>(
+                factory,
+                &super::get_model_file_path(name, "_specular.png"),
+            )?;
+
+            let drawable = Drawable::new(vbuf, slice, diffuse, specular, material);
+
+            let mesh = {
+                let mesh_vertices = vertices
+                    .iter()
+                    .map(|v| {
+                        na::Point3::new(v.pos[0] as f64, v.pos[1] as f64, v.pos[2] as f64)
+                    })
+                    .collect::<Vec<_>>();
+
+                let mesh_indices = (0..mesh_vertices.len())
+                    .map(|i| na::Point3::new(i, i, i))
+                    .collect();
+
+                shape::TriMesh::new(Arc::new(mesh_vertices), Arc::new(mesh_indices), None, None)
+            };
+
+            Ok((drawable, mesh))
+        })
+        .collect()
+}
+
+fn load_object<'a>(obj: &obj::Obj<'a, Polygon>, object: &obj::Object<'a, Polygon>) -> Vec<Vertex> {
     let mut vertices = Vec::new();
 
-    for object in &data.objects {
-        for shape in object.groups.iter().flat_map(|g| g.polys.iter()) {
-            match *shape {
-                genmesh::Polygon::PolyTri(genmesh::Triangle { x: a, y: b, z: c }) => {
-                    for v in &[a, b, c] {
-                        let pos = data.position[v.0];
-                        let uv = v.1.map(|i| data.texture[i]).unwrap_or([0.0; 2]);
-                        let normal = v.2.map(|i| data.normal[i]).unwrap_or([0.0; 3]);
+    for shape in object.groups.iter().flat_map(|g| g.polys.iter()) {
+        match *shape {
+            genmesh::Polygon::PolyTri(genmesh::Triangle { x: a, y: b, z: c }) => {
+                for v in &[a, b, c] {
+                    let pos = obj.position[v.0];
+                    let uv = v.1.map(|i| obj.texture[i]).unwrap_or([0.0; 2]);
+                    let normal = v.2.map(|i| obj.normal[i]).unwrap_or([0.0; 3]);
 
-                        vertices.push(Vertex::new(pos, uv, normal));
-                    }
+                    vertices.push(Vertex::new(pos, uv, normal));
                 }
-                p @ _ => {
-                    println!("unknown polygon: {:?}", p);
-                }
+            }
+            p @ _ => {
+                println!("unknown polygon: {:?}", p);
             }
         }
     }
 
-    let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
-
-    let diffuse = load_texture::<_, image_utils::Srgba8, _, _>(
-        factory,
-        &super::get_model_file_path(name, "_diffuse.png"),
-    )?;
-
-    let specular = load_texture::<_, image_utils::Srgba8, _, _>(
-        factory,
-        &super::get_model_file_path(name, "_specular.png"),
-    )?;
-
-    Ok(Drawable::new(vbuf, slice, diffuse, specular, material))
+    vertices
 }
 
 quick_error! {

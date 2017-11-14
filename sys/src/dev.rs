@@ -5,8 +5,10 @@ use specs;
 use gfx;
 use cgmath::*;
 use na::{self, Translation3};
+use na::geometry::TranslationBase;
 use nphysics3d::object::RigidBody;
-use ncollide::shape::{Cuboid, Plane};
+use nphysics3d::math::Isometry;
+use ncollide::shape::Cuboid;
 
 use graphics::draw::{self, Material};
 use graphics::draw::components::*;
@@ -15,6 +17,7 @@ use physics::components::*;
 use control::Control;
 use assets::obj;
 use math::functions::dir_vec_to_quaternion;
+use math::convert;
 use player;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
@@ -29,9 +32,9 @@ where
         body
     };
 
-    let physics = Physics::new(body_init, true);
+    let physics = Physics::new(Box::new(body_init), true);
     let space = Spatial(Point3::new(0.0, 0.0, 0.0));
-    let direction = Direction(Quaternion::from_angle_y(Deg(0.0)));
+    let direction = Direction::default();
     let control = Control::default();
 
     // Add player entity
@@ -44,26 +47,40 @@ where
         .with(PhysicsTiedPosition)
         .with(player::components::Player);
 
-    // Add a plane to test physics on
-    let body_init = || {
-        let geom = Plane::new(na::Vector3::new(0.0 as ::Float, 0.0, 1.0));
-        RigidBody::new_static(geom, 1.0, 1.0)
-    };
-
-    let physics = Physics::new(body_init, false);
-
-    create_test_entity(world, factory, "floor", [0.0; 3], 70.0, Material::new(32.0)).with(physics);
+    create_test_entity(
+        world,
+        factory,
+        "floor",
+        [0.0; 3],
+        Direction::default(),
+        1.0,
+        Material::new(32.0),
+        Some(GenericProperties(0.0, 100.0)),
+    );
 
     // Create test entities
     {
-        let mut cube = |pos, size| {
-            let _ = create_test_entity(world, factory, "box", pos, size, Material::new(32.0));
+        let mut cube = |pos, size, dir| {
+            let _ = create_test_entity(
+                world,
+                factory,
+                "box",
+                pos,
+                dir,
+                size,
+                Material::new(32.0),
+                Some(GenericProperties(0.0, 100.0)),
+            );
         };
 
-        //cube([-4.0, 0.0, 5.0], 2.0);
-        //cube([2.0, 4.0, 1.0], 2.0);
-        //cube([3.0, -1.0, 3.0], 2.0);
-        cube([5.0, 5.0, 3.5], 1.5);
+        //cube([-4.0, 0.0, 5.0], 2.0, Direction::default());
+        //cube([2.0, 4.0, 1.0], 2.0, Direction::default());
+        //cube([3.0, -1.0, 3.0], 2.0, Direction::default());
+        cube(
+            [5.0, 5.0, 3.5],
+            1.5,
+            Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
+        );
     }
 
     // Create some lights
@@ -111,26 +128,31 @@ where
                     pos,
                     dir,
                     light_color,
-                    LightAttenuation::new(1.0, 0.0, 0.0),
+                    LightAttenuation::new(1.0, 0.14, 0.07),
                     Deg(30.0),
                     Deg(45.0),
                 );
             };
 
-            //spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
-            spot_light([0.0, 0.0, 65.0], [0.0, 0.0, -1.0]);
+            spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
+            //spot_light([0.0, 0.0, 65.0], [0.0, 0.0, -1.0]);
         }
 
     }
 }
+
+#[derive(Clone, Copy)]
+struct GenericProperties(f64, f64);
 
 fn create_test_entity<'a, R, F, P>(
     world: &'a mut specs::World,
     factory: &mut F,
     name: &str,
     pos: P,
+    dir: Direction,
     scale: f32,
     material: Material,
+    properties: Option<GenericProperties>,
 ) -> specs::EntityBuilder<'a>
 where
     R: gfx::Resources,
@@ -140,15 +162,49 @@ where
     let pos = pos.into();
     let space = pos.map(|p| Spatial(Point3::new(p[0], p[1], p[2])));
     let scale = draw::components::Scale(scale);
-    let drawable = obj::create_drawable_from_obj_file(factory, name, material).unwrap();
+    let (drawable, mesh) = obj::load_obj(factory, name, material)
+        .unwrap()
+        .pop()
+        .unwrap();
     let shader_param = draw::ShaderParam::default();
 
-    let mut entity = world.create_entity().with(scale).with(drawable).with(
-        shader_param,
-    );
+    let mut entity = world
+        .create_entity()
+        .with(scale)
+        .with(drawable)
+        .with(shader_param)
+        .with(dir);
 
     if let Some(s) = space {
         entity = entity.with(s);
+    }
+
+    let mut mesh_opt = Some(mesh);
+    if let Some(p) = properties {
+        let body_init = move || {
+            let m = mesh_opt.take().unwrap();
+
+            let pos = if let Some(s) = space {
+                convert::to_na_vector(s.0.to_vec())
+            } else {
+                na::Vector3::zero()
+            };
+
+            let dir = convert::to_na_quaternion(dir.0);
+
+            let mut rb = RigidBody::new_static(m, p.0, p.1);
+
+            let transform = Isometry::from_parts(TranslationBase::from_vector(pos), dir);
+
+            rb.set_transformation(transform);
+
+            rb
+        };
+
+        let physics = Physics::new(Box::new(body_init), false);
+        entity = entity.with(physics).with(PhysicsTiedPosition).with(
+            PhysicsTiedDirection,
+        );
     }
 
     entity
@@ -192,14 +248,20 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    create_test_entity(world, factory, "light", pos, 0.2, Material::new(0.0)).with(PointLight::new(
+    create_test_entity(
+        world,
+        factory,
+        "light",
+        pos,
+        Direction::default(),
+        0.2,
+        Material::new(0.0),
+        None,
+    ).with(PointLight::new(
         color,
         ShadowSettings::Enabled,
         attenuation,
-        ProjectionData::new(
-            1.0,
-            50.0,
-        ),
+        ProjectionData::new(1.0, 50.0),
     ))
 }
 
@@ -219,16 +281,23 @@ where
 {
     let direction = dir_vec_to_quaternion(direction);
 
-    create_test_entity(world, factory, "light", pos, 0.5, Material::new(0.0))
-        .with(
-            SpotLight::new(
-                color,
-                ShadowSettings::Enabled,
-                angle.into(),
-                outer_angle.into(),
-                attenuation,
-                ProjectionData::new(1.0, 50.0),
-            ).unwrap(),
-        )
-        .with(Direction(direction))
+    create_test_entity(
+        world,
+        factory,
+        "light",
+        pos,
+        Direction(direction),
+        0.5,
+        Material::new(0.0),
+        None,
+    ).with(
+        SpotLight::new(
+            color,
+            ShadowSettings::Enabled,
+            angle.into(),
+            outer_angle.into(),
+            attenuation,
+            ProjectionData::new(1.0, 50.0),
+        ).unwrap(),
+    )
 }

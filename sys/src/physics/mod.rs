@@ -34,12 +34,12 @@ impl<'a> specs::System<'a> for System {
         for p in (&mut data.physics).join() {
             let mut new_handle = None;
 
-            match *p.handle() {
-                handle::Handle::Body(_) => {}
-                handle::Handle::Init(ref f) => {
-                    let body = f();
-                    new_handle = Some(self.world.add_rigid_body(body));
-                }
+            if let handle::Handle::Init(ref mut f) = *p.handle_mut() {
+                let mut init = f.take().expect(
+                    "Attempt to initialize physics body multiple times",
+                );
+                let body = init();
+                new_handle = Some(self.world.add_rigid_body(body));
             }
 
             if let Some(handle) = new_handle {
