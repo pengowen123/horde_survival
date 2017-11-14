@@ -11,10 +11,12 @@ use window::info;
 /// Vertical field of view of the camera
 const FOV_Y: f32 = 45.0;
 
-/// Near plane distance for the cull frustum
-const NEAR: f32 = 1.0;
+/// Near plane distance for the camera
+// NOTE: This must not be greater than the near plane value used for light shadows, or instead of
+//       disappearing, close-by objects will appear completely black
+const NEAR: f32 = 0.1;
 
-/// Far plane distance for the cull frustum
+/// Far plane distance for the camera
 const FAR: f32 = 1000.0;
 
 /// Represents a camera in a 3D space
