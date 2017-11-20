@@ -7,13 +7,16 @@ pub mod components;
 pub mod init;
 mod handle;
 mod output;
+mod scale;
 
 use specs::{self, Join};
 use nphysics3d::world::World;
+use nphysics3d::object::{RigidBody, RigidBodyHandle};
 use na;
 
 use physics;
 use delta;
+use graphics::draw::components::Scale;
 
 pub struct System {
     world: World<::Float>,
@@ -23,6 +26,8 @@ pub struct System {
 pub struct Data<'a> {
     physics: specs::WriteStorage<'a, physics::components::Physics>,
     delta: specs::Fetch<'a, delta::Delta>,
+    entities: specs::Entities<'a>,
+    scale: specs::WriteStorage<'a, Scale>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -31,19 +36,40 @@ impl<'a> specs::System<'a> for System {
     fn run(&mut self, mut data: Self::SystemData) {
         let delta = data.delta.to_float();
 
-        for p in (&mut data.physics).join() {
+        for (entity, p) in (&*data.entities, &mut data.physics).join() {
+            // Initialize new entities and add them to the world
             let mut new_handle = None;
-
-            if let handle::Handle::Init(ref mut f) = *p.handle_mut() {
-                let mut init = f.take().expect(
+            if let handle::Handle::Init(ref mut init) = *p.handle_mut() {
+                let mut init = init.take().expect(
                     "Attempt to initialize physics body multiple times",
                 );
-                let body = init();
-                new_handle = Some(self.world.add_rigid_body(body));
+
+                new_handle = Some(self.add_entity(&mut *init));
             }
 
-            if let Some(handle) = new_handle {
-                p.set_handle(handle);
+            if let Some(h) = new_handle {
+                p.set_handle(h);
+            }
+
+            // Apply changes to the scale of entities
+            if let Some(scale) = data.scale.get_mut(entity) {
+                if let Some(old) = scale.get_previous_value() {
+                    let relative_scale = scale.get() / old;
+
+                    let new_handle = {
+                        let rb = p.handle_mut().get_body_mut().expect(
+                            "Found uninitialized handle",
+                        );
+
+                        let new_rb = scale::scale_body(&*rb, relative_scale as ::Float);
+
+                        self.replace_rigid_body(rb, new_rb)
+                    };
+
+                    p.set_handle(new_handle);
+
+                    scale.reset_flag();
+                }
             }
         }
 
@@ -74,6 +100,27 @@ impl<'a> specs::System<'a> for System {
 }
 
 impl System {
+    /// Adds the rigid body provided by the provided initialization function to the physics world,
+    /// and returns a handle to it
+    fn add_entity<F>(&mut self, mut init: F) -> RigidBodyHandle<::Float>
+    where
+        F: FnMut() -> RigidBody<::Float>,
+    {
+        let body = init();
+        self.world.add_rigid_body(body)
+    }
+
+    /// Removes the `old` body with the `new` body in the physics world, and returns a handle to
+    /// the new one
+    fn replace_rigid_body(
+        &mut self,
+        old: &RigidBodyHandle<::Float>,
+        new: RigidBody<::Float>,
+    ) -> RigidBodyHandle<::Float> {
+        self.world.remove_rigid_body(old);
+        self.world.add_rigid_body(new)
+    }
+
     /// Removes physics bodies belonging to entities that were removed
     // TODO: Implement this
     fn remove_dead_bodies(&mut self) {}

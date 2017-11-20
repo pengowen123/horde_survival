@@ -23,7 +23,7 @@ pub fn load_obj<R, F>(
     factory: &mut F,
     name: &str,
     material: Material,
-) -> Result<Vec<(Drawable<R>, shape::TriMesh<na::Point3<f64>>)>, ObjError>
+) -> Result<Vec<(Drawable<R>, shape::TriMesh3<::Float>)>, ObjError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
@@ -53,16 +53,26 @@ where
             let drawable = Drawable::new(vbuf, slice, diffuse, specular, material);
 
             let mesh = {
+                // Collect vertices of the mesh
                 let mesh_vertices = vertices
                     .iter()
                     .map(|v| {
-                        na::Point3::new(v.pos[0] as f64, v.pos[1] as f64, v.pos[2] as f64)
+                        na::Point3::new(
+                            v.pos[0] as ::Float,
+                            v.pos[1] as ::Float,
+                            v.pos[2] as ::Float,
+                        )
                     })
                     .collect::<Vec<_>>();
 
-                let mesh_indices = (0..mesh_vertices.len())
-                    .map(|i| na::Point3::new(i, i, i))
-                    .collect();
+                // Collect indices of the mesh
+                let mut mesh_indices = Vec::new();
+                let mut i = 0;
+
+                while i < mesh_vertices.len() - 1 {
+                    mesh_indices.push(na::Point3::new(i, i + 1, i + 2));
+                    i += 3;
+                }
 
                 shape::TriMesh::new(Arc::new(mesh_vertices), Arc::new(mesh_indices), None, None)
             };

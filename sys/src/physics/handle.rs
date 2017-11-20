@@ -12,6 +12,16 @@ pub enum Handle {
 }
 
 impl Handle {
+    /// Returns the a mutable reference to the physics body if `self` is `Handle::Body`, otherwise
+    /// returns `None`
+    pub fn get_body_mut(&mut self) -> Option<&mut RigidBodyHandle<::Float>> {
+        if let Handle::Body(ref mut rb) = *self {
+            Some(rb)
+        } else {
+            None
+        }
+    }
+
     /// Calls the provided function on the handle if it exists
     pub fn map<F>(&self, f: F)
     where

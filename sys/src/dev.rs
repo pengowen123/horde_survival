@@ -53,7 +53,7 @@ where
         "floor",
         [0.0; 3],
         Direction::default(),
-        1.0,
+        25.0,
         Material::new(32.0),
         Some(GenericProperties(0.0, 100.0)),
     );
@@ -78,7 +78,7 @@ where
         //cube([3.0, -1.0, 3.0], 2.0, Direction::default());
         cube(
             [5.0, 5.0, 3.5],
-            1.5,
+            2.0,
             Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
         );
     }
@@ -93,6 +93,7 @@ where
 
         // Create directional lights
         {
+            #[allow(unused)]
             let mut dir_light = |x, y, z, pos| {
                 let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
             };
@@ -102,6 +103,7 @@ where
 
         // Create point lights
         {
+            #[allow(unused)]
             let mut point_light = |x, y, z| {
                 let _ = create_point_light(
                     world,
@@ -121,6 +123,7 @@ where
 
         // Create spot lights
         {
+            #[allow(unused)]
             let mut spot_light = |pos, dir| {
                 let _ = create_spot_light(
                     world,
@@ -142,7 +145,7 @@ where
 }
 
 #[derive(Clone, Copy)]
-struct GenericProperties(f64, f64);
+struct GenericProperties(::Float, ::Float);
 
 fn create_test_entity<'a, R, F, P>(
     world: &'a mut specs::World,
@@ -161,7 +164,7 @@ where
 {
     let pos = pos.into();
     let space = pos.map(|p| Spatial(Point3::new(p[0], p[1], p[2])));
-    let scale = draw::components::Scale(scale);
+    let scale = draw::components::Scale::new(scale);
     let (drawable, mesh) = obj::load_obj(factory, name, material)
         .unwrap()
         .pop()
@@ -212,8 +215,8 @@ where
 
 fn create_dir_light<'a>(
     world: &'a mut specs::World,
-    direction: [f64; 3],
-    pos: [f64; 3],
+    direction: [::Float; 3],
+    pos: [::Float; 3],
     color: LightColor,
     ortho_size: f32,
 ) -> specs::EntityBuilder<'a> {
@@ -240,7 +243,7 @@ fn create_dir_light<'a>(
 fn create_point_light<'a, R, F>(
     world: &'a mut specs::World,
     factory: &mut F,
-    pos: [f64; 3],
+    pos: [::Float; 3],
     color: LightColor,
     attenuation: LightAttenuation,
 ) -> specs::EntityBuilder<'a>
@@ -268,8 +271,8 @@ where
 fn create_spot_light<'a, R, F>(
     world: &'a mut specs::World,
     factory: &mut F,
-    pos: [f64; 3],
-    direction: [f64; 3],
+    pos: [::Float; 3],
+    direction: [::Float; 3],
     color: LightColor,
     attenuation: LightAttenuation,
     angle: Deg<f32>,

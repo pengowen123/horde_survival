@@ -23,7 +23,7 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         for (s, p) in (&data.scale, &mut data.param).join() {
-            p.scale = cgmath::Matrix4::from_scale(s.0);
+            p.scale = cgmath::Matrix4::from_scale(s.get());
         }
     }
 }

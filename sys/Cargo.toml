@@ -15,8 +15,9 @@ ncollide = "0.11"
 quick-error = "1.2.0"
 rayon = "0.8.2"
 regex = "0.2.2"
-shred = "0.4"
-shred-derive = "0.3"
+shred = "0.5.0"
+shred-derive = "0.3.0"
+specs = "0.10.0"
 time = "0.1.37"
 
 [dependencies.gfx]
@@ -35,9 +36,6 @@ path = "/home/pengowen/forks/nphysics/build/nphysics3d/"
 [dependencies.obj]
 features = ["genmesh"]
 version = "0.8.0"
-
-[dependencies.specs]
-git = "https://github.com/slide-rs/specs"
 
 [dev-dependencies]
 approx = "0.1.1"
