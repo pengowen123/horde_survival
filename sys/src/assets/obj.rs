@@ -65,11 +65,15 @@ where
                     })
                     .collect::<Vec<_>>();
 
+                if mesh_vertices.is_empty() {
+                    return Err(ObjError::EmptyObj);
+                }
+
                 // Collect indices of the mesh
                 let mut mesh_indices = Vec::new();
                 let mut i = 0;
 
-                while i < mesh_vertices.len() - 1 {
+                while i < mesh_vertices.len().checked_sub(1).unwrap() {
                     mesh_indices.push(na::Point3::new(i, i + 1, i + 2));
                     i += 3;
                 }
@@ -116,6 +120,9 @@ quick_error! {
         Texture(err: image_utils::TextureError) {
             display("Texture creation error: {}", err)
             from()
+        }
+        EmptyObj {
+            display("OBJ with no vertices")
         }
     }
 }

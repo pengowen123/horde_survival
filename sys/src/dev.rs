@@ -28,7 +28,7 @@ where
     let body_init = || {
         let geom = Cuboid::new(na::Vector3::new(1.0, 1.0, 2.0));
         let mut body = RigidBody::new_dynamic(geom, 100.0, 0.0, 100.0);
-        body.append_translation(&Translation3::new(0.0, 0.0, 15.0));
+        body.append_translation(&Translation3::new(0.0, 0.0, 100.0));
         body
     };
 
@@ -50,10 +50,10 @@ where
     create_test_entity(
         world,
         factory,
-        "floor",
+        "test_map",
         [0.0; 3],
         Direction::default(),
-        25.0,
+        1.0,
         Material::new(32.0),
         Some(GenericProperties(0.0, 100.0)),
     );
@@ -98,7 +98,7 @@ where
                 let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
             };
 
-            //dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
+            dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
         }
 
         // Create point lights
@@ -137,7 +137,7 @@ where
                 );
             };
 
-            spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
+            //spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
             //spot_light([0.0, 0.0, 65.0], [0.0, 0.0, -1.0]);
         }
 
