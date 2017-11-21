@@ -6,7 +6,7 @@ use ncollide::shape;
 use na;
 use image_utils;
 use obj;
-use genmesh;
+use genmesh::{self, Triangulate};
 
 use std::io::{self, BufReader};
 use std::path::Path;
@@ -89,20 +89,21 @@ where
 fn load_object<'a>(obj: &obj::Obj<'a, Polygon>, object: &obj::Object<'a, Polygon>) -> Vec<Vertex> {
     let mut vertices = Vec::new();
 
-    for shape in object.groups.iter().flat_map(|g| g.polys.iter()) {
-        match *shape {
-            genmesh::Polygon::PolyTri(genmesh::Triangle { x: a, y: b, z: c }) => {
-                for v in &[a, b, c] {
-                    let pos = obj.position[v.0];
-                    let uv = v.1.map(|i| obj.texture[i]).unwrap_or([0.0; 2]);
-                    let normal = v.2.map(|i| obj.normal[i]).unwrap_or([0.0; 3]);
+    // Triangulate the mesh
+    for tri in object
+        .groups
+        .iter()
+        .flat_map(|g| g.polys.iter())
+        .cloned()
+        .triangulate()
+    {
+        // Create vertices from the triangles
+        for v in &[tri.x, tri.y, tri.z] {
+            let pos = obj.position[v.0];
+            let uv = v.1.map(|i| obj.texture[i]).unwrap_or([0.0; 2]);
+            let normal = v.2.map(|i| obj.normal[i]).unwrap_or([1.0; 3]);
 
-                    vertices.push(Vertex::new(pos, uv, normal));
-                }
-            }
-            p @ _ => {
-                println!("unknown polygon: {:?}", p);
-            }
+            vertices.push(Vertex::new(pos, uv, normal));
         }
     }
 
