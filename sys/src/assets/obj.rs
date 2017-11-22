@@ -100,6 +100,7 @@ fn load_object<'a>(obj: &obj::Obj<'a, Polygon>, object: &obj::Object<'a, Polygon
         // Create vertices from the triangles
         for v in &[tri.x, tri.y, tri.z] {
             let pos = obj.position[v.0];
+            let pos = [pos[0], pos[2], pos[1]];
             let uv = v.1.map(|i| obj.texture[i]).unwrap_or([0.0; 2]);
             let normal = v.2.map(|i| obj.normal[i]).unwrap_or([1.0; 3]);
 
