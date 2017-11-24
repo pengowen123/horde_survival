@@ -53,34 +53,34 @@ where
         "test_map",
         [0.0; 3],
         Direction::default(),
-        1.0,
+        25.0,
         Material::new(32.0),
         Some(GenericProperties(0.0, 100.0)),
     );
 
     // Create test entities
     {
-        let mut cube = |pos, size, dir| {
-            let _ = create_test_entity(
-                world,
-                factory,
-                "box",
-                pos,
-                dir,
-                size,
-                Material::new(32.0),
-                Some(GenericProperties(0.0, 100.0)),
-            );
-        };
+        //let mut cube = |pos, size, dir| {
+        //let _ = create_test_entity(
+        //world,
+        //factory,
+        //"box",
+        //pos,
+        //dir,
+        //size,
+        //Material::new(32.0),
+        //Some(GenericProperties(0.0, 100.0)),
+        //);
+        //};
 
         //cube([-4.0, 0.0, 5.0], 2.0, Direction::default());
         //cube([2.0, 4.0, 1.0], 2.0, Direction::default());
         //cube([3.0, -1.0, 3.0], 2.0, Direction::default());
-        cube(
-            [5.0, 5.0, 3.5],
-            2.0,
-            Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
-        );
+        //cube(
+        //[5.0, 5.0, 3.5],
+        //2.0,
+        //Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
+        //);
     }
 
     // Create some lights
@@ -95,7 +95,14 @@ where
         {
             #[allow(unused)]
             let mut dir_light = |x, y, z, pos| {
-                let _ = create_dir_light(world, [x, y, z], pos, light_color, 20.0);
+                let _ = create_dir_light(
+                    world,
+                    [x, y, z],
+                    pos,
+                    light_color,
+                    20.0,
+                    ShadowSettings::Disabled,
+                );
             };
 
             dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
@@ -111,6 +118,7 @@ where
                     [x, y, z],
                     light_color,
                     LightAttenuation::new(1.0, 0.14, 0.07),
+                    ShadowSettings::Enabled,
                 );
             };
 
@@ -134,6 +142,7 @@ where
                     LightAttenuation::new(1.0, 0.14, 0.07),
                     Deg(30.0),
                     Deg(45.0),
+                    ShadowSettings::Enabled,
                 );
             };
 
@@ -219,6 +228,7 @@ fn create_dir_light<'a>(
     pos: [::Float; 3],
     color: LightColor,
     ortho_size: f32,
+    shadow_settings: ShadowSettings,
 ) -> specs::EntityBuilder<'a> {
     let direction = dir_vec_to_quaternion(direction);
 
@@ -226,7 +236,7 @@ fn create_dir_light<'a>(
         .create_entity()
         .with(DirectionalLight::new(
             color,
-            ShadowSettings::Enabled,
+            shadow_settings,
             Ortho {
                 left: -ortho_size,
                 right: ortho_size,
@@ -246,6 +256,7 @@ fn create_point_light<'a, R, F>(
     pos: [::Float; 3],
     color: LightColor,
     attenuation: LightAttenuation,
+    shadow_settings: ShadowSettings,
 ) -> specs::EntityBuilder<'a>
 where
     R: gfx::Resources,
@@ -262,7 +273,7 @@ where
         None,
     ).with(PointLight::new(
         color,
-        ShadowSettings::Enabled,
+        shadow_settings,
         attenuation,
         ProjectionData::new(1.0, 50.0),
     ))
@@ -277,6 +288,7 @@ fn create_spot_light<'a, R, F>(
     attenuation: LightAttenuation,
     angle: Deg<f32>,
     outer_angle: Deg<f32>,
+    shadow_settings: ShadowSettings,
 ) -> specs::EntityBuilder<'a>
 where
     R: gfx::Resources,
@@ -296,7 +308,7 @@ where
     ).with(
         SpotLight::new(
             color,
-            ShadowSettings::Enabled,
+            shadow_settings,
             angle.into(),
             outer_angle.into(),
             attenuation,

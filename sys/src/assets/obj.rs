@@ -100,15 +100,22 @@ fn load_object<'a>(obj: &obj::Obj<'a, Polygon>, object: &obj::Object<'a, Polygon
         // Create vertices from the triangles
         for v in &[tri.x, tri.y, tri.z] {
             let pos = obj.position[v.0];
-            let pos = [pos[0], pos[2], pos[1]];
             let uv = v.1.map(|i| obj.texture[i]).unwrap_or([0.0; 2]);
             let normal = v.2.map(|i| obj.normal[i]).unwrap_or([1.0; 3]);
+
+            let pos = transform_coords(pos);
+            let normal = transform_coords(normal);
 
             vertices.push(Vertex::new(pos, uv, normal));
         }
     }
 
     vertices
+}
+
+/// Applies a transformation to the coordinates to make the in-game model match the view in Blender
+fn transform_coords(arr: [f32; 3]) -> [f32; 3] {
+    [arr[0] * -1.0, arr[2] * -1.0, arr[1]]
 }
 
 quick_error! {
