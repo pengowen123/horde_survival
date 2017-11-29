@@ -198,9 +198,12 @@ macro_rules! create_light_pipeline {
                 let vbuf = factory.create_vertex_buffer(&vertices);
 
                 // Create texture sampler info
-                let sampler_info = texture::SamplerInfo {
+                let sampler_info = texture::SamplerInfo::new(texture::FilterMethod::$filtering,
+                                                             texture::WrapMode::Tile);
+
+                let shadow_sampler_info =  texture::SamplerInfo {
                     border: texture::PackedColor::from([1.0; 4]),
-                    ..texture::SamplerInfo::new(texture::FilterMethod::$filtering, texture::WrapMode::$wrap_mode)
+                    ..texture::SamplerInfo::new(texture::FilterMethod::Scale, texture::WrapMode::$wrap_mode)
                 };
 
                 let data = $name::Data {
@@ -208,7 +211,7 @@ macro_rules! create_light_pipeline {
                     material: factory.create_constant_buffer(1),
                     locals: factory.create_constant_buffer(1),
                     light: factory.create_constant_buffer(1),
-                    shadow_map: (shadow_map, factory.create_sampler(sampler_info)),
+                    shadow_map: (shadow_map, factory.create_sampler(shadow_sampler_info)),
                     g_position: (srv_pos, factory.create_sampler(sampler_info)),
                     g_normal: (srv_normal, factory.create_sampler(sampler_info)),
                     g_color: (srv_color, factory.create_sampler(sampler_info)),
