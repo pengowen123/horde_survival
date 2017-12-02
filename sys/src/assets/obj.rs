@@ -32,90 +32,123 @@ where
     let data = utils::read_bytes(super::get_model_file_path(name, ".obj"))?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
-    let obj = obj::Obj::load_buf(&mut buf_reader)?;
+    let mut obj = obj::Obj::load_buf(&mut buf_reader)?;
+
+    for path in &mut obj.material_libs {
+        *path = super::get_model_file_path(path, "");
+    }
+
+    obj.load_mtls().unwrap();
 
     obj.objects
         .iter()
-        .map(|o| {
-            let vertices = load_object(&obj, o);
-            let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
+        .flat_map(|o| {
+            load_object(&obj, o)
+                .into_iter()
+                .map(|(vertices, diffuse_tex_path)| {
+                    let tex_path = diffuse_tex_path.replace("_diffuse.png", "");
 
-            let diffuse = load_texture::<_, image_utils::Srgba8, _, _>(
-                factory,
-                &super::get_model_file_path(name, "_diffuse.png"),
-            )?;
+                    let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
 
-            let specular = load_texture::<_, image_utils::Srgba8, _, _>(
-                factory,
-                &super::get_model_file_path(name, "_specular.png"),
-            )?;
+                    let diffuse = load_texture::<_, image_utils::Srgba8, _, _>(
+                        factory,
+                        &super::get_model_file_path(&tex_path, "_diffuse.png"),
+                    )?;
 
-            let drawable = Drawable::new(vbuf, slice, diffuse, specular, material);
+                    let specular = load_texture::<_, image_utils::Srgba8, _, _>(
+                        factory,
+                        &super::get_model_file_path(&tex_path, "_specular.png"),
+                    )?;
 
-            let mesh = {
-                // Collect vertices of the mesh
-                let mesh_vertices = vertices
-                    .iter()
-                    .map(|v| {
-                        na::Point3::new(
-                            v.pos[0] as ::Float,
-                            v.pos[1] as ::Float,
-                            v.pos[2] as ::Float,
+                    let drawable = Drawable::new(vbuf, slice, diffuse, specular, material);
+
+                    let mesh = {
+                        // Collect vertices of the mesh
+                        let mesh_vertices = vertices
+                            .iter()
+                            .map(|v| {
+                                na::Point3::new(
+                                    v.pos[0] as ::Float,
+                                    v.pos[1] as ::Float,
+                                    v.pos[2] as ::Float,
+                                )
+                            })
+                            .collect::<Vec<_>>();
+
+                        if mesh_vertices.is_empty() {
+                            return Err(ObjError::EmptyObj);
+                        }
+
+                        // Collect indices of the mesh
+                        let mut mesh_indices = Vec::new();
+                        let mut i = 0;
+
+                        while i < mesh_vertices.len().checked_sub(1).unwrap() {
+                            mesh_indices.push(na::Point3::new(i, i + 1, i + 2));
+                            i += 3;
+                        }
+
+                        shape::TriMesh::new(
+                            Arc::new(mesh_vertices),
+                            Arc::new(mesh_indices),
+                            None,
+                            None,
                         )
-                    })
-                    .collect::<Vec<_>>();
+                    };
 
-                if mesh_vertices.is_empty() {
-                    return Err(ObjError::EmptyObj);
-                }
-
-                // Collect indices of the mesh
-                let mut mesh_indices = Vec::new();
-                let mut i = 0;
-
-                while i < mesh_vertices.len().checked_sub(1).unwrap() {
-                    mesh_indices.push(na::Point3::new(i, i + 1, i + 2));
-                    i += 3;
-                }
-
-                shape::TriMesh::new(Arc::new(mesh_vertices), Arc::new(mesh_indices), None, None)
-            };
-
-            Ok((drawable, mesh))
+                    Ok((drawable, mesh))
+                })
+                // Collecting into a vector then immediately consuming it is necessary to avoid a
+                // re-borrow lifetime error
+                .collect::<Vec<_>>()
+                .into_iter()
         })
         .collect()
 }
 
-fn load_object<'a>(obj: &obj::Obj<'a, Polygon>, object: &obj::Object<'a, Polygon>) -> Vec<Vertex> {
-    let mut vertices = Vec::new();
+// TODO: Use indices instead of cloning data to save memory
+/// Loads the provided object from the `Obj`, and returns a list of tuples containing the vertices
+/// of a mesh and their path
+fn load_object<'a>(
+    obj: &obj::Obj<'a, Polygon>,
+    object: &obj::Object<'a, Polygon>,
+) -> Vec<(Vec<Vertex>, String)> {
+    let mut objects = Vec::new();
 
-    // Triangulate the mesh
-    for tri in object
-        .groups
-        .iter()
-        .flat_map(|g| g.polys.iter())
-        .cloned()
-        .triangulate()
-    {
-        // Create vertices from the triangles
-        for v in &[tri.x, tri.y, tri.z] {
-            let pos = obj.position[v.0];
-            let uv = v.1.map(|i| obj.texture[i]).unwrap_or([0.0; 2]);
-            let normal = v.2.map(|i| obj.normal[i]).unwrap_or([1.0; 3]);
+    // Create an object per group
+    for group in &object.groups {
+        let mut vertices = Vec::new();
 
-            let pos = transform_coords(pos);
-            let normal = transform_coords(normal);
+        for tri in group.polys.iter().cloned().triangulate() {
+            // Create vertices from the triangles
+            for v in &[tri.x, tri.y, tri.z] {
+                let pos = obj.position[v.0];
+                let uv = v.1.map(|i| obj.texture[i]).unwrap_or([0.0; 2]);
+                let normal = v.2.map(|i| obj.normal[i]).unwrap_or([1.0; 3]);
 
-            vertices.push(Vertex::new(pos, uv, normal));
+                let pos = transform_coords(pos);
+                let normal = transform_coords(normal);
+
+                vertices.push(Vertex::new(pos, uv, normal));
+            }
         }
+
+        let material = group.material.as_ref().expect("Missing material");
+
+        objects.push((
+            vertices,
+            material.map_kd.clone().expect(
+                "Material has no diffuse texture",
+            ),
+        ));
     }
 
-    vertices
+    objects
 }
 
 /// Applies a transformation to the coordinates to make the in-game model match the view in Blender
 fn transform_coords(arr: [f32; 3]) -> [f32; 3] {
-    [arr[0] * -1.0, arr[2] * -1.0, arr[1]]
+    [arr[0] * -1.0, arr[2], arr[1]]
 }
 
 quick_error! {

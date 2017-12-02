@@ -53,9 +53,10 @@ where
         "test_map",
         [0.0; 3],
         Direction::default(),
-        25.0,
+        1.0,
         Material::new(32.0),
         Some(GenericProperties(0.0, 100.0)),
+        Box::new(|_| {}),
     );
 
     // Create test entities
@@ -100,7 +101,7 @@ where
                     [x, y, z],
                     pos,
                     light_color,
-                    20.0,
+                    40.0,
                     ShadowSettings::Disabled,
                 );
             };
@@ -119,6 +120,7 @@ where
                     light_color,
                     LightAttenuation::new(1.0, 0.14, 0.07),
                     ShadowSettings::Enabled,
+                    Box::new(|_| {}),
                 );
             };
 
@@ -143,6 +145,7 @@ where
                     Deg(30.0),
                     Deg(45.0),
                     ShadowSettings::Enabled,
+                    Box::new(|_| {}),
                 );
             };
 
@@ -156,6 +159,8 @@ where
 #[derive(Clone, Copy)]
 struct GenericProperties(::Float, ::Float);
 
+type MapEntity = Box<Fn(specs::EntityBuilder)>;
+
 fn create_test_entity<'a, R, F, P>(
     world: &'a mut specs::World,
     factory: &mut F,
@@ -165,8 +170,8 @@ fn create_test_entity<'a, R, F, P>(
     scale: f32,
     material: Material,
     properties: Option<GenericProperties>,
-) -> specs::EntityBuilder<'a>
-where
+    map: MapEntity,
+) where
     R: gfx::Resources,
     F: gfx::Factory<R>,
     P: Into<Option<[::Float; 3]>>,
@@ -174,52 +179,51 @@ where
     let pos = pos.into();
     let space = pos.map(|p| Spatial(Point3::new(p[0], p[1], p[2])));
     let scale = draw::components::Scale::new(scale);
-    let (drawable, mesh) = obj::load_obj(factory, name, material)
-        .unwrap()
-        .pop()
-        .unwrap();
+    let objects = obj::load_obj(factory, name, material).unwrap();
     let shader_param = draw::ShaderParam::default();
 
-    let mut entity = world
-        .create_entity()
-        .with(scale)
-        .with(drawable)
-        .with(shader_param)
-        .with(dir);
+    for (drawable, mesh) in objects {
+        let mut entity = world
+            .create_entity()
+            .with(scale)
+            .with(drawable)
+            .with(shader_param)
+            .with(dir);
 
-    if let Some(s) = space {
-        entity = entity.with(s);
-    }
+        if let Some(s) = space {
+            entity = entity.with(s);
+        }
 
-    let mut mesh_opt = Some(mesh);
-    if let Some(p) = properties {
-        let body_init = move || {
-            let m = mesh_opt.take().unwrap();
+        let mut mesh_opt = Some(mesh);
+        if let Some(p) = properties {
+            let body_init = move || {
+                let m = mesh_opt.take().unwrap();
 
-            let pos = if let Some(s) = space {
-                convert::to_na_vector(s.0.to_vec())
-            } else {
-                na::Vector3::zero()
+                let pos = if let Some(s) = space {
+                    convert::to_na_vector(s.0.to_vec())
+                } else {
+                    na::Vector3::zero()
+                };
+
+                let dir = convert::to_na_quaternion(dir.0);
+
+                let mut rb = RigidBody::new_static(m, p.0, p.1);
+
+                let transform = Isometry::from_parts(TranslationBase::from_vector(pos), dir);
+
+                rb.set_transformation(transform);
+
+                rb
             };
 
-            let dir = convert::to_na_quaternion(dir.0);
+            let physics = Physics::new(Box::new(body_init), false);
+            entity = entity.with(physics).with(PhysicsTiedPosition).with(
+                PhysicsTiedDirection,
+            );
+        }
 
-            let mut rb = RigidBody::new_static(m, p.0, p.1);
-
-            let transform = Isometry::from_parts(TranslationBase::from_vector(pos), dir);
-
-            rb.set_transformation(transform);
-
-            rb
-        };
-
-        let physics = Physics::new(Box::new(body_init), false);
-        entity = entity.with(physics).with(PhysicsTiedPosition).with(
-            PhysicsTiedDirection,
-        );
+        map(entity);
     }
-
-    entity
 }
 
 fn create_dir_light<'a>(
@@ -257,8 +261,8 @@ fn create_point_light<'a, R, F>(
     color: LightColor,
     attenuation: LightAttenuation,
     shadow_settings: ShadowSettings,
-) -> specs::EntityBuilder<'a>
-where
+    map: MapEntity,
+) where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
@@ -271,12 +275,16 @@ where
         0.2,
         Material::new(0.0),
         None,
-    ).with(PointLight::new(
-        color,
-        shadow_settings,
-        attenuation,
-        ProjectionData::new(1.0, 50.0),
-    ))
+        Box::new(move |e| {
+            let e = e.with(PointLight::new(
+                color,
+                shadow_settings,
+                attenuation,
+                ProjectionData::new(1.0, 50.0),
+            ));
+            map(e);
+        }),
+    )
 }
 
 fn create_spot_light<'a, R, F>(
@@ -289,8 +297,8 @@ fn create_spot_light<'a, R, F>(
     angle: Deg<f32>,
     outer_angle: Deg<f32>,
     shadow_settings: ShadowSettings,
-) -> specs::EntityBuilder<'a>
-where
+    map: MapEntity,
+) where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
@@ -305,14 +313,19 @@ where
         0.5,
         Material::new(0.0),
         None,
-    ).with(
-        SpotLight::new(
-            color,
-            shadow_settings,
-            angle.into(),
-            outer_angle.into(),
-            attenuation,
-            ProjectionData::new(1.0, 50.0),
-        ).unwrap(),
-    )
+        Box::new(move |e| {
+            let e = e.with(
+                SpotLight::new(
+                    color,
+                    shadow_settings,
+                    angle.into(),
+                    outer_angle.into(),
+                    attenuation,
+                    ProjectionData::new(1.0, 50.0),
+                ).unwrap(),
+            );
+
+            map(e);
+        }),
+    );
 }

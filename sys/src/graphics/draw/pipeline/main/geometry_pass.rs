@@ -63,7 +63,7 @@ impl<R: gfx::Resources> Pipeline<R> {
         // TODO: maybe enable culling
         let rasterizer = state::Rasterizer {
             //samples: Some(state::MultiSample),
-            //cull_face: state::CullFace::Back,
+            cull_face: state::CullFace::Back,
             ..state::Rasterizer::new_fill()
         };
 
@@ -88,8 +88,10 @@ impl<R: gfx::Resources> Pipeline<R> {
             .unwrap();
 
         // Create texture sampler info
-        let sampler_info =
-            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
+        let sampler_info = texture::SamplerInfo::new(
+            texture::FilterMethod::Anisotropic(8),
+            texture::WrapMode::Tile,
+        );
 
         let data = pipe::Data {
             vbuf: vbuf,
