@@ -1,16 +1,18 @@
-//! Types and functions for dealing with 3d spaces
+//! Components and systems related to the world
 
-// TODO: Replace this module with a small wrapper for a third party library
+pub mod components;
 
-#[macro_use]
-pub mod coords;
-pub mod direction;
-pub mod vector;
-pub mod ray;
-pub mod velocity;
+use specs::{self, DispatcherBuilder};
 
-pub use self::coords::Coords;
-pub use self::direction::*;
-pub use self::vector::*;
-pub use self::ray::Ray;
-pub use self::velocity::Velocity;
+/// Initialization of world-related components and systems
+pub fn init<'a, 'b>(
+    world: &mut specs::World,
+    dispatcher: DispatcherBuilder<'a, 'b>,
+) -> DispatcherBuilder<'a, 'b> {
+
+    // Register components
+    world.register::<components::Spatial>();
+    world.register::<components::Direction>();
+
+    dispatcher
+}

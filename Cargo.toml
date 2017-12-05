@@ -1,34 +1,41 @@
 [package]
-name = "horde_survival"
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+name = "sys"
 version = "0.1.0"
-authors = ["pengowen123 <pengowen816@gmail.com>"]
-
 [dependencies]
-cgmath = "0.12.0"
-image = "0.10.3"
-gfx = "0.12.1"
-gfx_window_glutin = "0.12.0"
-gfx_device_gl = "0.11.2"
-glutin = "0.6.2"
-rand = "0.3"
-log = "0.3"
-log-panics = "1.0.0"
-time = "0.1.35"
-collision = "0.9.0"
-random_choice = "0.3.2"
-shader_version = "0.2.1"
+alga = "0.5.1"
+bitflags = "0.9.1"
+cgmath = "0.14"
+genmesh = "0.5.0"
+glutin = "0.9"
+lazy_static = "0.2.8"
+log = "0.3.8"
+nalgebra = "0.11"
+ncollide = "0.11"
+quick-error = "1.2.0"
+rayon = "0.8.2"
+regex = "0.2.2"
+shred = "0.5.0"
+shred-derive = "0.3.0"
+specs = "0.10.0"
+time = "0.1.37"
 
-[dependencies.conrod]
-version = "0.44.0"
-default-features = false
-features = ["glutin"]
+[dependencies.gfx]
+git = "https://github.com/gfx-rs/gfx"
+
+[dependencies.gfx_window_glutin]
+git = "https://github.com/gfx-rs/gfx"
 
 [dependencies.image_utils]
 path = "image_utils"
 
-[dependencies.clippy]
-version = "*"
-optional = true
+[dependencies.nphysics3d]
+features = ["threadsafe"]
+path = "/home/pengowen/forks/nphysics/build/nphysics3d/"
 
-[features]
-default = []
+[dependencies.obj]
+features = ["genmesh"]
+version = "0.8.0"
+
+[dev-dependencies]
+approx = "0.1.1"

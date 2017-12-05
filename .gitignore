@@ -1,7 +1,6 @@
 target
 *.swp
 *.vi
-*.tdl
 todo
-log.txt
-test_assets/
+assets/
+renderdoc.cfg
