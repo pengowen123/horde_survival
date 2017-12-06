@@ -72,12 +72,12 @@ impl<R: gfx::Resources> Pipeline<R> {
         let cubemap = image_utils::load_cubemap::<_, _, image_utils::Srgba8>(
             factory,
             image_utils::CubemapData {
-                up: &read_bytes(path("/assets/skybox/top.jpg"))?,
-                down: &read_bytes(path("/assets/skybox/bottom.jpg"))?,
-                front: &read_bytes(path("/assets/skybox/front.jpg"))?,
-                back: &read_bytes(path("/assets/skybox/back.jpg"))?,
-                left: &read_bytes(path("/assets/skybox/left.jpg"))?,
-                right: &read_bytes(path("/assets/skybox/right.jpg"))?,
+                up: &read_bytes(path("/test_assets/skybox/top.jpg"))?,
+                down: &read_bytes(path("/test_assets/skybox/bottom.jpg"))?,
+                front: &read_bytes(path("/test_assets/skybox/front.jpg"))?,
+                back: &read_bytes(path("/test_assets/skybox/back.jpg"))?,
+                left: &read_bytes(path("/test_assets/skybox/left.jpg"))?,
+                right: &read_bytes(path("/test_assets/skybox/right.jpg"))?,
             },
             image_utils::JPEG,
         )?;

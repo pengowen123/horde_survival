@@ -2,5 +2,4 @@ target
 *.swp
 *.vi
 todo
-assets/
 renderdoc.cfg
