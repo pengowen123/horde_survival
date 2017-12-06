@@ -2,8 +2,7 @@
 
 use specs::{self, Join};
 use cgmath;
-
-use world;
+use common;
 
 /// A 3D rotation
 pub type Rotation = cgmath::Matrix4<f32>;
@@ -12,7 +11,7 @@ pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    direction: specs::ReadStorage<'a, world::components::Direction>,
+    direction: specs::ReadStorage<'a, common::Direction>,
     param: specs::WriteStorage<'a, super::ShaderParam>,
 }
 

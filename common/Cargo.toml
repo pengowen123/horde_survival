@@ -1,0 +1,8 @@
+[package]
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+name = "common"
+version = "0.1.0"
+
+[dependencies]
+cgmath = "0.15.0"
+specs = "0.10.0"

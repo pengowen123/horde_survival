@@ -9,8 +9,8 @@ pub use self::utils::CameraRotation;
 
 use specs::{self, Join};
 use cgmath::{self, Quaternion, Rotation3, Rad};
+use common;
 
-use world;
 use control;
 use player::components::Player;
 use math::functions;
@@ -87,7 +87,7 @@ pub struct Data<'a> {
     control: specs::WriteStorage<'a, control::Control>,
     // Direction is directly accessed because it is special for the player (it is not tied to
     // physics)
-    direction: specs::WriteStorage<'a, world::components::Direction>,
+    direction: specs::WriteStorage<'a, common::Direction>,
 }
 
 impl<'a> specs::System<'a> for System {

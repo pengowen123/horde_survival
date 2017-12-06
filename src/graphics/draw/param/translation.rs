@@ -4,8 +4,7 @@
 
 use specs::{self, Join};
 use cgmath::{self, EuclideanSpace};
-
-use world;
+use common;
 
 /// A 3D translation
 pub type Translation = cgmath::Matrix4<f32>;
@@ -14,7 +13,7 @@ pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    space: specs::ReadStorage<'a, world::components::Spatial>,
+    space: specs::ReadStorage<'a, common::Position>,
     param: specs::WriteStorage<'a, super::ShaderParam>,
 }
 

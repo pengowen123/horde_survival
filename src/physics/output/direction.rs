@@ -2,7 +2,7 @@
 
 use specs::{self, Join};
 
-use world;
+use common;
 use physics;
 use math::convert;
 
@@ -20,7 +20,7 @@ pub struct System;
 pub struct Data<'a> {
     tie: specs::ReadStorage<'a, PhysicsTiedDirection>,
     physics: specs::ReadStorage<'a, physics::components::Physics>,
-    direction: specs::WriteStorage<'a, world::components::Direction>,
+    direction: specs::WriteStorage<'a, common::Direction>,
 }
 
 impl<'a> specs::System<'a> for System {

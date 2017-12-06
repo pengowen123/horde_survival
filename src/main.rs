@@ -1,5 +1,5 @@
-extern crate sys;
+extern crate horde_survival;
 
 fn main() {
-    sys::run();
+    horde_survival::run();
 }

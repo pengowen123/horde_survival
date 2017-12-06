@@ -1,8 +1,8 @@
 //! A component and system to tie the position of an entity to the position of its physics body
 
 use specs::{self, Join};
+use common;
 
-use world;
 use physics;
 use math::convert;
 
@@ -20,7 +20,7 @@ pub struct System;
 pub struct Data<'a> {
     tie: specs::ReadStorage<'a, PhysicsTiedPosition>,
     physics: specs::ReadStorage<'a, physics::components::Physics>,
-    space: specs::WriteStorage<'a, world::components::Spatial>,
+    space: specs::WriteStorage<'a, common::Position>,
 }
 
 impl<'a> specs::System<'a> for System {

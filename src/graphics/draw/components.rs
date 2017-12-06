@@ -141,10 +141,10 @@ impl ProjectionData {
 
 /// A directional light
 ///
-/// In order to work, an entity must have the `Spatial` and `Direction` components in addition to
-/// this one. The `Spatial` component will be used for rendering a shadow map from the perspective
+/// In order to work, an entity must have the `Position` and `Direction` components in addition to
+/// this one. The `Position` component will be used for rendering a shadow map from the perspective
 /// of the light if shadows are enabled.
-// FIXME: Allow directional lights to be rendered even with no Spatial component (just don't render
+// FIXME: Allow directional lights to be rendered even with no Position component (just don't render
 //        shadows)
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalLight {
@@ -170,7 +170,7 @@ impl DirectionalLight {
 
 /// A point light
 ///
-/// In order to work, an entity must have the `Spatial` component in addition to this one.
+/// In order to work, an entity must have the `Position` component in addition to this one.
 #[derive(Clone, Copy, Debug)]
 pub struct PointLight {
     pub color: LightColor,
@@ -198,7 +198,7 @@ impl PointLight {
 
 /// A spot light
 ///
-/// In order to work, an entity must have the `Direction` and `Spatial` components in addition to
+/// In order to work, an entity must have the `Direction` and `Position` components in addition to
 /// this one.
 // NOTE: `cos_cutoff` and `cos_outer_cutoff` must be the cosine of the desired angle, in radians.
 //       This is enforced by the constructor

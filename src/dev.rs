@@ -9,10 +9,10 @@ use na::geometry::TranslationBase;
 use nphysics3d::object::RigidBody;
 use nphysics3d::math::Isometry;
 use ncollide::shape::Cuboid;
+use common::*;
 
 use graphics::draw::{self, Material};
 use graphics::draw::components::*;
-use world::components::*;
 use physics::components::*;
 use control::Control;
 use assets::obj;
@@ -33,7 +33,7 @@ where
     };
 
     let physics = Physics::new(Box::new(body_init), true);
-    let space = Spatial(Point3::new(0.0, 0.0, 0.0));
+    let space = Position(Point3::new(0.0, 0.0, 0.0));
     let direction = Direction::default();
     let control = Control::default();
 
@@ -177,7 +177,7 @@ fn create_test_entity<'a, R, F, P>(
     P: Into<Option<[::Float; 3]>>,
 {
     let pos = pos.into();
-    let space = pos.map(|p| Spatial(Point3::new(p[0], p[1], p[2])));
+    let space = pos.map(|p| Position(Point3::new(p[0], p[1], p[2])));
     let scale = draw::components::Scale::new(scale);
     let objects = obj::load_obj(factory, name, material).unwrap();
     let shader_param = draw::ShaderParam::default();
@@ -251,7 +251,7 @@ fn create_dir_light<'a>(
             },
         ))
         .with(Direction(direction))
-        .with(Spatial(pos.into()))
+        .with(Position(pos.into()))
 }
 
 fn create_point_light<'a, R, F>(

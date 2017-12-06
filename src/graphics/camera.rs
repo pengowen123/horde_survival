@@ -2,8 +2,8 @@
 
 use specs::{self, ReadStorage, Join};
 use cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
+use common;
 
-use world;
 use math::functions;
 use player::components::Player;
 use window::info;
@@ -97,8 +97,8 @@ pub struct System;
 #[derive(SystemData)]
 pub struct Data<'a> {
     player: ReadStorage<'a, Player>,
-    space: ReadStorage<'a, world::components::Spatial>,
-    direction: ReadStorage<'a, world::components::Direction>,
+    space: ReadStorage<'a, common::Position>,
+    direction: ReadStorage<'a, common::Direction>,
     camera: specs::FetchMut<'a, Camera>,
     window_info: specs::Fetch<'a, info::WindowInfo>,
 }

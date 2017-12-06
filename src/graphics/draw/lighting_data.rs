@@ -8,7 +8,7 @@ use std::sync::mpsc;
 use graphics::draw::pipeline::main::lighting;
 use graphics::draw::pipeline::shadow::traits::{LightTransform, AspectRatio};
 use graphics::draw::components;
-use world::components::{Direction, Spatial};
+use common;
 
 pub struct Light<T: LightTransform> {
     pub light: T::ShaderStruct,
@@ -85,7 +85,7 @@ impl<'a> specs::System<'a> for System {
 
         // Collect all directional light entities
         for (l, d, s) in (&data.dir_light, &data.direction, &data.space).join() {
-            let dir: cgmath::Vector3<f32> = d.into_vector().cast();
+            let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast();
 
             let light = lighting::DirectionalLight::from_components(*l, dir.into());
 
@@ -113,7 +113,7 @@ impl<'a> specs::System<'a> for System {
         // Collect all spot light entities
         for (l, d, s) in (&data.spot_light, &data.direction, &data.space).join() {
             let pos: [f32; 3] = s.0.cast().into();
-            let dir: cgmath::Vector3<f32> = d.into_vector().cast();
+            let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast();
             let light = lighting::SpotLight::from_components(*l, pos, dir.into());
 
             let transform =
@@ -135,8 +135,8 @@ pub struct SystemData<'a> {
     point_light: specs::ReadStorage<'a, components::PointLight>,
     spot_light: specs::ReadStorage<'a, components::SpotLight>,
     // Other light properties
-    direction: specs::ReadStorage<'a, Direction>,
-    space: specs::ReadStorage<'a, Spatial>,
+    direction: specs::ReadStorage<'a, common::Direction>,
+    space: specs::ReadStorage<'a, common::Position>,
 }
 
 

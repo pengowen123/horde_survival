@@ -1,11 +1,11 @@
 [package]
 authors = ["Owen Sanchez <pengowen816@gmail.com>"]
-name = "sys"
+name = "horde_survival"
 version = "0.1.0"
+
 [dependencies]
 alga = "0.5.1"
 bitflags = "0.9.1"
-cgmath = "0.14"
 genmesh = "0.5.0"
 glutin = "0.9"
 lazy_static = "0.2.8"
@@ -17,8 +17,10 @@ rayon = "0.8.2"
 regex = "0.2.2"
 shred = "0.5.0"
 shred-derive = "0.3.0"
-specs = "0.10.0"
 time = "0.1.37"
+
+[dependencies.common]
+path = "common"
 
 [dependencies.gfx]
 git = "https://github.com/gfx-rs/gfx"

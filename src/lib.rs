@@ -1,7 +1,7 @@
 // TODO: Crate docs
 
 // Entity component system
-extern crate specs;
+use common::specs;
 extern crate shred;
 #[macro_use]
 extern crate shred_derive;
@@ -21,7 +21,7 @@ extern crate obj;
 extern crate image_utils;
 
 // Math
-extern crate cgmath;
+use common::cgmath;
 extern crate nalgebra as na;
 extern crate alga;
 
@@ -41,6 +41,9 @@ extern crate regex;
 #[macro_use]
 extern crate lazy_static;
 
+// Common types
+extern crate common;
+
 // Dev dependencies
 #[cfg(test)]
 #[macro_use]
@@ -50,7 +53,6 @@ extern crate approx;
 mod dev;
 
 mod assets;
-mod world;
 mod physics;
 mod math;
 mod delta;
@@ -62,7 +64,7 @@ mod graphics;
 use shred::RunNow;
 
 /// The floating point type used in this crate
-pub type Float = f64;
+use common::Float;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
@@ -71,11 +73,11 @@ pub fn run() {
     let mut world = specs::World::new();
     let dispatcher = specs::DispatcherBuilder::new();
 
-    // Call initialization function of each module (initializes their components and systems)
+    // Call initialization functions (initializes their components and systems)
+    common::register_components(&mut world);
     let (dispatcher, sender) = player::init(&mut world, dispatcher);
     let dispatcher = control::init(&mut world, dispatcher);
     let dispatcher = delta::init(&mut world, dispatcher);
-    let dispatcher = world::init(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::init::init(&mut world, dispatcher);
     let (dispatcher, window, mut events) = graphics::init(&mut world, dispatcher);
 
