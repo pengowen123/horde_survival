@@ -6,9 +6,9 @@ use gfx;
 use cgmath::*;
 use na::{self, Translation3};
 use na::geometry::TranslationBase;
-use nphysics3d::object::RigidBody;
-use nphysics3d::math::Isometry;
-use ncollide::shape::Cuboid;
+use common::nphysics3d::object::RigidBody;
+use common::nphysics3d::math::Isometry;
+use common::ncollide::shape::Cuboid;
 use common::*;
 
 use graphics::draw::{self, Material};
@@ -178,7 +178,7 @@ fn create_test_entity<'a, R, F, P>(
 {
     let pos = pos.into();
     let space = pos.map(|p| Position(Point3::new(p[0], p[1], p[2])));
-    let scale = draw::components::Scale::new(scale);
+    let scale = Scale::new(scale);
     let objects = obj::load_obj(factory, name, material).unwrap();
     let shader_param = draw::ShaderParam::default();
 

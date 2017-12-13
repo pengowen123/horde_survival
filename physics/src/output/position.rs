@@ -3,7 +3,7 @@
 use specs::{self, Join};
 use common;
 
-use physics;
+use components;
 use math::convert;
 
 /// This component acts as a flag to enable the overwriting of an entity's position with the
@@ -19,7 +19,7 @@ pub struct System;
 #[derive(SystemData)]
 pub struct Data<'a> {
     tie: specs::ReadStorage<'a, PhysicsTiedPosition>,
-    physics: specs::ReadStorage<'a, physics::components::Physics>,
+    physics: specs::ReadStorage<'a, components::Physics>,
     space: specs::WriteStorage<'a, common::Position>,
 }
 

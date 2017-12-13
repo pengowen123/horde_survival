@@ -4,20 +4,15 @@ name = "horde_survival"
 version = "0.1.0"
 
 [dependencies]
-alga = "0.5.1"
 bitflags = "0.9.1"
 genmesh = "0.5.0"
 glutin = "0.9"
 lazy_static = "0.2.8"
-log = "0.3.8"
-nalgebra = "0.11"
-ncollide = "0.11"
 quick-error = "1.2.0"
 rayon = "0.8.2"
 regex = "0.2.2"
 shred = "0.5.0"
 shred-derive = "0.3.0"
-time = "0.1.37"
 
 [dependencies.common]
 path = "common"
@@ -31,13 +26,15 @@ git = "https://github.com/gfx-rs/gfx"
 [dependencies.image_utils]
 path = "image_utils"
 
-[dependencies.nphysics3d]
-features = ["threadsafe"]
-path = "/home/pengowen/forks/nphysics/build/nphysics3d/"
+[dependencies.math]
+path = "math"
 
 [dependencies.obj]
 features = ["genmesh"]
 version = "0.8.0"
+
+[dependencies.physics]
+path = "physics"
 
 [dev-dependencies]
 approx = "0.1.1"

@@ -130,7 +130,13 @@ name = "common"
 version = "0.1.0"
 dependencies = [
  "cgmath 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nalgebra 0.11.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ncollide 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nphysics3d 0.6.1 (git+https://github.com/pengowen123/nphysics?branch=horde)",
+ "shred 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "specs 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -407,7 +413,6 @@ dependencies = [
 name = "horde_survival"
 version = "0.1.0"
 dependencies = [
- "alga 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "approx 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "common 0.1.0",
@@ -417,17 +422,14 @@ dependencies = [
  "glutin 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image_utils 0.1.0",
  "lazy_static 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "nalgebra 0.11.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "ncollide 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "nphysics3d 0.6.1",
+ "math 0.1.0",
  "obj 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "physics 0.1.0",
  "quick-error 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rayon 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "shred 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "shred-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.37 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -533,6 +535,14 @@ version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "libc 0.2.24 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "math"
+version = "0.1.0"
+dependencies = [
+ "alga 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "common 0.1.0",
 ]
 
 [[package]]
@@ -685,6 +695,7 @@ dependencies = [
 [[package]]
 name = "nphysics3d"
 version = "0.6.1"
+source = "git+https://github.com/pengowen123/nphysics?branch=horde#ecabfd020052fd1d6554c436daddf194351ff4ad"
 dependencies = [
  "alga 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nalgebra 0.11.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -802,6 +813,15 @@ version = "0.7.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "siphasher 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "physics"
+version = "0.1.0"
+dependencies = [
+ "common 0.1.0",
+ "math 0.1.0",
+ "shred-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1291,6 +1311,7 @@ dependencies = [
 "checksum ncollide_transformation 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "94702c2234664d2e791db33434ebf86871b2fb6d3b32f85148fe69a9344c8d14"
 "checksum ncollide_utils 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "97a92d39f89be3cae42020959af582d8041b3e7acbede6848f49e0fdb1a59a44"
 "checksum nodrop 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)" = "52cd74cd09beba596430cc6e3091b74007169a56246e1262f0ba451ea95117b2"
+"checksum nphysics3d 0.6.1 (git+https://github.com/pengowen123/nphysics?branch=horde)" = "<none>"
 "checksum num-complex 0.1.38 (registry+https://github.com/rust-lang/crates.io-index)" = "412dfc143c56579aa6a22c574e38ddbf724522f1280ae2b257498cccff3fb6af"
 "checksum num-integer 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)" = "d1452e8b06e448a07f0e6ebb0bb1d92b8890eea63288c0b627331d53514d0fba"
 "checksum num-iter 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)" = "7485fcc84f85b4ecd0ea527b14189281cf27d60e583ae65ebc9c088b13dffe01"

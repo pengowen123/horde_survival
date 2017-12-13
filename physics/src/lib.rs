@@ -3,20 +3,25 @@
 //! The physics system internally uses the `nphysics3d` physics engine, so it exists as a wrapper
 //! with components to provide input to the engine, and to read from the results.
 
+extern crate common;
+extern crate math;
+#[macro_use]
+extern crate shred_derive;
+
 pub mod components;
-pub mod init;
+mod init;
 mod handle;
 mod output;
 mod scale;
 
-use specs::{self, Join};
-use nphysics3d::world::World;
-use nphysics3d::object::{RigidBody, RigidBodyHandle};
-use na;
+pub use init::initialize;
 
-use physics;
-use delta;
-use graphics::draw::components::Scale;
+#[allow(unused_imports)]
+use common::shred;
+use common::{Float, Scale, Delta, na, ncollide, nphysics3d};
+use common::specs::{self, Join};
+use common::nphysics3d::world::World;
+use common::nphysics3d::object::{RigidBody, RigidBodyHandle};
 
 pub struct System {
     world: World<::Float>,
@@ -24,8 +29,8 @@ pub struct System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    physics: specs::WriteStorage<'a, physics::components::Physics>,
-    delta: specs::Fetch<'a, delta::Delta>,
+    physics: specs::WriteStorage<'a, components::Physics>,
+    delta: specs::Fetch<'a, Delta>,
     entities: specs::Entities<'a>,
     scale: specs::WriteStorage<'a, Scale>,
 }
@@ -90,8 +95,8 @@ impl<'a> specs::System<'a> for System {
                     let mut h = h.borrow_mut();
 
                     h.set_ang_vel(na::Vector3::new(0.0, 0.0, 0.0));
-                    h.set_rotation(na::UnitQuaternionBase::from_quaternion(
-                        na::QuaternionBase::new(1.0, 0.0, 0.0, 0.0),
+                    h.set_rotation(na::UnitQuaternion::from_quaternion(
+                        na::Quaternion::new(1.0, 0.0, 0.0, 0.0),
                     ));
                 }
             }

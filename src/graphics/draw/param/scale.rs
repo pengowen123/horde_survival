@@ -4,8 +4,7 @@
 
 use specs::{self, Join};
 use cgmath;
-
-use graphics::draw::components;
+use common;
 
 /// A 3D scale
 pub type Scale = cgmath::Matrix4<f32>;
@@ -14,7 +13,7 @@ pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    scale: specs::ReadStorage<'a, components::Scale>,
+    scale: specs::ReadStorage<'a, common::Scale>,
     param: specs::WriteStorage<'a, super::ShaderParam>,
 }
 

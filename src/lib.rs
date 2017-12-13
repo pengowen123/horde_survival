@@ -7,8 +7,7 @@ extern crate shred;
 extern crate shred_derive;
 
 // Physics
-extern crate nphysics3d;
-extern crate ncollide;
+extern crate physics;
 
 // Graphics
 #[macro_use]
@@ -21,17 +20,11 @@ extern crate obj;
 extern crate image_utils;
 
 // Math
-use common::cgmath;
-extern crate nalgebra as na;
-extern crate alga;
-
-// Logging
-#[macro_use]
-extern crate log;
+use common::{na, cgmath};
+extern crate math;
 
 // Misc
 extern crate rayon;
-extern crate time;
 #[macro_use]
 extern crate bitflags;
 #[macro_use]
@@ -53,9 +46,6 @@ extern crate approx;
 mod dev;
 
 mod assets;
-mod physics;
-mod math;
-mod delta;
 mod player;
 mod control;
 mod window;
@@ -74,11 +64,10 @@ pub fn run() {
     let dispatcher = specs::DispatcherBuilder::new();
 
     // Call initialization functions (initializes their components and systems)
-    common::register_components(&mut world);
+    let dispatcher = common::initialize(&mut world, dispatcher);
     let (dispatcher, sender) = player::init(&mut world, dispatcher);
     let dispatcher = control::init(&mut world, dispatcher);
-    let dispatcher = delta::init(&mut world, dispatcher);
-    let (dispatcher, mut physics) = physics::init::init(&mut world, dispatcher);
+    let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);
     let (dispatcher, window, mut events) = graphics::init(&mut world, dispatcher);
 
     // Build the dispatcher

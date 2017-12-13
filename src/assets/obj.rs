@@ -2,7 +2,7 @@
 
 use gfx::traits::FactoryExt;
 use gfx::{self, handle, format};
-use ncollide::shape;
+use common::ncollide::shape;
 use na;
 use image_utils;
 use obj;

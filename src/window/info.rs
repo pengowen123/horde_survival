@@ -3,6 +3,7 @@
 
 use glutin;
 use specs;
+use common;
 
 use super::Window;
 
@@ -41,7 +42,7 @@ pub struct Data<'a> {
     window_info: specs::FetchMut<'a, WindowInfo>,
     window: specs::Fetch<'a, Window>,
     // TODO: remove when a better way of displaying this info is implemented
-    delta: specs::Fetch<'a, ::delta::Delta>,
+    delta: specs::Fetch<'a, common::Delta>,
 }
 
 impl<'a> specs::System<'a> for System {

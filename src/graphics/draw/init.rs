@@ -41,7 +41,6 @@ pub fn init<'a, 'b>(
 
     // Register components
     register_drawable(world, &factory);
-    world.register::<components::Scale>();
     world.register::<components::DirectionalLight>();
     world.register::<components::PointLight>();
     world.register::<components::SpotLight>();

@@ -1,0 +1,10 @@
+[package]
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+name = "math"
+version = "0.1.0"
+
+[dependencies]
+alga = "0.5.1"
+
+[dependencies.common]
+path = "../common"

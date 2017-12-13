@@ -1,6 +1,6 @@
-//! A system to control the delta-time in other, real-time systems
+//! A system to update the delta time
 
-use specs::{self, DispatcherBuilder};
+use specs;
 use time::Duration;
 
 use std::time::Instant;
@@ -20,17 +20,17 @@ impl Delta {
 
 impl Default for Delta {
     fn default() -> Self {
-        Delta(Duration::milliseconds(50))
+        Delta(Duration::milliseconds(16))
     }
 }
 
 /// A system to update the delta time
-pub struct System {
+pub(crate) struct System {
     last_update: Instant,
 }
 
 impl System {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { last_update: Instant::now() }
     }
 }
@@ -44,14 +44,4 @@ impl<'a> specs::System<'a> for System {
         );
         self.last_update = Instant::now();
     }
-}
-
-/// Initializes delta-related components and systems
-pub fn init<'a, 'b>(
-    world: &mut specs::World,
-    dispatcher: DispatcherBuilder<'a, 'b>,
-) -> DispatcherBuilder<'a, 'b> {
-
-    world.add_resource(Delta::default());
-    dispatcher.add(System::new(), "delta-time", &[])
 }

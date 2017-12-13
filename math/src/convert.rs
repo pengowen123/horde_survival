@@ -28,12 +28,7 @@ pub fn to_na_quaternion<T>(quat: cgmath::Quaternion<T>) -> na::UnitQuaternion<T>
 where
     T: Real,
 {
-    na::UnitQuaternion::from_quaternion(na::QuaternionBase::new(
-        quat.s,
-        quat.v.x,
-        quat.v.y,
-        quat.v.z,
-    ))
+    na::UnitQuaternion::from_quaternion(na::Quaternion::new(quat.s, quat.v.x, quat.v.y, quat.v.z))
 }
 
 /// Returns a `nalgebra::Vector3` from the provided `cgmath::Vector3`
