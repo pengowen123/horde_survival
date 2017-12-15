@@ -1,29 +1,22 @@
 //! Controls system to let players control their entity
 
-pub mod event;
-mod input;
-mod utils;
-
-pub use self::input::Direction;
-pub use self::utils::CameraRotation;
-
 use specs::{self, Join};
 use cgmath::{self, Quaternion, Rotation3, Rad};
+use window::player_event::{self, Event};
+use window::input;
 use common;
 
 use control;
-use player::components::Player;
 use math::functions;
-use self::event::Event;
 
 /// A type alias for convenience
 type Euler = cgmath::Euler<Rad<::Float>>;
 
 pub struct System {
     /// Receives events
-    input: event::EventReceiver,
+    input: player_event::EventReceiver,
     /// The rotation to apply to the player entity
-    rotate_direction: Option<CameraRotation>,
+    rotate_direction: Option<player_event::CameraRotation>,
     /// Internally used for clamping the camera controls
     current_direction: Euler,
     /// Input state
@@ -31,7 +24,7 @@ pub struct System {
 }
 
 impl System {
-    pub fn new(input: event::EventReceiver) -> Self {
+    pub fn new(input: player_event::EventReceiver) -> Self {
         Self {
             input: input,
             rotate_direction: None,
@@ -61,7 +54,7 @@ impl System {
     }
 
     /// Applies the provided rotation to the current direction, and returns the new value
-    fn update_direction(&mut self, rot: CameraRotation) -> Quaternion<::Float> {
+    fn update_direction(&mut self, rot: player_event::CameraRotation) -> Quaternion<::Float> {
         let current = &mut self.current_direction;
 
         // The pitch, yaw, and roll values are stored internally
@@ -83,7 +76,7 @@ impl System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    player: specs::ReadStorage<'a, Player>,
+    player: specs::ReadStorage<'a, common::Player>,
     control: specs::WriteStorage<'a, control::Control>,
     // Direction is directly accessed because it is special for the player (it is not tied to
     // physics)

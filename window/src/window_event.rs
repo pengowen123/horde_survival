@@ -1,15 +1,15 @@
 //! Window event processing
 //!
-//! Processes raw window events into higher-level data types and sends them to the event handling
-//! system to be handled
+//! A type that processes raw window events into higher-level data types and sends them to the event
+//! handling system to be handled
 
-use glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState};
-use cgmath;
+use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState};
+use common::cgmath;
 
 use std::sync::mpsc;
 
-use player::control::{CameraRotation, Direction};
-use player::control::event::{Event, EventReceiver};
+use input::Direction;
+use player_event::{Event, EventReceiver, CameraRotation};
 
 /// A type for receiving processed window events
 pub struct ReceiverHub {

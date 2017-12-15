@@ -7,7 +7,7 @@ mod camera;
 use glutin;
 use specs::{self, DispatcherBuilder};
 
-use window::{self, info};
+use window;
 
 /// Initializes graphics-related components and systems
 pub fn init<'a, 'b>(
@@ -20,13 +20,10 @@ pub fn init<'a, 'b>(
     // Add resources
     let (w, h) = window.get_inner_size_pixels().unwrap();
     world.add_resource(camera::Camera::new_default(w as f32 / h as f32));
-    world.add_resource(info::WindowInfo::new(&window));
     world.add_resource(window.clone());
 
     // Add systems
     let dispatcher = dispatcher
-        // This comment is here to stop rustfmt from messing with these lines
-        .add(info::System, "window-info", &[])
         .add(camera::System, "camera", &["window-info"]);
 
     (dispatcher, window, events)

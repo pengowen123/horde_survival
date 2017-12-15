@@ -1,16 +1,21 @@
 //! Properties of the window for use in graphics-related systems, and a system to update a resource
 //! containing those properties
 
-use glutin;
-use specs;
-use common;
+use common::{self, glutin, specs};
 
-use super::Window;
-
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub struct WindowInfo {
     dimensions: (u32, u32),
     aspect_ratio: f32,
+}
+
+impl Default for WindowInfo {
+    fn default() -> Self {
+        Self {
+            dimensions: (100, 100),
+            aspect_ratio: 1.0,
+        }
+    }
 }
 
 impl WindowInfo {
@@ -40,7 +45,7 @@ pub struct System;
 #[derive(SystemData)]
 pub struct Data<'a> {
     window_info: specs::FetchMut<'a, WindowInfo>,
-    window: specs::Fetch<'a, Window>,
+    window: specs::Fetch<'a, ::Window>,
     // TODO: remove when a better way of displaying this info is implemented
     delta: specs::Fetch<'a, common::Delta>,
 }

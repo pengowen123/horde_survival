@@ -5,7 +5,6 @@ use cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
 use common;
 
 use math::functions;
-use player::components::Player;
 use window::info;
 
 /// Vertical field of view of the camera
@@ -96,7 +95,7 @@ pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    player: ReadStorage<'a, Player>,
+    player: ReadStorage<'a, common::Player>,
     space: ReadStorage<'a, common::Position>,
     direction: ReadStorage<'a, common::Direction>,
     camera: specs::FetchMut<'a, Camera>,

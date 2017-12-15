@@ -3,6 +3,15 @@
 use specs;
 use cgmath::{self, Rotation3, InnerSpace};
 
+/// A flag that represents an entity being a player entity
+///
+/// Entities with this component will be controlled by the player.
+///
+/// This components must only exist on one entity (failure to uphold this may cause unexpected
+/// behavior)
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Player;
+
 /// The position of an entity
 #[derive(Clone, Copy, Debug)]
 pub struct Position(pub cgmath::Point3<::Float>);
@@ -78,6 +87,10 @@ impl Default for Direction {
     fn default() -> Self {
         Direction(cgmath::Quaternion::from_angle_y(cgmath::Deg(0.0)))
     }
+}
+
+impl specs::Component for Player {
+    type Storage = specs::NullStorage<Self>;
 }
 
 impl specs::Component for Position {

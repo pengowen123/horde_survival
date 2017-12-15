@@ -13,7 +13,8 @@ extern crate physics;
 #[macro_use]
 extern crate gfx;
 extern crate gfx_window_glutin;
-extern crate glutin;
+use common::glutin;
+extern crate window;
 
 // Assets
 extern crate obj;
@@ -25,8 +26,6 @@ extern crate math;
 
 // Misc
 extern crate rayon;
-#[macro_use]
-extern crate bitflags;
 #[macro_use]
 extern crate quick_error;
 extern crate genmesh;
@@ -48,7 +47,6 @@ mod dev;
 mod assets;
 mod player;
 mod control;
-mod window;
 mod graphics;
 
 use shred::RunNow;
@@ -65,6 +63,7 @@ pub fn run() {
 
     // Call initialization functions (initializes their components and systems)
     let dispatcher = common::initialize(&mut world, dispatcher);
+    let dispatcher = window::initialize(&mut world, dispatcher);
     let (dispatcher, sender) = player::init(&mut world, dispatcher);
     let dispatcher = control::init(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);

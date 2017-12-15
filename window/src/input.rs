@@ -1,6 +1,6 @@
 //! Types for storing input state
 
-use cgmath;
+use common::cgmath;
 
 bitflags! {
     /// A type that stores movement key input state
@@ -18,10 +18,10 @@ impl InputState {
     ///
     /// The angle represents a counter-clockwise rotation
     pub fn get_movement_angle(&self) -> Option<cgmath::Rad<::Float>> {
-        let f = self.contains(FORWARD);
-        let r = self.contains(RIGHT);
-        let b = self.contains(BACKWARD);
-        let l = self.contains(LEFT);
+        let f = self.contains(InputState::FORWARD);
+        let r = self.contains(InputState::RIGHT);
+        let b = self.contains(InputState::BACKWARD);
+        let l = self.contains(InputState::LEFT);
 
         let angle = match (f, r, b, l) {
             // If all keys or no keys are pressed, don't move
@@ -64,8 +64,8 @@ impl InputState {
 /// A movement direction
 #[repr(u8)]
 pub enum Direction {
-    Forward = FORWARD.bits,
-    Right = RIGHT.bits,
-    Backward = BACKWARD.bits,
-    Left = LEFT.bits,
+    Forward = InputState::FORWARD.bits,
+    Right = InputState::RIGHT.bits,
+    Backward = InputState::BACKWARD.bits,
+    Left = InputState::LEFT.bits,
 }

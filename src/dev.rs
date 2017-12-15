@@ -18,7 +18,6 @@ use control::Control;
 use assets::obj;
 use math::functions::dir_vec_to_quaternion;
 use math::convert;
-use player;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
 where
@@ -45,7 +44,7 @@ where
         .with(direction)
         .with(control)
         .with(PhysicsTiedPosition)
-        .with(player::components::Player);
+        .with(Player);
 
     create_test_entity(
         world,

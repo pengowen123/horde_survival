@@ -1,24 +1,19 @@
 //! Components and systems related to the player
 
-pub mod components;
 pub mod control;
 
 use specs::{self, DispatcherBuilder};
 
-use window::event;
+use window::window_event;
 
 /// Initializes player-related components
 pub fn init<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
-) -> (DispatcherBuilder<'a, 'b>, event::SenderHub) {
-
-    // Register components
-    world.register::<components::Player>();
+) -> (DispatcherBuilder<'a, 'b>, window_event::SenderHub) {
 
     // Initialize systems
-
-    let (snd, recv) = event::SenderHub::new();
+    let (snd, recv) = window_event::SenderHub::new();
     let control = control::System::new(recv.into_receiver());
 
     // Add systems

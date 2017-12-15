@@ -1,0 +1,11 @@
+[package]
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+name = "window"
+version = "0.1.0"
+
+[dependencies]
+bitflags = "1.0.1"
+shred-derive = "0.3.0"
+
+[dependencies.common]
+path = "../common"
