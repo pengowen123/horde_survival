@@ -1,25 +1,16 @@
 //! A component and system to tie the position of an entity to the position of its physics body
 
 use specs::{self, Join};
-use common;
+use common::{self, physics};
 
-use components;
 use math::convert;
-
-/// This component acts as a flag to enable the overwriting of an entity's position with the
-/// position of its physics body
-pub struct PhysicsTiedPosition;
-
-impl specs::Component for PhysicsTiedPosition {
-    type Storage = specs::VecStorage<Self>;
-}
 
 pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    tie: specs::ReadStorage<'a, PhysicsTiedPosition>,
-    physics: specs::ReadStorage<'a, components::Physics>,
+    tie: specs::ReadStorage<'a, physics::PhysicsTiedPosition>,
+    physics: specs::ReadStorage<'a, physics::Physics>,
     space: specs::WriteStorage<'a, common::Position>,
 }
 

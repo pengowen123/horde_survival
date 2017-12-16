@@ -3,8 +3,8 @@
 use specs::{self, DispatcherBuilder};
 use nphysics3d;
 use na;
+use common::physics;
 
-use components;
 use output;
 use System;
 
@@ -17,7 +17,7 @@ pub fn initialize<'a, 'b>(
 ) -> (DispatcherBuilder<'a, 'b>, System) {
 
     // Register components
-    world.register::<components::Physics>();
+    world.register::<physics::Physics>();
 
     // Initialize systems
     let mut physics_world = nphysics3d::world::World::new();

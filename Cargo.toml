@@ -15,6 +15,9 @@ shred-derive = "0.3.0"
 [dependencies.common]
 path = "common"
 
+[dependencies.control]
+path = "control"
+
 [dependencies.gfx]
 git = "https://github.com/gfx-rs/gfx"
 

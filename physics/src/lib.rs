@@ -8,9 +8,7 @@ extern crate math;
 #[macro_use]
 extern crate shred_derive;
 
-pub mod components;
 mod init;
-mod handle;
 mod output;
 mod scale;
 
@@ -22,6 +20,7 @@ use common::{Float, Scale, Delta, na, ncollide, nphysics3d};
 use common::specs::{self, Join};
 use common::nphysics3d::world::World;
 use common::nphysics3d::object::{RigidBody, RigidBodyHandle};
+use common::physics;
 
 pub struct System {
     world: World<::Float>,
@@ -29,7 +28,7 @@ pub struct System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    physics: specs::WriteStorage<'a, components::Physics>,
+    physics: specs::WriteStorage<'a, physics::Physics>,
     delta: specs::Fetch<'a, Delta>,
     entities: specs::Entities<'a>,
     scale: specs::WriteStorage<'a, Scale>,
@@ -44,7 +43,7 @@ impl<'a> specs::System<'a> for System {
         for (entity, p) in (&*data.entities, &mut data.physics).join() {
             // Initialize new entities and add them to the world
             let mut new_handle = None;
-            if let handle::Handle::Init(ref mut init) = *p.handle_mut() {
+            if let physics::Handle::Init(ref mut init) = *p.handle_mut() {
                 let mut init = init.take().expect(
                     "Attempt to initialize physics body multiple times",
                 );
@@ -90,7 +89,7 @@ impl<'a> specs::System<'a> for System {
         for p in (&mut data.physics).join() {
             let handle = p.handle();
 
-            if let handle::Handle::Body(ref h) = *handle {
+            if let physics::Handle::Body(ref h) = *handle {
                 if p.lock_rotation() {
                     let mut h = h.borrow_mut();
 

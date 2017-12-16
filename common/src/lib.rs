@@ -39,6 +39,9 @@ pub fn initialize<'a, 'b>(
     world.register::<components::Position>();
     world.register::<components::Direction>();
     world.register::<components::Scale>();
+    world.register::<components::physics::Physics>();
+    world.register::<components::physics::PhysicsTiedPosition>();
+    world.register::<components::physics::PhysicsTiedDirection>();
 
     world.add_resource(Delta::default());
 

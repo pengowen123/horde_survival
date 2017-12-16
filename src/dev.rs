@@ -10,10 +10,10 @@ use common::nphysics3d::object::RigidBody;
 use common::nphysics3d::math::Isometry;
 use common::ncollide::shape::Cuboid;
 use common::*;
+use common::physics::*;
 
 use graphics::draw::{self, Material};
 use graphics::draw::components::*;
-use physics::components::*;
 use control::Control;
 use assets::obj;
 use math::functions::dir_vec_to_quaternion;

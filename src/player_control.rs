@@ -1,12 +1,12 @@
-//! Controls system to let players control their entity
+//! A system that processes input events and controls the player entity
 
-use specs::{self, Join};
+use specs::{self, Join, DispatcherBuilder};
 use cgmath::{self, Quaternion, Rotation3, Rad};
 use window::player_event::{self, Event};
-use window::input;
+use window::{window_event, input};
 use common;
-
 use control;
+
 use math::functions;
 
 /// A type alias for convenience
@@ -107,4 +107,19 @@ impl<'a> specs::System<'a> for System {
             }
         }
     }
+}
+
+/// Initializes the player control system
+pub fn init<'a, 'b>(
+    dispatcher: DispatcherBuilder<'a, 'b>,
+) -> (DispatcherBuilder<'a, 'b>, window_event::SenderHub) {
+
+    // Initialize systems
+    let (snd, recv) = window_event::SenderHub::new();
+    let control = System::new(recv.into_receiver());
+
+    // Add systems
+    let dispatcher = dispatcher.add(control, "player-control", &[]);
+
+    (dispatcher, snd)
 }

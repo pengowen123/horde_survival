@@ -3,11 +3,14 @@
 //! For example, the player control system may write to this component to cause the player entity to
 //! move forward
 
-use specs::{self, DispatcherBuilder, Join};
-use cgmath::{self, Quaternion};
-use na;
+extern crate common;
+#[macro_use]
+extern crate shred_derive;
+extern crate math;
 
-use physics::components;
+use common::specs::{self, DispatcherBuilder, Join};
+use common::cgmath::{self, Quaternion};
+use common::{Float, shred, na, physics};
 use math::convert;
 
 /// Controlled properties of an entity
@@ -68,7 +71,7 @@ pub struct System;
 #[derive(SystemData)]
 pub struct Data<'a> {
     control: specs::WriteStorage<'a, Control>,
-    physics: specs::WriteStorage<'a, components::Physics>,
+    physics: specs::WriteStorage<'a, physics::Physics>,
 }
 
 impl<'a> specs::System<'a> for System {

@@ -2,24 +2,15 @@
 
 use specs::{self, Join};
 
-use common;
-use components;
+use common::{self, physics};
 use math::convert;
-
-/// This component acts as a flag to enable the overwriting of an entity's direction with the
-/// direction of its physics body
-pub struct PhysicsTiedDirection;
-
-impl specs::Component for PhysicsTiedDirection {
-    type Storage = specs::VecStorage<Self>;
-}
 
 pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    tie: specs::ReadStorage<'a, PhysicsTiedDirection>,
-    physics: specs::ReadStorage<'a, components::Physics>,
+    tie: specs::ReadStorage<'a, physics::PhysicsTiedDirection>,
+    physics: specs::ReadStorage<'a, physics::Physics>,
     direction: specs::WriteStorage<'a, common::Direction>,
 }
 

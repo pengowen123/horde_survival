@@ -1,0 +1,13 @@
+[package]
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+name = "control"
+version = "0.1.0"
+
+[dependencies]
+shred-derive = "0.3.0"
+
+[dependencies.common]
+path = "../common"
+
+[dependencies.math]
+path = "../math"

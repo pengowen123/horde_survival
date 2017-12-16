@@ -6,15 +6,11 @@ extern crate shred;
 #[macro_use]
 extern crate shred_derive;
 
-// Physics
-extern crate physics;
-
 // Graphics
 #[macro_use]
 extern crate gfx;
 extern crate gfx_window_glutin;
 use common::glutin;
-extern crate window;
 
 // Assets
 extern crate obj;
@@ -36,6 +32,11 @@ extern crate lazy_static;
 // Common types
 extern crate common;
 
+// Systems
+extern crate physics;
+extern crate window;
+extern crate control;
+
 // Dev dependencies
 #[cfg(test)]
 #[macro_use]
@@ -45,8 +46,7 @@ extern crate approx;
 mod dev;
 
 mod assets;
-mod player;
-mod control;
+mod player_control;
 mod graphics;
 
 use shred::RunNow;
@@ -64,7 +64,7 @@ pub fn run() {
     // Call initialization functions (initializes their components and systems)
     let dispatcher = common::initialize(&mut world, dispatcher);
     let dispatcher = window::initialize(&mut world, dispatcher);
-    let (dispatcher, sender) = player::init(&mut world, dispatcher);
+    let (dispatcher, sender) = player_control::init(dispatcher);
     let dispatcher = control::init(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);
     let (dispatcher, window, mut events) = graphics::init(&mut world, dispatcher);
