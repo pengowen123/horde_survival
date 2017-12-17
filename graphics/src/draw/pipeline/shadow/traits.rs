@@ -1,12 +1,12 @@
 //! Traits for working with shadows for different light types
 
-use cgmath::{self, SquareMatrix, Angle};
+use common::cgmath::{self, SquareMatrix, Angle};
 use gfx::{self, handle};
 use specs::Join;
 
-use graphics::draw::{self, components};
-use graphics::draw::pipeline::main::{lighting, geometry_pass};
-use graphics::draw::pipeline::shadow;
+use draw::{self, components};
+use draw::pipeline::main::{lighting, geometry_pass};
+use draw::pipeline::shadow;
 
 /// The aspect ratio of a render target
 #[derive(Clone, Copy, Debug)]
@@ -110,7 +110,7 @@ impl LightTransform for components::PointLight {
 
     fn get_light_space_transform(&self, data: Self::RequiredData) -> Self::Transform {
 
-        use cgmath::{Matrix4, vec3};
+        use common::cgmath::{Matrix4, vec3};
 
         let (pos, aspect_ratio) = data;
 

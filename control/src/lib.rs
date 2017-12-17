@@ -116,7 +116,7 @@ impl<'a> specs::System<'a> for System {
 }
 
 /// Initialization of control-related systems and components
-pub fn init<'a, 'b>(
+pub fn initialize<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> DispatcherBuilder<'a, 'b> {

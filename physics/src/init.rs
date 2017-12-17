@@ -26,7 +26,7 @@ pub fn initialize<'a, 'b>(
     let system = System { world: physics_world };
 
     // Initialize subsystems
-    let dispatcher = output::init(world, dispatcher);
+    let dispatcher = output::initialize(dispatcher);
 
     (dispatcher, system)
 }

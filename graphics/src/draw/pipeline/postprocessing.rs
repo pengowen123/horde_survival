@@ -5,8 +5,8 @@ use gfx::traits::FactoryExt;
 
 use std::path::Path;
 
-use graphics::draw::{types, utils, pipeline};
-use graphics::draw::glsl::{Vec2, Vec4};
+use draw::{types, utils, pipeline};
+use draw::glsl::{Vec2, Vec4};
 
 gfx_defines! {
     vertex Vertex {

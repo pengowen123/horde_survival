@@ -3,7 +3,7 @@
 /// Gets the translation data from the entity's position
 
 use specs::{self, Join};
-use cgmath::{self, EuclideanSpace};
+use common::cgmath::{self, EuclideanSpace};
 use common;
 
 /// A 3D translation

@@ -4,14 +4,14 @@ pub mod translation;
 pub mod rotation;
 pub mod scale;
 
-use cgmath::{self, One};
+use common::cgmath::{self, One};
 use specs::{self, DispatcherBuilder, Join};
 use gfx;
 
 use self::translation::Translation;
 use self::rotation::Rotation;
 use self::scale::Scale;
-use graphics::draw::components;
+use draw::components;
 
 /// A type that stores all individual parameters to pass the the graphics system
 #[derive(Clone, Copy, Debug)]

@@ -4,12 +4,9 @@ name = "horde_survival"
 version = "0.1.0"
 
 [dependencies]
-genmesh = "0.5.0"
+gfx = "0.16.2"
 lazy_static = "0.2.8"
-quick-error = "1.2.0"
-rayon = "0.8.2"
 regex = "0.2.2"
-shred = "0.5.0"
 shred-derive = "0.3.0"
 
 [dependencies.common]
@@ -18,11 +15,8 @@ path = "common"
 [dependencies.control]
 path = "control"
 
-[dependencies.gfx]
-git = "https://github.com/gfx-rs/gfx"
-
-[dependencies.gfx_window_glutin]
-git = "https://github.com/gfx-rs/gfx"
+[dependencies.graphics]
+path = "graphics"
 
 [dependencies.image_utils]
 path = "image_utils"
@@ -30,15 +24,10 @@ path = "image_utils"
 [dependencies.math]
 path = "math"
 
-[dependencies.obj]
-features = ["genmesh"]
-version = "0.8.0"
-
 [dependencies.physics]
 path = "physics"
 
 [dependencies.window]
 path = "window"
 
-[dev-dependencies]
-approx = "0.1.1"
+[workspace]

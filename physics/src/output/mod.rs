@@ -3,10 +3,9 @@
 pub mod position;
 pub mod direction;
 
-use specs::{self, DispatcherBuilder};
+use specs::DispatcherBuilder;
 
-pub fn init<'a, 'b>(
-    world: &mut specs::World,
+pub fn initialize<'a, 'b>(
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> DispatcherBuilder<'a, 'b> {
     // Add systems

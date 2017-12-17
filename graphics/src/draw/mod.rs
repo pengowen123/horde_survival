@@ -16,7 +16,7 @@ mod lighting_data;
 mod render_target;
 mod glsl;
 
-pub use self::init::init;
+pub use self::init::initialize;
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
 pub use self::pipeline::main::geometry_pass::Vertex;
@@ -26,9 +26,11 @@ pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, handle, texture};
-use glutin::{Window, GlContext};
-use specs::{self, Join};
-use cgmath::{self, Matrix4, SquareMatrix};
+use common::glutin::{Window, GlContext};
+use common::specs::{self, Join};
+use common::cgmath::{self, Matrix4, SquareMatrix};
+use window;
+use assets;
 
 use std::sync::mpsc;
 
@@ -36,9 +38,7 @@ use self::pipeline::{postprocessing, skybox};
 use self::pipeline::main::{self, geometry_pass, lighting};
 use self::pipeline::shadow;
 use self::pipeline::shadow::traits::{LightShadows, AspectRatio};
-use graphics::camera;
-use assets;
-use window;
+use camera;
 
 const CLEAR_COLOR: [f32; 4] = [0.0; 4];
 
@@ -95,7 +95,7 @@ where
     ) -> Self {
 
         // Get the dimensions for all new render targets
-        let (width, height) = window.get_inner_size_pixels().expect(
+        let (width, height) = window.get_inner_size().expect(
             "Failed to get window size",
         );
         let (width, height) = (width as texture::Size, height as texture::Size);

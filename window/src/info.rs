@@ -20,7 +20,7 @@ impl Default for WindowInfo {
 
 impl WindowInfo {
     pub fn new(window: &glutin::Window) -> Self {
-        let dimensions = match window.get_inner_size_pixels() {
+        let dimensions = match window.get_inner_size() {
             Some(d) => d,
             // This should only happen when the window gets closed, so it's okay to return a
             // default value

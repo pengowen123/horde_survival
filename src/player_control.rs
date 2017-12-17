@@ -1,10 +1,10 @@
 //! A system that processes input events and controls the player entity
 
-use specs::{self, Join, DispatcherBuilder};
-use cgmath::{self, Quaternion, Rotation3, Rad};
+use common;
+use common::specs::{self, Join, DispatcherBuilder};
+use common::cgmath::{self, Quaternion, Rotation3, Rad};
 use window::player_event::{self, Event};
 use window::{window_event, input};
-use common;
 use control;
 
 use math::functions;
@@ -110,7 +110,7 @@ impl<'a> specs::System<'a> for System {
 }
 
 /// Initializes the player control system
-pub fn init<'a, 'b>(
+pub fn initialize<'a, 'b>(
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> (DispatcherBuilder<'a, 'b>, window_event::SenderHub) {
 

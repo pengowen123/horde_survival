@@ -3,7 +3,7 @@
 use gfx::traits::FactoryExt;
 use gfx::{self, handle, format};
 use common::ncollide::shape;
-use na;
+use common::na;
 use image_utils;
 use obj;
 use genmesh::{self, Triangulate};
@@ -12,7 +12,7 @@ use std::io::{self, BufReader};
 use std::path::Path;
 use std::sync::Arc;
 
-use graphics::draw::{Vertex, Drawable, Material};
+use draw::{Vertex, Drawable, Material};
 use super::utils;
 
 type Polygon = genmesh::Polygon<obj::IndexTuple>;

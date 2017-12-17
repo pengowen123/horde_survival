@@ -1,9 +1,8 @@
 //! A resource to store the camera, and a system to update it
 
-use specs::{self, ReadStorage, Join};
-use cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
+use common::specs::{self, ReadStorage, Join};
+use common::cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
 use common;
-
 use math::functions;
 use window::info;
 

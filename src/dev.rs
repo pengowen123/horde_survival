@@ -1,23 +1,24 @@
 //! Temporary hacks to set the game up for testing
 //! Will be removed when no longer needed
 
-use specs;
-use gfx;
-use cgmath::*;
-use na::{self, Translation3};
-use na::geometry::TranslationBase;
+extern crate gfx;
+
+use common::specs;
+use common::cgmath::*;
+use common::na::{self, Translation3};
+use common::na::geometry::TranslationBase;
 use common::nphysics3d::object::RigidBody;
 use common::nphysics3d::math::Isometry;
 use common::ncollide::shape::Cuboid;
 use common::*;
 use common::physics::*;
+use math::functions::dir_vec_to_quaternion;
+use math::convert;
+use control::Control;
+use graphics::assets::obj;
 
 use graphics::draw::{self, Material};
 use graphics::draw::components::*;
-use control::Control;
-use assets::obj;
-use math::functions::dir_vec_to_quaternion;
-use math::convert;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
 where

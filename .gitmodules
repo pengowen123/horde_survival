@@ -1,3 +1,3 @@
 [submodule "test_assets"]
-	path = test_assets
+	path = graphics/test_assets
 	url = git@github.com:pengowen123/horde_survival_assets

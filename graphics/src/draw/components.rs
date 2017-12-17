@@ -2,7 +2,7 @@
 
 use specs;
 use gfx;
-use cgmath::{self, Angle};
+use common::cgmath::{self, Angle};
 
 use super::param;
 use super::pipeline::main::{geometry_pass, lighting};

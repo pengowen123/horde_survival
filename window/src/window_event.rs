@@ -39,12 +39,12 @@ impl SenderHub {
     /// Processes the provided window event, sending the process version to the event handler
     pub fn process_window_event(&self, window: &glutin::Window, event: WindowEvent) {
         match event {
-            WindowEvent::MouseMoved {
+            WindowEvent::CursorMoved {
                 device_id: _,
                 position: (x, y),
             } => {
                 // TODO: Refactor this to make this code cleaner
-                let (w, h) = match window.get_inner_size_pixels() {
+                let (w, h) = match window.get_inner_size() {
                     Some(s) => s,
                     None => return,
                 };

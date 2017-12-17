@@ -4,8 +4,6 @@ name = "image_utils"
 version = "0.1.0"
 
 [dependencies]
+gfx = "0.16.2"
 image = "0.14.0"
 quick-error = "1.2.0"
-
-[dependencies.gfx]
-git = "https://github.com/gfx-rs/gfx"

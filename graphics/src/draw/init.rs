@@ -1,19 +1,21 @@
 //! Initialization of the rendering system
 
 use specs::{self, DispatcherBuilder};
-use glutin::{self, EventsLoop, GlContext};
+use common::glutin::{self, EventsLoop, GlContext};
 use gfx_window_glutin;
 use gfx;
+use window;
 
 use std::sync::Arc;
 
-use window;
 use super::{param, components, lighting_data};
 
+use gfx_device_gl;
 /// Initializes rendering-related components and systems
-pub fn init<'a, 'b>(
+pub fn initialize<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
+    init_test_entities: Box<Fn(&mut specs::World, &mut gfx_device_gl::Factory)>,
 ) -> (DispatcherBuilder<'a, 'b>, window::Window, EventsLoop) {
 
     // Initialize window settings
@@ -28,7 +30,7 @@ pub fn init<'a, 'b>(
     let (window, device, mut factory, main_color, _) =
         gfx_window_glutin::init::<super::ColorFormat, super::DepthFormat>(
             window_builder,
-            context_builder,
+             context_builder,
             &events,
         );
 
@@ -53,7 +55,7 @@ pub fn init<'a, 'b>(
     // TODO: Remove this when the game has a better initialization system
     // NOTE: This line must come after registering all required components; move it around to
     //       satisfy this as needed
-    ::dev::add_test_entities(world, &mut factory);
+   init_test_entities(world, &mut factory);
 
     // Initialize systems
     let draw = super::System::new(factory, &*window, device, main_color, encoder, (

@@ -2,8 +2,8 @@
 
 use gfx::{self, texture, handle};
 
-use graphics::draw::types;
-use graphics::draw::render_target::ViewPair;
+use draw::types;
+use draw::render_target::ViewPair;
 
 /// A geometry buffer
 ///

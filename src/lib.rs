@@ -1,57 +1,22 @@
 // TODO: Crate docs
 
-// Entity component system
-use common::specs;
-extern crate shred;
 #[macro_use]
 extern crate shred_derive;
-
-// Graphics
-#[macro_use]
-extern crate gfx;
-extern crate gfx_window_glutin;
-use common::glutin;
-
-// Assets
-extern crate obj;
-extern crate image_utils;
-
-// Math
-use common::{na, cgmath};
-extern crate math;
-
-// Misc
-extern crate rayon;
-#[macro_use]
-extern crate quick_error;
-extern crate genmesh;
-extern crate regex;
-#[macro_use]
-extern crate lazy_static;
-
-// Common types
 extern crate common;
-
-// Systems
+extern crate math;
 extern crate physics;
 extern crate window;
 extern crate control;
-
-// Dev dependencies
-#[cfg(test)]
-#[macro_use]
-extern crate approx;
+extern crate graphics;
 
 // TODO: Remove when no longer needed
 mod dev;
 
-mod assets;
 mod player_control;
-mod graphics;
 
-use shred::RunNow;
+use common::{specs, glutin};
+use common::shred::{self, RunNow};
 
-/// The floating point type used in this crate
 use common::Float;
 
 // TODO: Docs
@@ -64,10 +29,11 @@ pub fn run() {
     // Call initialization functions (initializes their components and systems)
     let dispatcher = common::initialize(&mut world, dispatcher);
     let dispatcher = window::initialize(&mut world, dispatcher);
-    let (dispatcher, sender) = player_control::init(dispatcher);
-    let dispatcher = control::init(&mut world, dispatcher);
+    let (dispatcher, sender) = player_control::initialize(dispatcher);
+    let dispatcher = control::initialize(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);
-    let (dispatcher, window, mut events) = graphics::init(&mut world, dispatcher);
+    let (dispatcher, window, mut events) = graphics::initialize(&mut world, dispatcher,
+                                                                Box::new(dev::add_test_entities));
 
     // Build the dispatcher
     let mut dispatcher = dispatcher.build();
@@ -81,7 +47,7 @@ pub fn run() {
         events.poll_events(|e| match e {
             glutin::Event::WindowEvent { event, .. } => {
                 // Collect the latest mouse event
-                if let glutin::WindowEvent::MouseMoved { .. } = event {
+                if let glutin::WindowEvent::CursorMoved { .. } = event {
                     latest_mouse_move = Some(event);
                     return;
                 // Test if `Escape` was pressed, and if so, end the event loop

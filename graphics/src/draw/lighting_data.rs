@@ -1,14 +1,14 @@
 //! A system to collect light info from all light entities
 
-use specs::{self, Join, DispatcherBuilder};
-use cgmath;
+use common::specs::{self, Join, DispatcherBuilder};
+use common::cgmath;
+use common;
 
 use std::sync::mpsc;
 
-use graphics::draw::pipeline::main::lighting;
-use graphics::draw::pipeline::shadow::traits::{LightTransform, AspectRatio};
-use graphics::draw::components;
-use common;
+use draw::pipeline::main::lighting;
+use draw::pipeline::shadow::traits::{LightTransform, AspectRatio};
+use draw::components;
 
 pub struct Light<T: LightTransform> {
     pub light: T::ShaderStruct,

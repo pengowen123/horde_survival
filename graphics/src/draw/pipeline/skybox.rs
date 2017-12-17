@@ -3,12 +3,12 @@
 use gfx::{self, state, handle, format};
 use gfx::traits::FactoryExt;
 use image_utils;
+use assets::read_bytes;
 
 use std::path::Path;
 
-use graphics::draw::{types, utils, pipeline};
-use graphics::draw::glsl::{Vec3, Vec4, Mat4};
-use assets::read_bytes;
+use draw::{types, utils, pipeline};
+use draw::glsl::{Vec3, Vec4, Mat4};
 
 gfx_defines! {
     vertex Vertex {

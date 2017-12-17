@@ -3,8 +3,7 @@
 /// Gets the scale data from the entity's `Scale` component
 
 use specs::{self, Join};
-use cgmath;
-use common;
+use common::{self, cgmath};
 
 /// A 3D scale
 pub type Scale = cgmath::Matrix4<f32>;

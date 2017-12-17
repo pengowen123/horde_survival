@@ -7,8 +7,8 @@ use gfx::traits::FactoryExt;
 
 use std::path::Path;
 
-use graphics::draw::{pipeline, types, components, utils};
-use graphics::draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
+use draw::{pipeline, types, components, utils};
+use draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
 use super::gbuffer;
 
 gfx_defines! {

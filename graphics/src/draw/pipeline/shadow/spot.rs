@@ -5,9 +5,9 @@ use gfx::traits::FactoryExt;
 
 use std::path::Path;
 
-use graphics::draw::{types, pipeline};
-use graphics::draw::glsl::Mat4;
-use graphics::draw::pipeline::main::geometry_pass;
+use draw::{types, pipeline};
+use draw::glsl::Mat4;
+use draw::pipeline::main::geometry_pass;
 
 gfx_defines! {
     constant Locals {
