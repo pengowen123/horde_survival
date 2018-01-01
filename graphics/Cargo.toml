@@ -29,3 +29,6 @@ version = "0.8.0"
 
 [dependencies.window]
 path = "../window"
+
+[dependencies.rendergraph]
+path = "rendergraph"

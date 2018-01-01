@@ -3,6 +3,7 @@
 #[macro_use]
 extern crate gfx;
 extern crate gfx_window_glutin;
+extern crate rendergraph;
 #[macro_use]
 extern crate quick_error;
 #[macro_use]

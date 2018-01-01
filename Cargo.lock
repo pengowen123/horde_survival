@@ -475,6 +475,7 @@ dependencies = [
  "obj 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "quick-error 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rendergraph 0.1.0",
  "shred-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "window 0.1.0",
 ]
@@ -1001,6 +1002,17 @@ dependencies = [
 name = "regex-syntax"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "rendergraph"
+version = "0.1.0"
+dependencies = [
+ "cgmath 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gfx 0.16.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gfx_window_glutin 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "glutin 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "shred 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "rustc-serialize"
