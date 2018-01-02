@@ -1,4 +1,6 @@
-use gfx::{self, format, handle};
+//! A `GraphBuilder` type that is used to build a `RenderGraph`
+
+use gfx::{self, handle};
 use shred::{self, Resources};
 use glutin;
 
@@ -9,16 +11,17 @@ use std::sync::Arc;
 use super::pass::Pass;
 use super::RenderGraph;
 
-pub type MainColor<R> = handle::RenderTargetView<R, format::Srgba8>;
-pub type MainDepth<R> = handle::DepthStencilView<R, format::DepthStencil>;
-
+/// An error while accessing the output of a pass
 #[derive(Debug)]
 pub enum PassOutputError {
+    /// The output of a pass was not found. The `String` is the name of the pass.
     NotFound(String),
+    /// The output of a pass was found, but it did not have the requested type.
     DowncastError,
 }
 
-pub struct GraphBuilder<'a, R, C, F>
+/// A `GraphBuilder`
+pub struct GraphBuilder<'a, R, C, F, CF, DF>
 where R: gfx::Resources,
       C: gfx::CommandBuffer<R> + 'a,
       F: gfx::Factory<R> + 'a,
@@ -27,55 +30,59 @@ where R: gfx::Resources,
     pass_outputs: HashMap<String, Box<Any>>,
     resources: Resources,
     factory: &'a mut F,
-    encoder: gfx::Encoder<R, C>,
-    main_color: MainColor<R>,
-    main_depth: MainDepth<R>,
+    main_color: handle::RenderTargetView<R, CF>,
+    main_depth: handle::DepthStencilView<R, DF>,
 }
 
-impl<'a, R, C, F> GraphBuilder<'a, R, C, F>
+impl<'a, R, C, F, CF, DF> GraphBuilder<'a, R, C, F, CF, DF>
 where R: gfx::Resources,
       C: gfx::CommandBuffer<R>,
       F: gfx::Factory<R>,
 {
+    /// Returns a new `GraphBuilder`, using `factory` to create resources, and `main_color` and
+    /// `main_depth` as the main targets (these should be acquired from a backend crate such as
+    /// `gfx_window_glutin`).
     pub fn new(
         factory: &'a mut F,
-        encoder: gfx::Encoder<R, C>,
-        main_color: MainColor<R>,
-        main_depth: MainDepth<R>,
+        main_color: handle::RenderTargetView<R, CF>,
+        main_depth: handle::DepthStencilView<R, DF>,
     ) -> Self {
         Self {
             passes: Vec::new(),
             pass_outputs: HashMap::new(),
             factory,
-            encoder,
             resources: Resources::new(),
             main_color,
             main_depth,
         }
     }
 
-    pub fn add_pass<P, S, O>(&mut self, name: S, pass: P, pass_output: O)
-        where P: Pass<R, C> + 'static,
-              S: Into<String>,
+    /// Adds the output of a pass for other passes to use
+    pub fn add_pass_output<P, S, O>(&mut self, name: S, pass_output: O)
+        where S: Into<String>,
               O: Any
     {
-        self.add_pass_no_output(pass);
-
         let pass_output: Box<O> = pass_output.into();
         self.pass_outputs.insert(name.into(), pass_output);
     }
 
-    pub fn add_pass_no_output<P>(&mut self, pass: P)
+    /// Adds the provided pass to the `GraphBuilder`
+    pub fn add_pass<P>(&mut self, pass: P)
         where P: Pass<R, C> + 'static,
     {
         let pass: Box<P> = pass.into();
         self.passes.push(pass);
     }
 
+    /// Adds the resource to the `GraphBuilder`
     pub fn add_resource<Res: shred::Resource>(&mut self, resource: Res) {
         self.resources.add(resource);
     }
 
+    /// Returns the resource with the provided name
+    ///
+    /// If the resource does not exist or it doesn't have the expected type, an error is returned
+    /// instead.
     pub fn get_pass_output<T: 'static>(&self, name: &str) -> Result<&T, PassOutputError> {
         self.pass_outputs
             .get(name)
@@ -83,29 +90,31 @@ where R: gfx::Resources,
             .and_then(|o| o.downcast_ref().ok_or(PassOutputError::DowncastError))
     }
 
-    pub fn main_color(&self) -> &MainColor<R> {
+    /// Returns a reference to the window's color output
+    pub fn main_color(&self) -> &handle::RenderTargetView<R, CF> {
         &self.main_color
     }
 
-    pub fn main_depth(&self) -> &MainDepth<R> {
+    /// Returns a reference to the window's depth output
+    pub fn main_depth(&self) -> &handle::DepthStencilView<R, DF> {
         &self.main_depth
     }
 
+    /// Returns a mutable reference to the factory for resource creation
     pub fn factory(&mut self) -> &mut F {
         &mut self.factory
     }
 
-    pub fn encoder(&mut self) -> &mut gfx::Encoder<R, C> {
-        &mut self.encoder
-    }
-
+    /// Builds the `RenderGraph`, using the `GraphBuilder` and some additional types needed for
+    /// executing passes
     pub fn build<D>(
         self,
         device: D,
+        encoder: gfx::Encoder<R, C>,
         window: Arc<glutin::GlWindow>
     ) -> RenderGraph<R, C, D>
         where D: gfx::Device<Resources = R, CommandBuffer = C>
     {
-        RenderGraph::new(self.passes, self.resources, self.encoder, device, window)
+        RenderGraph::new(self.passes, self.resources, encoder, device, window)
     }
 }
