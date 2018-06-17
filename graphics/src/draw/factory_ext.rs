@@ -1,7 +1,7 @@
 //! Extensions to the `Factory` trait from `gfx`.
 
-use gfx::{self, texture, format, memory, handle, Factory, RENDER_TARGET, DEPTH_STENCIL,
-          SHADER_RESOURCE};
+use gfx::{self, texture, format, memory, handle, Factory};
+use gfx::memory::Bind;
 
 pub trait FactoryExtension<R: gfx::Resources>: Factory<R> {
     /// Creates a render target with the provided anti-aliasing mode enabled
@@ -28,7 +28,7 @@ pub trait FactoryExtension<R: gfx::Resources>: Factory<R> {
         let texture = self.create_texture(
             kind,
             levels,
-            SHADER_RESOURCE | RENDER_TARGET,
+            Bind::SHADER_RESOURCE | Bind::RENDER_TARGET,
             memory::Usage::Data,
             Some(channel_type),
         )?;
@@ -63,7 +63,7 @@ pub trait FactoryExtension<R: gfx::Resources>: Factory<R> {
         let texture = self.create_texture(
             kind,
             levels,
-            SHADER_RESOURCE | DEPTH_STENCIL,
+            Bind::SHADER_RESOURCE | Bind::DEPTH_STENCIL,
             memory::Usage::Data,
             Some(channel_type),
         )?;
@@ -87,7 +87,7 @@ pub trait FactoryExtension<R: gfx::Resources>: Factory<R> {
         // Get texture info
         let kind = texture::Kind::Cube(size);
         let levels = 1;
-        let bind = gfx::DEPTH_STENCIL | gfx::SHADER_RESOURCE;
+        let bind = Bind::DEPTH_STENCIL | Bind::SHADER_RESOURCE;
         let channel_type = <DF::Channel as format::ChannelTyped>::get_channel_type();
 
         // Create texture

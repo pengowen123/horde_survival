@@ -8,6 +8,7 @@ use std::mem;
 pub type ColorFormat = format::Rgba8;
 
 /// A render target and a view of that target as a texture
+#[derive(Clone)]
 pub struct ViewPair<R, T>
 where
     R: gfx::Resources,

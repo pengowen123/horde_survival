@@ -2,10 +2,12 @@
 
 // NOTE: This crate is standalone for compile time reasons
 
+extern crate common;
 extern crate image;
-extern crate gfx;
 #[macro_use]
 extern crate quick_error;
+
+use common::gfx;
 
 use gfx::{texture, format};
 use gfx::handle::ShaderResourceView;
@@ -54,7 +56,7 @@ where
     );
 
     factory
-        .create_texture_immutable_u8::<CF>(kind, &[data])
+        .create_texture_immutable_u8::<CF>(kind, texture::Mipmap::Allocated, &[data])
         .map(|(_, view)| view)
 }
 
@@ -109,7 +111,7 @@ where
 
     let kind = texture::Kind::Cube(images[0].dimensions().0 as u16);
 
-    let texture = factory.create_texture_immutable_u8::<CF>(kind, &data[..])?;
+    let texture = factory.create_texture_immutable_u8::<CF>(kind, texture::Mipmap::Allocated, &data[..])?;
 
     Ok(texture.1)
 }

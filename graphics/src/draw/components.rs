@@ -4,17 +4,20 @@ use specs;
 use gfx;
 use common::cgmath::{self, Angle};
 
+use std::sync::Arc;
+
 use super::param;
-use super::pipeline::main::{geometry_pass, lighting};
+use super::passes::main::{geometry_pass, lighting};
 use super::types::{TextureView, VertexBuffer};
 
 /// A component that stores the information needed to draw an entity
+#[derive(Clone)]
 pub struct Drawable<R: gfx::Resources> {
     vertex_buffer: VertexBuffer<R, geometry_pass::Vertex>,
     diffuse: TextureView<R>,
     specular: TextureView<R>,
-    material: lighting::Material,
     slice: gfx::Slice<R>,
+    material: lighting::Material,
     param: param::ShaderParam,
 }
 
@@ -27,7 +30,7 @@ impl<R: gfx::Resources> Drawable<R> {
         specular: TextureView<R>,
         material: lighting::Material,
     ) -> Self {
-        Self {
+        Drawable {
             vertex_buffer,
             slice,
             diffuse,

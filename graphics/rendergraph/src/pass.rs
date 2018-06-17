@@ -17,6 +17,16 @@ where R: gfx::Resources,
     setup: SetupFn<R, C, F, CF, DF>,
 }
 
+impl<R, C, F, CF, DF> From<SetupFn<R, C, F, CF, DF>> for PassSetup<R, C, F, CF, DF>
+where R: gfx::Resources,
+      C: gfx::CommandBuffer<R>,
+      F: gfx::Factory<R>,
+{
+    fn from(setup: SetupFn<R, C, F, CF, DF>) -> Self {
+        Self { setup }
+    }
+}
+
 impl<R, C, F, CF, DF> PassSetup<R, C, F, CF, DF>
 where R: gfx::Resources,
       C: gfx::CommandBuffer<R>,
@@ -24,7 +34,7 @@ where R: gfx::Resources,
 {
     /// Returns a new `PassSetup` that will use the provided setup function
     pub fn new(setup: SetupFn<R, C, F, CF, DF>) -> Self {
-        Self { setup }
+        setup.into()
     }
 
     /// Calls the contained setup function, adding passes and resources to the `GraphBuilder`

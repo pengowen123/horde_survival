@@ -6,9 +6,10 @@ use gfx_window_glutin;
 use gfx;
 use window;
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use super::{param, components, lighting_data};
+use camera;
 
 use gfx_device_gl;
 /// Initializes rendering-related components and systems
@@ -19,18 +20,20 @@ pub fn initialize<'a, 'b>(
 ) -> (DispatcherBuilder<'a, 'b>, window::Window, EventsLoop) {
 
     // Initialize window settings
-    let (w, h) = (800, 600);
     let events = EventsLoop::new();
     let context_builder = glutin::ContextBuilder::new();
-    let window_builder = glutin::WindowBuilder::new()
-        .with_title("Horde Survival")
-        .with_min_dimensions(w, h);
+    let window_builder = {
+        let (w, h) = (800, 600);
+        glutin::WindowBuilder::new()
+            .with_title("Horde Survival")
+            .with_min_dimensions(w, h)
+    };
 
     // Initialize gfx structs
-    let (window, device, mut factory, main_color, _) =
+    let (window, device, mut factory, main_color, main_depth) =
         gfx_window_glutin::init::<super::ColorFormat, super::DepthFormat>(
             window_builder,
-             context_builder,
+            context_builder,
             &events,
         );
 
@@ -55,13 +58,23 @@ pub fn initialize<'a, 'b>(
     // TODO: Remove this when the game has a better initialization system
     // NOTE: This line must come after registering all required components; move it around to
     //       satisfy this as needed
-   init_test_entities(world, &mut factory);
+    init_test_entities(world, &mut factory);
 
     // Initialize systems
-    let draw = super::System::new(factory, &*window, device, main_color, encoder, (
-        point_send,
-        spot_send,
-    ));
+    let camera = world.read_resource::<Arc<Mutex<camera::Camera>>>().clone();
+    let lighting_data = world.read_resource::<Arc<Mutex<lighting_data::LightingData>>>().clone();
+
+    let draw = super::System::new(
+            factory,
+            window.clone(),
+            device,
+            main_color,
+            main_depth,
+            encoder,
+            (point_send, spot_send),
+            camera,
+            lighting_data,
+    );
 
     // Add systems
     let dispatcher = dispatcher

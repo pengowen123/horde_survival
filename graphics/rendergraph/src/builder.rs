@@ -1,23 +1,57 @@
 //! A `GraphBuilder` type that is used to build a `RenderGraph`
 
 use gfx::{self, handle};
-use shred::{self, Resources};
+use shred::{self, Resources, ResourceId};
 use glutin;
 
 use std::collections::HashMap;
 use std::any::Any;
 use std::sync::Arc;
+use std::fmt;
 
 use super::pass::Pass;
 use super::RenderGraph;
 
 /// An error while accessing the output of a pass
 #[derive(Debug)]
-pub enum PassOutputError {
-    /// The output of a pass was not found. The `String` is the name of the pass.
-    NotFound(String),
-    /// The output of a pass was found, but it did not have the requested type.
+pub struct PassOutputError {
+    name: String,
+    kind: PassOutputErrorKind,
+}
+
+impl PassOutputError {
+    /// Returns a new `PassOutputError`, with the provided name and kind
+    pub fn new(name: String, kind: PassOutputErrorKind) -> Self {
+        Self {
+            name,
+            kind,
+        }
+    }
+
+    /// Returns the name of the pass
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+#[derive(Debug)]
+/// The kind of of `PassOutputError`
+pub enum PassOutputErrorKind {
+    /// The output of a pass was not found
+    NotFound,
+    /// The output of a pass was found, but it did not have the requested type
     DowncastError,
+}
+
+impl fmt::Display for PassOutputError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.kind {
+            PassOutputErrorKind::NotFound =>
+                writeln!(f, "The output of the pass `{}` was not found", self.name),
+            PassOutputErrorKind::DowncastError =>
+                writeln!(f, "The output of the pass `{}` was not of the expected type", self.name),
+        }
+    }
 }
 
 /// A `GraphBuilder`
@@ -58,7 +92,7 @@ where R: gfx::Resources,
     }
 
     /// Adds the output of a pass for other passes to use
-    pub fn add_pass_output<P, S, O>(&mut self, name: S, pass_output: O)
+    pub fn add_pass_output<S, O>(&mut self, name: S, pass_output: O)
         where S: Into<String>,
               O: Any
     {
@@ -76,7 +110,21 @@ where R: gfx::Resources,
 
     /// Adds the resource to the `GraphBuilder`
     pub fn add_resource<Res: shred::Resource>(&mut self, resource: Res) {
-        self.resources.add(resource);
+        if self.resources.has_value(ResourceId::new::<Res>()) {
+            *self.resources.fetch_mut::<Res>(0) = resource;
+        } else {
+            self.resources.add(resource);
+        }
+    }
+
+    /// Returns a reference to the `GraphBuilder`'s resources
+    pub fn get_resources(&self) -> &Resources {
+        &self.resources
+    }
+
+    /// Returns a mutable reference to the `GraphBuilder`'s resources
+    pub fn get_mut_resources(&mut self) -> &mut Resources {
+        &mut self.resources
     }
 
     /// Returns the resource with the provided name
@@ -86,8 +134,12 @@ where R: gfx::Resources,
     pub fn get_pass_output<T: 'static>(&self, name: &str) -> Result<&T, PassOutputError> {
         self.pass_outputs
             .get(name)
-            .ok_or(PassOutputError::NotFound(name.to_string()))
-            .and_then(|o| o.downcast_ref().ok_or(PassOutputError::DowncastError))
+            .ok_or(PassOutputError::new(name.to_string(), PassOutputErrorKind::NotFound))
+            .and_then(|o| {
+                o.downcast_ref()
+                    .ok_or(PassOutputError::new(name.to_string(),
+                                                PassOutputErrorKind::DowncastError))
+            })
     }
 
     /// Returns a reference to the window's color output

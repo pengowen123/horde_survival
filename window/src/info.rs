@@ -35,6 +35,10 @@ impl WindowInfo {
         }
     }
 
+    pub fn dimensions(&self) -> (u32, u32) {
+        self.dimensions
+    }
+
     pub fn aspect_ratio(&self) -> f32 {
         self.aspect_ratio
     }

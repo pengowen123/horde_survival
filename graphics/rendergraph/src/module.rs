@@ -29,8 +29,10 @@ where R: gfx::Resources,
     /// Adds the provided pass to the `Module`
     ///
     /// The pass will not be setup until `Module::setup_passes` is run.
-    pub fn add_pass(mut self, pass: PassSetup<R, C, F, CF, DF>) -> Self {
-        self.passes.push(pass);
+    pub fn add_pass<P>(mut self, pass: P) -> Self
+        where P: Into<PassSetup<R, C, F, CF, DF>>
+    {
+        self.passes.push(pass.into());
         self
     }
 

@@ -14,6 +14,9 @@ pub extern crate nphysics3d;
 
 // Graphics
 pub extern crate glutin;
+pub extern crate gfx;
+pub extern crate gfx_window_glutin;
+pub extern crate gfx_device_gl;
 
 // Misc
 pub extern crate time;

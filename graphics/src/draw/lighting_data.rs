@@ -1,13 +1,15 @@
 //! A system to collect light info from all light entities
 
 use common::specs::{self, Join, DispatcherBuilder};
-use common::cgmath;
+use common::cgmath::{self, Point3, Matrix4, SquareMatrix, EuclideanSpace};
 use common;
 
-use std::sync::mpsc;
+use std::sync::{Arc, Mutex, mpsc};
+use std::vec::Drain;
 
-use draw::pipeline::main::lighting;
-use draw::pipeline::shadow::traits::{LightTransform, AspectRatio};
+use draw::passes::main::lighting;
+use draw::passes::shadow::traits::{LightTransform, PointLightTransform};
+use draw::types::AspectRatio;
 use draw::components;
 
 pub struct Light<T: LightTransform> {
@@ -39,16 +41,47 @@ pub struct LightingData {
 }
 
 impl LightingData {
-    pub fn dir_lights(&self) -> &[Light<components::DirectionalLight>] {
-        &self.dir_lights
+    pub fn take_dir_lights(&mut self) -> Drain<Light<components::DirectionalLight>> {
+        self.dir_lights.drain(0..)
     }
 
-    pub fn point_lights(&self) -> &[Light<components::PointLight>] {
-        &self.point_lights
+    pub fn take_point_lights(&mut self) -> Drain<Light<components::PointLight>> {
+        self.point_lights.drain(0..)
     }
 
-    pub fn spot_lights(&self) -> &[Light<components::SpotLight>] {
-        &self.spot_lights
+    pub fn take_spot_lights(&mut self) -> Drain<Light<components::SpotLight>> {
+        self.spot_lights.drain(0..)
+    }
+
+    pub fn reset_dir_lights(&mut self) {
+        for _ in 0..lighting::MAX_DIR_LIGHTS {
+            self.dir_lights.push(Light::new(
+                    Default::default(),
+                    components::ShadowSettings::Disabled,
+                    Matrix4::identity()));
+        }
+    }
+    
+    pub fn reset_point_lights(&mut self) {
+        for _ in 0..lighting::MAX_POINT_LIGHTS {
+            self.point_lights.push(Light::new(
+                    Default::default(),
+                    components::ShadowSettings::Disabled,
+                    PointLightTransform {
+                        matrices: [Matrix4::identity(); 6],
+                        light_pos: Point3::origin(),
+                        far_plane: 1.0,
+                    }));
+        }
+    }
+    
+    pub fn reset_spot_lights(&mut self) {
+        for _ in 0..lighting::MAX_SPOT_LIGHTS {
+            self.spot_lights.push(Light::new(
+                    Default::default(),
+                    components::ShadowSettings::Disabled,
+                    Matrix4::identity()));
+        }
     }
 }
 
@@ -74,7 +107,7 @@ impl<'a> specs::System<'a> for System {
     type SystemData = SystemData<'a>;
 
     fn run(&mut self, data: Self::SystemData) {
-        let mut light_info = data.light_info;
+        let mut light_info = data.light_info.lock().unwrap();
 
         self.update_shadow_map_aspect_ratios();
 
@@ -130,7 +163,7 @@ impl<'a> specs::System<'a> for System {
 
 #[derive(SystemData)]
 pub struct SystemData<'a> {
-    light_info: specs::FetchMut<'a, LightingData>,
+    light_info: specs::FetchMut<'a, Arc<Mutex<LightingData>>>,
     dir_light: specs::ReadStorage<'a, components::DirectionalLight>,
     point_light: specs::ReadStorage<'a, components::PointLight>,
     spot_light: specs::ReadStorage<'a, components::SpotLight>,
@@ -139,7 +172,6 @@ pub struct SystemData<'a> {
     space: specs::ReadStorage<'a, common::Position>,
 }
 
-
 /// Initializes the lighting data system
 pub fn init<'a, 'b>(
     world: &mut specs::World,
@@ -147,7 +179,7 @@ pub fn init<'a, 'b>(
 ) -> (DispatcherBuilder<'a, 'b>, mpsc::Sender<AspectRatio>, mpsc::Sender<AspectRatio>) {
 
     // Add resources
-    world.add_resource(LightingData::default());
+    world.add_resource(Arc::new(Mutex::new(LightingData::default())));
 
     let (point_send, point_recv) = mpsc::channel();
     let (spot_send, spot_recv) = mpsc::channel();

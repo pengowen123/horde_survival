@@ -2,17 +2,15 @@
 
 #![deny(missing_docs)]
 
-extern crate gfx;
-extern crate gfx_window_glutin;
-extern crate glutin;
-extern crate cgmath;
-extern crate shred;
+extern crate common;
+
+use common::{glutin, shred, gfx};
 
 pub mod pass;
 pub mod module;
 pub mod builder;
 
-use shred::Resources;
+use shred::{Resources, ResourceId};
 use glutin::GlContext;
 
 use std::sync::Arc;
@@ -55,17 +53,22 @@ impl<R, C, D> RenderGraph<R, C, D>
 
     /// Adds a resource of any type to the `RenderGraph`, making it available to passes
     pub fn add_resource<Res: shred::Resource>(&mut self, resource: Res) {
-        self.resources.add(resource);
+        if self.resources.has_value(ResourceId::new::<Res>()) {
+            *self.resources.fetch_mut::<Res>(0) = resource;
+        } else {
+            self.resources.add(resource);
+        }
     }
 
     /// Executes all passes in the `RenderGraph`
     pub fn execute_passes(&mut self) {
+        self.device.cleanup();
+
         for pass in &mut self.passes {
             pass.execute_pass(&mut self.encoder, &mut self.resources)
         }
 
         self.encoder.flush(&mut self.device);
         self.window.swap_buffers().expect("Failed to swap buffers");
-        self.device.cleanup();
     }
 }

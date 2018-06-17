@@ -1,9 +1,7 @@
 //! Temporary hacks to set the game up for testing
 //! Will be removed when no longer needed
 
-extern crate gfx;
-
-use common::specs;
+use common::{specs, gfx};
 use common::cgmath::*;
 use common::na::{self, Translation3};
 use common::na::geometry::TranslationBase;

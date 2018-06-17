@@ -68,25 +68,3 @@ where
         f([1.0, -1.0, 1.0]),
     ]
 }
-
-/// Clears all render targets if `COLOR` is the first argument. Clears all depth targets if `DEPTH`
-/// is the first argument. This macro can only be used in a method on `draw::System`.
-///
-/// # Examples
-///
-/// This will use `self.encoder` to clear the depth of `data.depth`, and `other_data.depth`:
-/// ```rust
-/// clear_targets!(DEPTH, self, data.depth, other_data.depth);
-/// ```
-macro_rules! clear_targets {
-    (COLOR, $self_:ident, $($target:expr),*,) => {
-        $(
-            $self_.encoder.clear(&$target, CLEAR_COLOR);
-        )*
-    };
-    (DEPTH, $self_:ident, $($target:expr),*,) => {
-        $(
-            $self_.encoder.clear_depth(&$target, 1.0);
-        )*
-    }
-}

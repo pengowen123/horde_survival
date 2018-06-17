@@ -34,6 +34,8 @@ impl System {
     }
 
     fn check_input(&mut self) {
+        self.rotate_direction = None;
+
         while let Ok(e) = self.input.try_recv() {
             match e {
                 Event::RotateCamera(rot) => self.rotate_direction = Some(rot),

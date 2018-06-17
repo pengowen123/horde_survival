@@ -6,12 +6,15 @@ use common;
 use math::functions;
 use window::info;
 
+use std::sync::{Arc, Mutex};
+
 /// Vertical field of view of the camera
 const FOV_Y: f32 = 45.0;
 
 /// Near plane distance for the camera
 // NOTE: This must not be greater than the near plane value used for light shadows, or instead of
 //       disappearing, close-by objects will appear completely black
+// TODO: Just set the shadow near plane to this, and the above constraint will always be met
 const NEAR: f32 = 0.1;
 
 /// Far plane distance for the camera
@@ -69,18 +72,11 @@ impl Camera {
         self.view
     }
 
-    /// Calculates the `view * projection` matrix for the skybox camera
-    ///
-    /// This matrix has translation removed because the skybox should stay centered on the camera.
-    /// It is also rotated to account for coordinate space differences.
-    pub fn skybox_camera(&self) -> cgmath::Matrix4<f32> {
-        // Remove the translation
-        let mut view = functions::remove_translation(self.view);
-        // Rotate the camera
-        view = view * cgmath::Matrix4::from_angle_x(cgmath::Deg(90.0));
-
-        // Create the camera matrix
-        self.proj * view
+    /// Calculates the `view` matrix for the skybox camera
+    /// 
+    /// It is rotated to account for coordinate space differences.
+    pub fn skybox_view(&self) -> cgmath::Matrix4<f32> {
+        self.view * cgmath::Matrix4::from_angle_x(cgmath::Deg(90.0))
     }
 
     /// Returns the eye position
@@ -97,18 +93,18 @@ pub struct Data<'a> {
     player: ReadStorage<'a, common::Player>,
     space: ReadStorage<'a, common::Position>,
     direction: ReadStorage<'a, common::Direction>,
-    camera: specs::FetchMut<'a, Camera>,
+    camera: specs::FetchMut<'a, Arc<Mutex<Camera>>>,
     window_info: specs::Fetch<'a, info::WindowInfo>,
 }
 
 impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
-    fn run(&mut self, mut data: Self::SystemData) {
+    fn run(&mut self, data: Self::SystemData) {
         for (s, d, _) in (&data.space, &data.direction, &data.player).join() {
-            *data.camera = Camera::new(
+            *data.camera.lock().unwrap() = Camera::new(
                 s.0.cast(),
-                cgmath::Quaternion::from_sv(d.0.s as f32, d.0.v.cast()),
+                d.0.cast(),
                 data.window_info.aspect_ratio(),
             );
         }

@@ -41,6 +41,7 @@ impl SenderHub {
         match event {
             WindowEvent::CursorMoved {
                 device_id: _,
+                modifiers: _,
                 position: (x, y),
             } => {
                 // TODO: Refactor this to make this code cleaner
@@ -63,7 +64,7 @@ impl SenderHub {
                 let diff_yaw = -diff_yaw;
                 // Pitch control is also inverted
                 let diff_pitch = -diff_pitch;
-
+                
                 let rot_pitch = diff_pitch as ::Float * sensitivity;
                 let rot_yaw = diff_yaw as ::Float * sensitivity;
                 let camera_rot = CameraRotation::new(cgmath::Rad(rot_pitch), cgmath::Rad(rot_yaw));

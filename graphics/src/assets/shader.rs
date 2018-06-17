@@ -1,4 +1,4 @@
-//! Shader loading
+//! Shader loading and preprocessing
 
 use regex::bytes::{Regex, Replacer, Captures};
 
@@ -10,19 +10,23 @@ use super::utils;
 
 const MAX_RECURSION_DEPTH: usize = 32;
 
+/// A wrapper for `std::io::Error` that includes the file path
+#[derive(Debug)]
+pub struct IoError(String, io::Error);
+
 quick_error! {
     /// An error while loading a shader from a file
     #[derive(Debug)]
     pub enum ShaderLoadingError {
-        Io(err: io::Error) {
-            display("Io error: {}", err)
+        Io(err: IoError) {
+            display("Io error while reading `{}`: {}", err.0, err.1)
             from()
         }
         MaxIncludeRecursion {
             display("Maximum recursion depth reached while processing `#include` directives")
         }
         Utf8(err: FromUtf8Error) {
-            display("Shader contained invalid Utf8")
+            display("Shader name contained invalid Utf8: {}", err)
             from()
         }
     }
@@ -40,7 +44,8 @@ fn load_shader_file_impl(path: &Path, recurses: usize) -> Result<Vec<u8>, Shader
         return Err(ShaderLoadingError::MaxIncludeRecursion);
     }
 
-    let bytes = utils::read_bytes(path)?;
+    let bytes = utils::read_bytes(path)
+        .map_err(|err| ShaderLoadingError::Io(IoError(path.to_str().unwrap().to_string(), err)))?;
 
     lazy_static! {
         static ref FIND_INCLUDE: Regex = Regex::new(r#"#include "(.*)""#).unwrap();
@@ -48,7 +53,7 @@ fn load_shader_file_impl(path: &Path, recurses: usize) -> Result<Vec<u8>, Shader
 
     let mut replacer = IncludeReplacer::new(recurses);
 
-    let result = FIND_INCLUDE.replace(&bytes, &mut replacer);
+    let result = FIND_INCLUDE.replace_all(&bytes, &mut replacer);
 
     let _ = replacer.error?;
 
@@ -84,7 +89,8 @@ impl Replacer for IncludeReplacer {
             }
         };
 
-        dst.extend_from_slice(&file_contents);
+        dst.extend(file_contents);
+        dst.extend(b"\n");
     }
 }
 
@@ -94,7 +100,7 @@ impl<'a> Replacer for &'a mut IncludeReplacer {
     }
 }
 
-/// The actual implementation of `replace_append` for `IncludeReplace`, made separate for nicer
+/// The actual implementation of `replace_append` for `IncludeReplacer`, made separate for nicer
 /// error handling
 fn replace_include(caps: &Captures, recurses: usize) -> Result<Vec<u8>, ShaderLoadingError> {
     let name = caps[1].to_vec();
