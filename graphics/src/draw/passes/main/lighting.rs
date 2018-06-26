@@ -5,18 +5,20 @@
 use gfx::{self, format, handle, state, texture};
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
-use window::info::WindowInfo;
 use shred::Resources;
+use cgmath::{self, SquareMatrix};
 use assets;
 
 use std::sync::{Arc, Mutex};
 
 use draw::{passes, types, components, utils, lighting_data};
-use draw::passes::resource_pass;
-use draw::glsl::{Vec2, Vec3, Vec4, vec4};
+use draw::passes::{shadow, resource_pass};
+use draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
 use camera::Camera;
 use super::{geometry_pass, gbuffer};
 
+// TODO: Enforce that these values match up with the shaders through a new feature in the shader
+// preprocessor
 pub const MAX_DIR_LIGHTS: usize = 4;
 pub const MAX_POINT_LIGHTS: usize = 4;
 pub const MAX_SPOT_LIGHTS: usize = 4;
@@ -38,8 +40,11 @@ gfx_defines! {
         ambient: Vec4 = "ambient",
         diffuse: Vec4 = "diffuse",
         specular: Vec4 = "specular",
+        
+        has_shadows: f32 = "has_shadows",
         enabled: f32 = "enabled",
-        _padding: Vec3 = "_padding",
+        
+        _padding: Vec2 = "_padding",
     }
 
     #[derive(Default)]
@@ -53,6 +58,7 @@ gfx_defines! {
         constant: f32 = "constant",
         linear: f32 = "linear",
         quadratic: f32 = "quadratic",
+        
         enabled: f32 = "enabled",
     }
 
@@ -77,14 +83,15 @@ gfx_defines! {
 
     constant Locals {
         eye_pos: Vec4 = "u_EyePos",
-        //light_space_matrix: Mat4 = "u_LightSpaceMatrix",
-        //far_plane: f32 = "u_FarPlane",
+        dir_light_space_matrix: Mat4 = "u_DirLightSpaceMatrix",
     }
 
     pipeline pipe {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         locals: gfx::ConstantBuffer<Locals> = "u_Locals",
         material: gfx::ConstantBuffer<Material> = "u_Material",
+        // Shadow maps
+        dir_shadow_map: gfx::TextureSampler<Vec4> = "t_DirShadowMap",
         // Light buffers
         dir_lights: gfx::ConstantBuffer<DirectionalLight> = "u_DirLights",
         point_lights: gfx::ConstantBuffer<PointLight> = "u_PointLights",
@@ -93,6 +100,7 @@ gfx_defines! {
         g_position: gfx::TextureSampler<Vec4> = "t_Position",
         g_normal: gfx::TextureSampler<Vec4> = "t_Normal",
         g_color: gfx::TextureSampler<Vec4> = "t_Color",
+        // Targets
         out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
         // NOTE: This is `LESS_EQUAL_TEST` instead of `LESS_EQUAL_WRITE`
         out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_TEST,
@@ -112,13 +120,18 @@ impl Material {
 }
 
 impl DirectionalLight {
-    pub fn from_components(light: components::DirectionalLight, direction: Vec3) -> Self {
+    pub fn from_components(
+        light: components::DirectionalLight,
+        direction: Vec3,
+        has_shadows: bool,
+    ) -> Self {
         Self {
             direction: vec4(direction, 0.0),
             ambient: light.color.ambient,
             diffuse: light.color.diffuse,
             specular: light.color.specular,
             enabled: 1.0,
+            has_shadows: has_shadows as i32 as f32,
             _padding: Default::default(),
         }
     }
@@ -168,7 +181,7 @@ impl<R: gfx::Resources> LightingPass<R> {
         gbuffer: &gbuffer::GeometryBuffer<R>,
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
-        (window_width, window_height): (u16, u16),
+        dir_shadow_map: handle::ShaderResourceView<R, [f32; 4]>,
     ) -> Result<Self, passes::PassError>
         where F: gfx::Factory<R>,
     {
@@ -202,6 +215,7 @@ impl<R: gfx::Resources> LightingPass<R> {
             vbuf: vbuf,
             material: factory.create_constant_buffer(1),
             locals: factory.create_constant_buffer(1),
+            dir_shadow_map: (dir_shadow_map, factory.create_sampler(shadow_sampler_info)),
             dir_lights: factory.create_constant_buffer(MAX_DIR_LIGHTS),
             point_lights: factory.create_constant_buffer(MAX_POINT_LIGHTS),
             spot_lights: factory.create_constant_buffer(MAX_SPOT_LIGHTS),
@@ -227,11 +241,6 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
-    let window_dim = {
-        let info = builder.get_resources().fetch::<WindowInfo>(0).dimensions().clone();
-        info
-    };
-    
     let gbuffer = {
         let gbuffer = builder
             .get_pass_output::<geometry_pass::Output<R>>("gbuffer")
@@ -248,6 +257,16 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         (target.rtv.clone(), target.dsv.clone())
     };
 
+    let dir_shadow_map = {
+        let srv = builder
+            .get_pass_output::<shadow::directional::Output<R>>("dir_shadow_map")
+            .unwrap()
+            .srv
+            .clone();
+
+        srv
+    };
+
     let pass = {
         let factory = builder.factory();
         LightingPass::new(
@@ -255,7 +274,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
             &gbuffer,
             rtv,
             dsv,
-            (window_dim.0 as u16, window_dim.1 as u16)
+            dir_shadow_map,
         ).unwrap()
     };
 
@@ -270,6 +289,14 @@ impl<R, C> Pass<R, C> for LightingPass<R>
         let camera = resources.fetch::<Arc<Mutex<Camera>>>(0);
         let lighting_data = resources.fetch::<Arc<Mutex<lighting_data::LightingData>>>(0);
         let mut lighting_data = lighting_data.lock().unwrap();
+        let dir_light_space_matrix = resources
+            .fetch::<Arc<Mutex<shadow::DirShadowSource>>>(0);
+        
+        let dir_light_space_matrix = dir_light_space_matrix
+            .lock()
+            .unwrap()
+            .light_space_matrix()
+            .unwrap_or(cgmath::Matrix4::identity());
 
         // Get camera position
         let eye_pos: [f32; 3] = camera.lock().unwrap().eye_position().into();
@@ -277,8 +304,7 @@ impl<R, C> Pass<R, C> for LightingPass<R>
 
         let locals = Locals {
             eye_pos,
-            //far_plane: 1.0,
-            //light_space_matrix: cgmath::Matrix4::identity().into(),
+            dir_light_space_matrix: dir_light_space_matrix.into(),
         };
 
         let data = &self.bundle.data;
@@ -289,22 +315,10 @@ impl<R, C> Pass<R, C> for LightingPass<R>
         encoder.update_constant_buffer(&data.material, &material);
 
         // Update light buffers
-        let dir_lights = lighting_data.take_dir_lights()
-            .map(|l| l.light)
-            .collect::<Vec<_>>();
+        let dir_lights = lighting_data.take_dir_lights().collect::<Vec<_>>();
+        let point_lights = lighting_data.take_point_lights().collect::<Vec<_>>();
+        let spot_lights = lighting_data.take_spot_lights().collect::<Vec<_>>();
 
-        let point_lights = lighting_data.take_point_lights()
-            .map(|l| l.light)
-            .collect::<Vec<_>>();
-
-        let spot_lights = lighting_data.take_spot_lights()
-            .map(|l| l.light)
-            .collect::<Vec<_>>();
-
-        lighting_data.reset_dir_lights();
-        lighting_data.reset_point_lights();
-        lighting_data.reset_spot_lights();
-        
         encoder.update_buffer(&data.dir_lights, &dir_lights, 0).unwrap();
         encoder.update_buffer(&data.point_lights, &point_lights, 0).unwrap();
         encoder.update_buffer(&data.spot_lights, &spot_lights, 0).unwrap();

@@ -96,8 +96,10 @@ where R: gfx::Resources,
         where S: Into<String>,
               O: Any
     {
+        let name = name.into();
         let pass_output: Box<O> = pass_output.into();
-        self.pass_outputs.insert(name.into(), pass_output);
+        assert!(self.pass_outputs.insert(name.clone(), pass_output).is_none(),
+                "A pass output with this name has already been added: {}", name);
     }
 
     /// Adds the provided pass to the `GraphBuilder`

@@ -4,11 +4,10 @@ use specs;
 use gfx;
 use common::cgmath::{self, Angle};
 
-use std::sync::Arc;
-
-use super::param;
-use super::passes::main::{geometry_pass, lighting};
-use super::types::{TextureView, VertexBuffer};
+use draw::param;
+use draw::passes::main::{geometry_pass, lighting};
+use draw::passes::shadow::LightSpaceMatrix;
+use draw::types::{TextureView, VertexBuffer};
 
 /// A component that stores the information needed to draw an entity
 #[derive(Clone)]
@@ -114,59 +113,24 @@ impl LightAttenuation {
     // TODO: Maybe provide constructor that takes only a light radius as an argument
 }
 
-/// Settings for shadows for a light
-#[derive(Clone, Copy, Debug)]
-pub enum ShadowSettings {
-    Enabled,
-    Disabled,
-}
-
-/// Info for a projection matrix
-#[derive(Clone, Copy, Debug)]
-pub struct ProjectionData {
-    near: f32,
-    far: f32,
-}
-
-impl ProjectionData {
-    pub fn new(near: f32, far: f32) -> Self {
-        Self { near, far }
-    }
-
-    pub fn near(&self) -> f32 {
-        self.near
-    }
-
-    pub fn far(&self) -> f32 {
-        self.far
-    }
-}
-
 /// A directional light
 ///
-/// In order to work, an entity must have the `Position` and `Direction` components in addition to
-/// this one. The `Position` component will be used for rendering a shadow map from the perspective
-/// of the light if shadows are enabled.
-// FIXME: Allow directional lights to be rendered even with no Position component (just don't render
-//        shadows)
+/// In order to work, an entity must have the `Direction` component in addition to this one
 #[derive(Clone, Copy, Debug)]
 pub struct DirectionalLight {
     pub color: LightColor,
-    pub shadows: ShadowSettings,
-    pub projection_matrix: cgmath::Ortho<f32>,
+    pub shadows: Option<LightSpaceMatrix>,
 }
 
 impl DirectionalLight {
     /// Creates a new `DirectionalLight` with the provided properties
     pub fn new(
         color: LightColor,
-        shadows: ShadowSettings,
-        projection_matrix: cgmath::Ortho<f32>,
+        shadows: Option<LightSpaceMatrix>,
     ) -> Self {
         Self {
             color,
             shadows,
-            projection_matrix,
         }
     }
 }
@@ -177,24 +141,18 @@ impl DirectionalLight {
 #[derive(Clone, Copy, Debug)]
 pub struct PointLight {
     pub color: LightColor,
-    pub shadows: ShadowSettings,
     pub attenuation: LightAttenuation,
-    pub projection: ProjectionData,
 }
 
 impl PointLight {
     /// Creates a new `PointLight` with the provided properties
     pub fn new(
         color: LightColor,
-        shadows: ShadowSettings,
         attenuation: LightAttenuation,
-        projection: ProjectionData,
     ) -> Self {
         Self {
             color,
-            shadows,
             attenuation,
-            projection,
         }
     }
 }
@@ -208,11 +166,9 @@ impl PointLight {
 #[derive(Clone, Copy, Debug)]
 pub struct SpotLight {
     pub color: LightColor,
-    pub shadows: ShadowSettings,
     cos_cutoff: cgmath::Rad<f32>,
     cos_outer_cutoff: cgmath::Rad<f32>,
     pub attenuation: LightAttenuation,
-    pub projection: ProjectionData,
 }
 
 impl SpotLight {
@@ -224,22 +180,18 @@ impl SpotLight {
     /// Returns `Err` if `outer_cutoff` is a smaller angle than `cutoff`
     pub fn new(
         color: LightColor,
-        shadows: ShadowSettings,
         cutoff: cgmath::Rad<f32>,
         outer_cutoff: cgmath::Rad<f32>,
         attenuation: LightAttenuation,
-        projection: ProjectionData,
     ) -> Result<Self, LightError> {
         if cutoff > outer_cutoff {
             Err(LightError::SpotLightAngle(cutoff, outer_cutoff))
         } else {
             Ok(Self {
                 color,
-                shadows,
                 cos_cutoff: cgmath::Rad(cutoff.cos()),
                 cos_outer_cutoff: cgmath::Rad(outer_cutoff.cos()),
                 attenuation,
-                projection,
             })
         }
     }

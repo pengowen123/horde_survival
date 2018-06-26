@@ -169,7 +169,7 @@ impl<R, C> pass::Pass<R, C> for GeometryPass<R>
             view_proj: view_proj.into(),
         };
 
-        for d in (&drawable).join() {
+        for d in drawable.join() {
             // Get model-specific transform matrix
             let model = d.param().get_model_matrix();
 

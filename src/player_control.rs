@@ -9,6 +9,8 @@ use control;
 
 use math::functions;
 
+const PLAYER_SPEED: ::Float = 25.0;
+
 /// A type alias for convenience
 type Euler = cgmath::Euler<Rad<::Float>>;
 
@@ -105,7 +107,7 @@ impl<'a> specs::System<'a> for System {
 
             if let Some(angle) = self.input_state.get_movement_angle() {
                 let dir = d.0 * Quaternion::from_angle_y(angle);
-                c.move_in_direction(dir, 10.0);
+                c.move_in_direction(dir, PLAYER_SPEED);
             }
         }
     }

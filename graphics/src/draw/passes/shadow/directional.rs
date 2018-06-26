@@ -2,12 +2,22 @@
 
 use gfx::{self, state, handle, texture};
 use gfx::traits::FactoryExt;
+use specs::Join;
+use cgmath::{Matrix4, SquareMatrix};
+use rendergraph;
+use shred;
 
-use std::path::Path;
+use std::sync::{Arc, Mutex};
 
-use draw::{types, passes};
+use draw::{DrawableStorageRef, types, passes};
 use draw::passes::main::geometry_pass;
+use draw::passes::shadow;
 use draw::glsl::Mat4;
+use assets;
+
+pub struct Output<R: gfx::Resources> {
+    pub srv: handle::ShaderResourceView<R, [f32; 4]>,
+}
 
 gfx_defines! {
     pipeline pipe {
@@ -22,41 +32,92 @@ gfx_defines! {
     }
 }
 
-/*impl<R: gfx::Resources> Pipeline<R> {*/
-    //pub fn new_dir_shadow<F, P>(
-        //factory: &mut F,
-        //shadow_map_size: texture::Size,
-        //vs_path: P,
-        //fs_path: P,
-    //) -> Result<(Self, handle::ShaderResourceView<R, [f32; 4]>), passes::PassError>
-    //where
-        //F: gfx::Factory<R>,
-        //P: AsRef<Path>,
-    //{
-        //let pso = passes::load_pso(
-            //factory,
-            //vs_path,
-            //fs_path,
-            //gfx::Primitive::TriangleList,
-            //state::Rasterizer::new_fill(),
-            //pipe::new(),
-        //)?;
+pub struct DirectionalShadowPass<R: gfx::Resources> {
+    bundle: gfx::Bundle<R, pipe::Data<R>>,
+}
 
-        //// Create dummy vertex data
-        //let vbuf = factory.create_vertex_buffer(&[]);
+impl<R: gfx::Resources> DirectionalShadowPass<R> {
+    fn new<F: gfx::Factory<R>>(
+        factory: &mut F,
+        shadow_map_size: texture::Size,
+    ) -> (Self, Output<R>) {
+        let (_, srv, dsv) = factory.create_depth_stencil(
+            shadow_map_size,
+            shadow_map_size,
+        ).unwrap();
 
-        //// Create a shadow map
-        //let (_, srv, dsv) = factory.create_depth_stencil(
-            //shadow_map_size,
-            //shadow_map_size,
-        //)?;
+        let vbuf = factory.create_vertex_buffer(&[]);
+        let slice = gfx::Slice::new_match_vertex_buffer(&vbuf);
+        
+        let data = pipe::Data {
+            vbuf,
+            locals: factory.create_constant_buffer(1),
+            out_depth: dsv,
+        };
 
-        //let data = pipe::Data {
-            //vbuf,
-            //locals: factory.create_constant_buffer(1),
-            //out_depth: dsv,
-        //};
+        let pso = passes::load_pso(
+            factory,
+            assets::get_shader_path("dir_shadow_vertex"),
+            assets::get_shader_path("dir_shadow_fragment"),
+            gfx::Primitive::TriangleList,
+            state::Rasterizer::new_fill(),
+            pipe::new(),
+        ).unwrap();
+        
+        let pass = Self {
+            bundle: gfx::Bundle::new(slice, pso, data),
+        };
 
-        //Ok((Pipeline::new(pso, data), srv))
-    //}
-/*}*/
+        let output = Output {
+            srv,
+        };
+        
+        (pass, output)
+    }
+}
+
+pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
+    where R: gfx::Resources,
+          C: gfx::CommandBuffer<R>,
+          F: gfx::Factory<R>,
+{
+    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, super::SHADOW_MAP_SIZE);
+
+    builder.add_pass(pass);
+    builder.add_pass_output("dir_shadow_map", output);
+}
+
+
+impl<R, C> rendergraph::pass::Pass<R, C> for DirectionalShadowPass<R>
+    where R: gfx::Resources,
+          C: gfx::CommandBuffer<R>,
+{
+    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources) {
+        encoder.clear_depth(&self.bundle.data.out_depth, 1.0);
+
+        let drawable = resources.fetch::<DrawableStorageRef<R>>(0);
+        let drawable = unsafe { &*drawable.get() };
+        
+        let shadow_source = resources.fetch::<Arc<Mutex<shadow::DirShadowSource>>>(0).clone();
+        let light_space_matrix = match shadow_source.lock().unwrap().light_space_matrix() {
+            Some(m) => m,
+            // If there is no shadow source, just return (depth buffer was already cleared)
+            None => return,
+        };
+        let mut locals = Locals {
+            light_space_matrix: light_space_matrix.into(),
+            model: Matrix4::identity().into(),
+        };
+
+        for d in drawable.join() {
+            let model = d.param().get_model_matrix();
+            locals.model = model.into();
+            
+            encoder.update_constant_buffer(&self.bundle.data.locals, &locals);
+            
+            self.bundle.data.vbuf = d.vertex_buffer().clone();
+            self.bundle.slice = d.slice().clone();
+            self.bundle.encode(encoder);
+        }
+    }
+}

@@ -1,86 +1,82 @@
 //! A system to collect light info from all light entities
 
 use common::specs::{self, Join, DispatcherBuilder};
-use common::cgmath::{self, Point3, Matrix4, SquareMatrix, EuclideanSpace};
+use common::cgmath;
 use common;
 
 use std::sync::{Arc, Mutex, mpsc};
 use std::vec::Drain;
 
 use draw::passes::main::lighting;
-use draw::passes::shadow::traits::{LightTransform, PointLightTransform};
 use draw::types::AspectRatio;
 use draw::components;
-
-pub struct Light<T: LightTransform> {
-    pub light: T::ShaderStruct,
-    pub shadows: components::ShadowSettings,
-    pub transform: T::Transform,
-}
-
-impl<T: LightTransform> Light<T> {
-    fn new(
-        light: T::ShaderStruct,
-        shadows: components::ShadowSettings,
-        transform: T::Transform,
-    ) -> Self {
-        Self {
-            light,
-            shadows,
-            transform,
-        }
-    }
-}
 
 /// Data for every light in the world
 #[derive(Default)]
 pub struct LightingData {
-    dir_lights: Vec<Light<components::DirectionalLight>>,
-    point_lights: Vec<Light<components::PointLight>>,
-    spot_lights: Vec<Light<components::SpotLight>>,
+    dir_lights: Vec<lighting::DirectionalLight>,
+    point_lights: Vec<lighting::PointLight>,
+    spot_lights: Vec<lighting::SpotLight>,
 }
 
 impl LightingData {
-    pub fn take_dir_lights(&mut self) -> Drain<Light<components::DirectionalLight>> {
-        self.dir_lights.drain(0..)
+    pub fn take_dir_lights(&mut self) -> Drain<lighting::DirectionalLight> {
+        self.dir_lights.drain(..)
     }
 
-    pub fn take_point_lights(&mut self) -> Drain<Light<components::PointLight>> {
-        self.point_lights.drain(0..)
+    pub fn take_point_lights(&mut self) -> Drain<lighting::PointLight> {
+        self.point_lights.drain(..)
     }
 
-    pub fn take_spot_lights(&mut self) -> Drain<Light<components::SpotLight>> {
-        self.spot_lights.drain(0..)
+    pub fn take_spot_lights(&mut self) -> Drain<lighting::SpotLight> {
+        self.spot_lights.drain(..)
     }
 
     pub fn reset_dir_lights(&mut self) {
         for _ in 0..lighting::MAX_DIR_LIGHTS {
-            self.dir_lights.push(Light::new(
-                    Default::default(),
-                    components::ShadowSettings::Disabled,
-                    Matrix4::identity()));
+            self.dir_lights.push(lighting::DirectionalLight {
+                        direction: [1.0, 0.0, 0.0, 0.0],
+                        ambient: [0.0; 4],
+                        diffuse: [0.0; 4],
+                        specular: [0.0; 4],
+                        has_shadows: 0.0,
+                        enabled: 0.0,
+                        _padding: Default::default(),
+                    });
         }
     }
     
     pub fn reset_point_lights(&mut self) {
         for _ in 0..lighting::MAX_POINT_LIGHTS {
-            self.point_lights.push(Light::new(
-                    Default::default(),
-                    components::ShadowSettings::Disabled,
-                    PointLightTransform {
-                        matrices: [Matrix4::identity(); 6],
-                        light_pos: Point3::origin(),
-                        far_plane: 1.0,
-                    }));
+            self.point_lights.push(lighting::PointLight {
+                        position: [0.0, 0.0, 0.0, 1.0],
+                        ambient: [1.0; 4],
+                        diffuse: [1.0; 4],
+                        specular: [1.0; 4],
+                        constant: 1.0,
+                        linear: 1.0,
+                        quadratic: 1.0,
+                        enabled: 0.0,
+                    });
         }
     }
     
     pub fn reset_spot_lights(&mut self) {
         for _ in 0..lighting::MAX_SPOT_LIGHTS {
-            self.spot_lights.push(Light::new(
-                    Default::default(),
-                    components::ShadowSettings::Disabled,
-                    Matrix4::identity()));
+            self.spot_lights.push(lighting::SpotLight {
+                        position: [0.0, 0.0, 0.0, 1.0],
+                        ambient: [1.0; 4],
+                        diffuse: [1.0; 4],
+                        specular: [1.0; 4],
+                        constant: 1.0,
+                        linear: 1.0,
+                        quadratic: 1.0,
+                        cos_cutoff: 0.5,
+                        cos_outer_cutoff: 1.0,
+                        direction: [1.0, 0.0, 0.0, 0.0],
+                        enabled: 0.0,
+                        _padding: Default::default(),
+                    });
         }
     }
 }
@@ -111,53 +107,44 @@ impl<'a> specs::System<'a> for System {
 
         self.update_shadow_map_aspect_ratios();
 
-        // Clear all lights
-        light_info.dir_lights.clear();
-        light_info.point_lights.clear();
-        light_info.spot_lights.clear();
+        // Clear all lights (reset them to default values so the shaders can use them without
+        // consequence)
+        light_info.reset_dir_lights();
+        light_info.reset_point_lights();
+        light_info.reset_spot_lights();
 
         // Collect all directional light entities
-        for (l, d, s) in (&data.dir_light, &data.direction, &data.space).join() {
+        for (i, (l, d)) in (&data.dir_light, &data.direction).join().enumerate() {
             let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast();
 
-            let light = lighting::DirectionalLight::from_components(*l, dir.into());
-
-            let transform = l.get_light_space_transform((s.0.cast(), dir));
-
-            light_info.dir_lights.push(
-                Light::new(light, l.shadows, transform),
+            let light = lighting::DirectionalLight::from_components(
+                *l,
+                dir.into(),
+                l.shadows.is_some(),
             );
+
+            light_info.dir_lights[i] = light;
         }
 
         // Collect all point light entities
-        for (l, s) in (&data.point_light, &data.space).join() {
+        for (i, (l, s)) in (&data.point_light, &data.space).join().enumerate() {
             let pos: [f32; 3] = s.0.cast().into();
             let light = lighting::PointLight::from_components(*l, pos);
 
-            let transform = l.get_light_space_transform((s.0.cast(), self.aspect_ratio_point.0));
-
-            light_info.point_lights.push(Light::new(
-                light,
-                l.shadows,
-                transform,
-            ));
+            light_info.point_lights[i] = light;
         }
 
         // Collect all spot light entities
-        for (l, d, s) in (&data.spot_light, &data.direction, &data.space).join() {
+        for (i, (l, d, s)) in (&data.spot_light, &data.direction, &data.space).join().enumerate() {
             let pos: [f32; 3] = s.0.cast().into();
             let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast();
             let light = lighting::SpotLight::from_components(*l, pos, dir.into());
 
-            let transform =
-                l.get_light_space_transform((s.0.cast(), dir, self.aspect_ratio_spot.0));
-
-            light_info.spot_lights.push(Light::new(
-                light,
-                l.shadows,
-                transform,
-            ));
+            light_info.spot_lights[i] = light;
         }
+
+        // Put the light with shadows enabled at index 0 of the list
+        light_info.dir_lights.sort_by_key(|light| light.has_shadows as i32);
     }
 }
 

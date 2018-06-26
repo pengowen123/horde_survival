@@ -14,7 +14,6 @@ const FOV_Y: f32 = 45.0;
 /// Near plane distance for the camera
 // NOTE: This must not be greater than the near plane value used for light shadows, or instead of
 //       disappearing, close-by objects will appear completely black
-// TODO: Just set the shadow near plane to this, and the above constraint will always be met
 const NEAR: f32 = 0.1;
 
 /// Far plane distance for the camera

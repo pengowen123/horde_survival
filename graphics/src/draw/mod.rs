@@ -20,6 +20,7 @@ pub use self::init::initialize;
 // TODO: Remove these re-exports when higher-level functionality is exposed
 pub use self::passes::main::geometry_pass::Vertex;
 pub use self::passes::main::lighting::Material;
+pub use self::passes::shadow::{DirShadowSource, LightSpaceMatrix};
 pub use self::types::{ColorFormat, DepthFormat};
 pub use self::components::Drawable;
 pub use self::param::ShaderParam;
@@ -31,7 +32,7 @@ use window;
 
 use std::sync::{Arc, Mutex, mpsc};
 
-use self::passes::{postprocessing, skybox, resource_pass};
+use self::passes::{postprocessing, skybox, resource_pass, shadow};
 use self::passes::main::{geometry_pass, lighting};
 use self::types::AspectRatio;
 use camera;
@@ -45,8 +46,9 @@ pub type DrawableStorage<'a, R> =
     >;
 
 // NOTE: This should only be passed from draw::System to rendergraph passes, which will always have
-//       a smaller lifetime and run on the same thread, so this should be safe
-pub(self) struct DrawableStorageRef<R: gfx::Resources>(Option<*const DrawableStorage<'static, R>>);
+//       a smaller lifetime and run on the same thread, and the contained raw pointer will never be
+//       null (`None` is used to represent null instead), so this should be safe to use
+struct DrawableStorageRef<R: gfx::Resources>(Option<*const DrawableStorage<'static, R>>);
 
 unsafe impl<R: gfx::Resources> Send for DrawableStorageRef<R> {}
 unsafe impl<R: gfx::Resources> Sync for DrawableStorageRef<R> {}
@@ -68,9 +70,7 @@ impl<R: gfx::Resources> DrawableStorageRef<R> {
 
     /// Returns a non-null pointer to the `DrawableStorage`
     pub fn get<'a>(&'a self) -> *const DrawableStorage<'a, R> {
-        unsafe {
-            ::std::mem::transmute(self.0.unwrap())
-        }
+        self.0.unwrap()
     }
 }
 
@@ -104,8 +104,10 @@ where
         encoder: gfx::Encoder<R, C>,
         (aspect_ratio_point, aspect_ratio_spot):
         (mpsc::Sender<AspectRatio>, mpsc::Sender<AspectRatio>),
+        // Shared resources between the `specs::World` and the rendergraph
         camera: Arc<Mutex<camera::Camera>>,
         lighting_data: Arc<Mutex<lighting_data::LightingData>>,
+        dir_shadow_source: Arc<Mutex<shadow::DirShadowSource>>,
     ) -> Self {
         // Build the rendergraph
         let graph = {
@@ -114,22 +116,29 @@ where
             builder.add_resource(window::info::WindowInfo::new(window.window()));
             builder.add_resource(camera);
             builder.add_resource(lighting_data);
+            builder.add_resource(dir_shadow_source);
 
             let resource_module = module::Module::new()
                 .add_pass(resource_pass::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
-            
-            let skybox_module = module::Module::new()
-                .add_pass(skybox::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
+
+            let shadow_module = module::Module::new()
+                .add_pass(
+                    shadow::directional::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>
+                    );
 
             let main_module = module::Module::new()
                 .add_pass(geometry_pass::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>)
                 .add_pass(lighting::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
 
+            let skybox_module = module::Module::new()
+                .add_pass(skybox::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
+            
             let postprocessing_module = module::Module::new()
                 .add_pass(postprocessing::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
 
             let modules = vec![
                 resource_module,
+                shadow_module,
                 main_module,
                 skybox_module,
                 postprocessing_module,

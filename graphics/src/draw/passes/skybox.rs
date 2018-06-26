@@ -29,7 +29,7 @@ gfx_defines! {
         skybox: gfx::TextureSampler<Vec4> = "t_Skybox",
         locals: gfx::ConstantBuffer<Locals> = "u_Locals",
         out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
-        out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
+        out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_TEST,
     }
 }
 

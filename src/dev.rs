@@ -14,8 +14,7 @@ use math::functions::dir_vec_to_quaternion;
 use math::convert;
 use control::Control;
 use graphics::assets::obj;
-
-use graphics::draw::{self, Material};
+use graphics::draw::{self, Material, LightSpaceMatrix};
 use graphics::draw::components::*;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
@@ -93,18 +92,28 @@ where
         // Create directional lights
         {
             #[allow(unused)]
-            let mut dir_light = |x, y, z, pos| {
+            let mut dir_light = |x, y, z, shadows| {
                 let _ = create_dir_light(
                     world,
                     [x, y, z],
-                    pos,
                     light_color,
-                    40.0,
-                    ShadowSettings::Disabled,
+                    shadows,
                 );
             };
 
-            dir_light(1.0, -1.0, -1.0, [-10.0, 10.0, 5.0]);
+            let ortho_size = 60.0;
+            let proj = Ortho {
+                left: -ortho_size,
+                right: ortho_size,
+                bottom: -ortho_size,
+                top: ortho_size,
+                near: 1.0,
+                far: ortho_size * 5.0,
+            };
+            let dir = cgmath::Vector3::new(1.0, -1.0, -1.0);
+            let pos = cgmath::Point3::new(-10.0, 10.0, 5.0);
+            let lsm = LightSpaceMatrix::from_components(proj, pos, dir.cast());
+            dir_light(dir.x, dir.y, dir.z, Some(lsm));
         }
 
         // Create point lights
@@ -117,7 +126,6 @@ where
                     [x, y, z],
                     light_color,
                     LightAttenuation::new(1.0, 0.14, 0.07),
-                    ShadowSettings::Enabled,
                     Box::new(|_| {}),
                 );
             };
@@ -126,7 +134,6 @@ where
             //point_light(-5.0, -5.0, 1.5);
             //point_light(5.0, 3.0, 6.5);
             //point_light(5.0, -5.0, 3.5);
-            //point_light(-3.0, 7.0, 10.0);
         }
 
         // Create spot lights
@@ -142,7 +149,6 @@ where
                     LightAttenuation::new(1.0, 0.14, 0.07),
                     Deg(30.0),
                     Deg(45.0),
-                    ShadowSettings::Enabled,
                     Box::new(|_| {}),
                 );
             };
@@ -227,10 +233,8 @@ fn create_test_entity<'a, R, F, P>(
 fn create_dir_light<'a>(
     world: &'a mut specs::World,
     direction: [::Float; 3],
-    pos: [::Float; 3],
     color: LightColor,
-    ortho_size: f32,
-    shadow_settings: ShadowSettings,
+    lsm: Option<LightSpaceMatrix>,
 ) -> specs::EntityBuilder<'a> {
     let direction = dir_vec_to_quaternion(direction);
 
@@ -238,18 +242,9 @@ fn create_dir_light<'a>(
         .create_entity()
         .with(DirectionalLight::new(
             color,
-            shadow_settings,
-            Ortho {
-                left: -ortho_size,
-                right: ortho_size,
-                bottom: -ortho_size,
-                top: ortho_size,
-                near: 1.0,
-                far: ortho_size * 10.0,
-            },
+            lsm,
         ))
         .with(Direction(direction))
-        .with(Position(pos.into()))
 }
 
 fn create_point_light<'a, R, F>(
@@ -258,7 +253,6 @@ fn create_point_light<'a, R, F>(
     pos: [::Float; 3],
     color: LightColor,
     attenuation: LightAttenuation,
-    shadow_settings: ShadowSettings,
     map: MapEntity,
 ) where
     R: gfx::Resources,
@@ -270,15 +264,13 @@ fn create_point_light<'a, R, F>(
         "light",
         pos,
         Direction::default(),
-        0.2,
+        0.5,
         Material::new(0.0),
         None,
         Box::new(move |e| {
             let e = e.with(PointLight::new(
                 color,
-                shadow_settings,
                 attenuation,
-                ProjectionData::new(1.0, 50.0),
             ));
             map(e);
         }),
@@ -294,7 +286,6 @@ fn create_spot_light<'a, R, F>(
     attenuation: LightAttenuation,
     angle: Deg<f32>,
     outer_angle: Deg<f32>,
-    shadow_settings: ShadowSettings,
     map: MapEntity,
 ) where
     R: gfx::Resources,
@@ -315,11 +306,9 @@ fn create_spot_light<'a, R, F>(
             let e = e.with(
                 SpotLight::new(
                     color,
-                    shadow_settings,
                     angle.into(),
                     outer_angle.into(),
                     attenuation,
-                    ProjectionData::new(1.0, 50.0),
                 ).unwrap(),
             );
 

@@ -31,10 +31,11 @@ where
     P: AsRef<Path>,
     I: pso::PipelineInit,
 {
-    let fref = fs_path.as_ref().to_owned();
     let vs = shader::load_shader_file(vs_path)?;
     let fs = shader::load_shader_file(fs_path)?;
     
+    // NOTE: If create_pipeline_from_program is used here, the ProgramInfo can be printed, which may
+    //       be useful for debugging
     let set = factory.create_shader_set(&vs, &fs)?;
 
     factory
