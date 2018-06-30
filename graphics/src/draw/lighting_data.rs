@@ -143,7 +143,7 @@ impl<'a> specs::System<'a> for System {
             light_info.spot_lights[i] = light;
         }
 
-        // Put the light with shadows enabled at index 0 of the list
+        // Put the light with shadows enabled at index 0 of the list (required by the shaders)
         light_info.dir_lights.sort_by_key(|light| light.has_shadows as i32);
     }
 }
