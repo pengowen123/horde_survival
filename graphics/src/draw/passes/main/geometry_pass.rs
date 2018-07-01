@@ -5,7 +5,8 @@
 use gfx::{self, state, texture, handle};
 use gfx::traits::FactoryExt;
 use shred;
-use rendergraph::pass;
+use rendergraph::pass::Pass;
+use rendergraph::error::{RunError, BuildError};
 use window::info::WindowInfo;
 use cgmath::{Matrix4, SquareMatrix};
 use specs::Join;
@@ -63,7 +64,7 @@ impl<R: gfx::Resources> GeometryPass<R> {
         factory: &mut F,
         (window_width, window_height): (u16, u16),
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
-    ) -> Result<(Self, Output<R>), passes::PassError>
+    ) -> Result<(Self, Output<R>), BuildError<String>>
     where
         F: gfx::Factory<R>,
     {
@@ -92,8 +93,7 @@ impl<R: gfx::Resources> GeometryPass<R> {
                 texture::Kind::D2(1, 1, texture::AaMode::Single),
                 texture::Mipmap::Allocated,
                 &[&texels],
-            )
-            .unwrap();
+            )?;
 
         // Create texture sampler info
         let sampler_info = texture::SamplerInfo::new(
@@ -128,6 +128,7 @@ impl<R: gfx::Resources> GeometryPass<R> {
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
+    -> Result<(), BuildError<String>>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -135,24 +136,27 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     let window_dim = builder.get_resources().fetch::<WindowInfo>(0).dimensions();
     
     let dsv = builder
-        .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")
-        .unwrap()
+        .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
         .dsv
         .clone();
 
     let (pass, output) = {
-        GeometryPass::new(builder.factory(), (window_dim.0 as u16, window_dim.1 as u16), dsv).unwrap()
+        GeometryPass::new(builder.factory(), (window_dim.0 as u16, window_dim.1 as u16), dsv)?
     };
 
     builder.add_pass(pass);
     builder.add_pass_output("gbuffer", output);
+
+    Ok(())
 }
 
-impl<R, C> pass::Pass<R, C> for GeometryPass<R>
+impl<R, C> Pass<R, C> for GeometryPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources) {
+    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
+        -> Result<(), RunError>
+    {
         encoder.clear(&self.bundle.data.out_pos, [0.0; 4]);
         encoder.clear(&self.bundle.data.out_normal, [0.0; 4]);
         encoder.clear(&self.bundle.data.out_color, [0.0; 4]);
@@ -200,5 +204,7 @@ impl<R, C> pass::Pass<R, C> for GeometryPass<R>
                 &self.bundle.data,
             );
         }
+        
+        Ok(())
     }
 }

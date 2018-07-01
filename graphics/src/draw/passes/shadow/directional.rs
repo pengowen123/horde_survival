@@ -4,7 +4,8 @@ use gfx::{self, state, handle, texture};
 use gfx::traits::FactoryExt;
 use specs::Join;
 use cgmath::{Matrix4, SquareMatrix};
-use rendergraph;
+use rendergraph::pass::Pass;
+use rendergraph::error::{RunError, BuildError};
 use shred;
 
 use std::sync::{Arc, Mutex};
@@ -40,11 +41,11 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
     fn new<F: gfx::Factory<R>>(
         factory: &mut F,
         shadow_map_size: texture::Size,
-    ) -> (Self, Output<R>) {
+    ) -> Result<(Self, Output<R>), BuildError<String>> {
         let (_, srv, dsv) = factory.create_depth_stencil(
             shadow_map_size,
             shadow_map_size,
-        ).unwrap();
+        )?;
 
         let vbuf = factory.create_vertex_buffer(&[]);
         let slice = gfx::Slice::new_match_vertex_buffer(&vbuf);
@@ -62,7 +63,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
-        ).unwrap();
+        )?;
         
         let pass = Self {
             bundle: gfx::Bundle::new(slice, pso, data),
@@ -72,27 +73,32 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             srv,
         };
         
-        (pass, output)
+        Ok((pass, output))
     }
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
+    -> Result<(), BuildError<String>>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
-    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, super::SHADOW_MAP_SIZE);
+    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, super::SHADOW_MAP_SIZE)?;
 
     builder.add_pass(pass);
     builder.add_pass_output("dir_shadow_map", output);
+
+    Ok(())
 }
 
 
-impl<R, C> rendergraph::pass::Pass<R, C> for DirectionalShadowPass<R>
+impl<R, C> Pass<R, C> for DirectionalShadowPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources) {
+    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
+        -> Result<(), RunError>
+    {
         encoder.clear_depth(&self.bundle.data.out_depth, 1.0);
 
         let drawable = resources.fetch::<DrawableStorageRef<R>>(0);
@@ -102,7 +108,7 @@ impl<R, C> rendergraph::pass::Pass<R, C> for DirectionalShadowPass<R>
         let light_space_matrix = match shadow_source.lock().unwrap().light_space_matrix() {
             Some(m) => m,
             // If there is no shadow source, just return (depth buffer was already cleared)
-            None => return,
+            None => return Ok(()),
         };
         let mut locals = Locals {
             light_space_matrix: light_space_matrix.into(),
@@ -119,5 +125,7 @@ impl<R, C> rendergraph::pass::Pass<R, C> for DirectionalShadowPass<R>
             self.bundle.slice = d.slice().clone();
             self.bundle.encode(encoder);
         }
+        
+        Ok(())
     }
 }

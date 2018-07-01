@@ -5,6 +5,7 @@ use gfx::traits::FactoryExt;
 use image_utils;
 use assets::{self, read_bytes};
 use rendergraph::pass::Pass;
+use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 
 use std::sync::{Arc, Mutex};
@@ -48,7 +49,7 @@ impl<R: gfx::Resources> SkyboxPass<R> {
         factory: &mut F,
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
-    ) -> Result<Self, passes::PassError>
+    ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
         let pso = passes::load_pso(
@@ -76,15 +77,19 @@ impl<R: gfx::Resources> SkyboxPass<R> {
         // TODO: load this from individual map files
         let path = |p| env!("CARGO_MANIFEST_DIR").to_string() + p;
 
+        let read_image = |s| {
+            let p = path(s);
+            read_bytes(&p).map_err(|e| BuildError::Io(e, p))
+        };
         let cubemap = image_utils::load_cubemap::<_, _, image_utils::Srgba8>(
             factory,
             image_utils::CubemapData {
-                up: &read_bytes(path("/test_assets/skybox/top.jpg"))?,
-                down: &read_bytes(path("/test_assets/skybox/bottom.jpg"))?,
-                front: &read_bytes(path("/test_assets/skybox/front.jpg"))?,
-                back: &read_bytes(path("/test_assets/skybox/back.jpg"))?,
-                left: &read_bytes(path("/test_assets/skybox/left.jpg"))?,
-                right: &read_bytes(path("/test_assets/skybox/right.jpg"))?,
+                up: &read_image("/test_assets/skybox/top.jpg")?,
+                down: &read_image("/test_assets/skybox/bottom.jpg")?,
+                front: &read_image("/test_assets/skybox/front.jpg")?,
+                back: &read_image("/test_assets/skybox/back.jpg")?,
+                left: &read_image("/test_assets/skybox/left.jpg")?,
+                right: &read_image("/test_assets/skybox/right.jpg")?,
             },
             image_utils::JPEG,
         )?;
@@ -107,13 +112,14 @@ impl<R: gfx::Resources> SkyboxPass<R> {
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
+    -> Result<(), BuildError<String>>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
     let (rtv, dsv) = {
         let target =
-            builder.get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target").unwrap();
+            builder.get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
         (target.rtv.clone(), target.dsv.clone())
     };
 
@@ -121,16 +127,20 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         builder.factory(),
         rtv,
         dsv,
-    ).unwrap();
+    )?;
 
     builder.add_pass(pass);
+
+    Ok(())
 }
 
 impl<R, C> Pass<R, C> for SkyboxPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources) {
+    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
+        -> Result<(), RunError>
+    {
         let camera = resources.fetch::<Arc<Mutex<Camera>>>(0);
         let camera = camera.lock().unwrap();
         let locals = Locals {
@@ -144,5 +154,7 @@ impl<R, C> Pass<R, C> for SkyboxPass<R>
         );
 
         self.bundle.encode(encoder);
+        
+        Ok(())
     }
 }

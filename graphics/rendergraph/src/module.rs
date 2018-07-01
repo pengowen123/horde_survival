@@ -2,8 +2,9 @@
 
 use gfx;
 
-use super::pass::PassSetup;
-use super::builder::GraphBuilder;
+use pass::PassSetup;
+use builder::GraphBuilder;
+use error::BuildError;
 
 /// A `Module`
 pub struct Module<R, C, F, CF, DF>
@@ -44,9 +45,14 @@ where R: gfx::Resources,
     }
 
     /// Calls `PassSetup::setup` on each of this `Module`'s passes
-    pub fn setup_passes(self, builder: &mut GraphBuilder<R, C, F, CF, DF>) {
+    pub fn setup_passes(
+        self,
+        builder: &mut GraphBuilder<R, C, F, CF, DF>
+    ) -> Result<(), BuildError<String>> {
         for pass in self.passes {
-            pass.setup(builder);
+            pass.setup(builder)?;
         }
+
+        Ok(())
     }
 }

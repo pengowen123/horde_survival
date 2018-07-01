@@ -5,6 +5,7 @@
 use gfx::{self, format, handle, state, texture};
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
+use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 use cgmath::{self, SquareMatrix};
 use assets;
@@ -182,7 +183,7 @@ impl<R: gfx::Resources> LightingPass<R> {
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
         dir_shadow_map: handle::ShaderResourceView<R, [f32; 4]>,
-    ) -> Result<Self, passes::PassError>
+    ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
         let pso = passes::load_pso(
@@ -237,14 +238,14 @@ impl<R: gfx::Resources> LightingPass<R> {
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
+    -> Result<(), BuildError<String>>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
     let gbuffer = {
         let gbuffer = builder
-            .get_pass_output::<geometry_pass::Output<R>>("gbuffer")
-            .unwrap()
+            .get_pass_output::<geometry_pass::Output<R>>("gbuffer")?
             .gbuffer
             .clone();
         
@@ -252,15 +253,13 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     };
     let (rtv, dsv) = {
         let target = builder
-            .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")
-            .unwrap();
+            .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
         (target.rtv.clone(), target.dsv.clone())
     };
 
     let dir_shadow_map = {
         let srv = builder
-            .get_pass_output::<shadow::directional::Output<R>>("dir_shadow_map")
-            .unwrap()
+            .get_pass_output::<shadow::directional::Output<R>>("dir_shadow_map")?
             .srv
             .clone();
 
@@ -275,17 +274,21 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
             rtv,
             dsv,
             dir_shadow_map,
-        ).unwrap()
+        )?
     };
 
     builder.add_pass(pass);
+
+    Ok(())
 }
 
 impl<R, C> Pass<R, C> for LightingPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources) {
+    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
+        -> Result<(), RunError>
+    {
         let camera = resources.fetch::<Arc<Mutex<Camera>>>(0);
         let lighting_data = resources.fetch::<Arc<Mutex<lighting_data::LightingData>>>(0);
         let mut lighting_data = lighting_data.lock().unwrap();
@@ -319,11 +322,13 @@ impl<R, C> Pass<R, C> for LightingPass<R>
         let point_lights = lighting_data.take_point_lights().collect::<Vec<_>>();
         let spot_lights = lighting_data.take_spot_lights().collect::<Vec<_>>();
 
-        encoder.update_buffer(&data.dir_lights, &dir_lights, 0).unwrap();
-        encoder.update_buffer(&data.point_lights, &point_lights, 0).unwrap();
-        encoder.update_buffer(&data.spot_lights, &spot_lights, 0).unwrap();
+        encoder.update_buffer(&data.dir_lights, &dir_lights, 0)?;
+        encoder.update_buffer(&data.point_lights, &point_lights, 0)?;
+        encoder.update_buffer(&data.spot_lights, &spot_lights, 0)?;
 
         // Calculate lighting
         self.bundle.encode(encoder);
+
+        Ok(())
     }
 }

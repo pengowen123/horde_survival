@@ -3,8 +3,14 @@ authors = ["Owen Sanchez <pengowen816@gmail.com>"]
 name = "rendergraph"
 version = "0.1.0"
 
+[dependencies]
+quick-error = "1.2.2"
+
 [dependencies.common]
 path = "../../common"
+
+[dependencies.image_utils]
+path = "../../image_utils"
 
 [dev-dependencies]
 gfx = "0.17.1"

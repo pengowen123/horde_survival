@@ -7,7 +7,7 @@ use glutin;
 use std::collections::HashMap;
 use std::any::Any;
 use std::sync::Arc;
-use std::fmt;
+use std::{error, fmt};
 
 use super::pass::Pass;
 use super::RenderGraph;
@@ -51,6 +51,12 @@ impl fmt::Display for PassOutputError {
             PassOutputErrorKind::DowncastError =>
                 writeln!(f, "The output of the pass `{}` was not of the expected type", self.name),
         }
+    }
+}
+
+impl error::Error for PassOutputError {
+    fn cause(&self) -> Option<&error::Error> {
+        None
     }
 }
 

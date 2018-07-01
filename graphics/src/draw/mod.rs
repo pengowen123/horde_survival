@@ -28,6 +28,7 @@ pub use self::param::ShaderParam;
 use gfx::{self, handle};
 use common::specs;
 use rendergraph::{RenderGraph, builder, module, pass};
+use rendergraph::error::BuildError;
 use window;
 
 use std::sync::{Arc, Mutex, mpsc};
@@ -145,7 +146,9 @@ where
             ];
 
             for module in modules {
-                module.setup_passes(&mut builder);
+                module.setup_passes(&mut builder).unwrap_or_else(|e| {
+                    panic!("Error setting up module: {}", e)
+                });
             }
 
             builder.build(device, encoder, window)
@@ -164,7 +167,7 @@ where
     }
 
     /// Reloads the shaders
-    fn reload_shaders(&mut self) -> Result<(), passes::PassError> {
+    fn reload_shaders(&mut self) -> Result<(), BuildError<String>> {
         // TODO
         Ok(())
     }
@@ -191,7 +194,7 @@ where
 
         self.graph.add_resource(DrawableStorageRef::new(drawable));
 
-        self.graph.execute_passes();
+        self.graph.execute_passes().unwrap_or_else(|e| panic!("Error executing passes: {}", e));
 
         self.graph.add_resource(DrawableStorageRef::<R>::new_null())
     }

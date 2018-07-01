@@ -9,10 +9,9 @@ pub mod resource_pass;
 use gfx::{self, pso};
 use gfx::traits::FactoryExt;
 use image_utils;
-use rendergraph;
+use rendergraph::error::BuildError;
 
 use std::path::Path;
-use std::io;
 
 use assets::shader;
 
@@ -24,7 +23,7 @@ pub fn load_pso<R, F, P, I>(
     primitive: gfx::Primitive,
     rasterizer: gfx::state::Rasterizer,
     init: I,
-) -> Result<pso::PipelineState<R, I::Meta>, PassError>
+) -> Result<pso::PipelineState<R, I::Meta>, BuildError<String>>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
@@ -38,9 +37,7 @@ where
     //       be useful for debugging
     let set = factory.create_shader_set(&vs, &fs)?;
 
-    factory
-        .create_pipeline_state(&set, primitive, rasterizer, init)
-        .map_err(|e| e.into())
+    factory.create_pipeline_state(&set, primitive, rasterizer, init).map_err(|e| e.into())
 }
 
 /// Like `load_pso`, but also loads a geometry shader
@@ -52,7 +49,7 @@ pub fn load_pso_geometry<R, F, P, I>(
     primitive: gfx::Primitive,
     rasterizer: gfx::state::Rasterizer,
     init: I,
-) -> Result<pso::PipelineState<R, I::Meta>, PassError>
+) -> Result<pso::PipelineState<R, I::Meta>, BuildError<String>>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
@@ -64,39 +61,5 @@ where
     let fs = shader::load_shader_file(fs_path)?;
     let set = factory.create_shader_set_geometry(&vs, &gs, &fs)?;
 
-    factory
-        .create_pipeline_state(&set, primitive, rasterizer, init)
-        .map_err(|e| e.into())
-}
-
-quick_error! {
-    /// An error while creating a pass
-    #[derive(Debug)]
-    pub enum PassError {
-        Io(err: io::Error) {
-            display("Io error: {}", err)
-            from()
-        }
-        PipelineState(err: gfx::PipelineStateError<String>) {
-            display("Pipeline state error: {}", err)
-            from()
-        }
-        ProgramError(err: gfx::shade::ProgramError) {
-            display("Program error: {}", err)
-            from()
-        }
-        Texture(err: image_utils::TextureError) {
-            display("Texture creation error: {}", err)
-            from()
-        }
-        GfxCombined(err: gfx::CombinedError) {
-            display("gfx error: {}", err)
-            from()
-        }
-        ShaderLoadingError(err: shader::ShaderLoadingError) {
-            display("Shader error: {}", err)
-            from()
-        }
-        PassOutput(err: rendergraph::builder::PassOutputError)
-    }
+    factory.create_pipeline_state(&set, primitive, rasterizer, init).map_err(|e| e.into())
 }

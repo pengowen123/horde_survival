@@ -1,6 +1,7 @@
 //! Shader loading and preprocessing
 
 use regex::bytes::{Regex, Replacer, Captures};
+use rendergraph::error::BuildError;
 
 use std::path::Path;
 use std::io;
@@ -29,6 +30,12 @@ quick_error! {
             display("Shader name contained invalid Utf8: {}", err)
             from()
         }
+    }
+}
+
+impl From<ShaderLoadingError> for BuildError<String> {
+    fn from(e: ShaderLoadingError) -> BuildError<String> {
+        BuildError::Custom(e.into())
     }
 }
 

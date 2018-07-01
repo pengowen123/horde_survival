@@ -3,6 +3,7 @@
 use gfx::{self, handle, format, texture};
 use window::info::WindowInfo;
 use rendergraph::pass::Pass;
+use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 
 use draw::types;
@@ -19,6 +20,7 @@ pub struct IntermediateTarget<R: gfx::Resources> {
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
+    -> Result<(), BuildError<String>>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -28,9 +30,8 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         let factory = builder.factory();
         let dim = (dim.0 as texture::Size, dim.1 as texture::Size);
         let (_, srv, rtv) = factory
-            .create_render_target(dim.0, dim.1)
-            .unwrap();
-        let (_, depth_srv, dsv) = factory.create_depth_stencil(dim.0, dim.1).unwrap();
+            .create_render_target(dim.0, dim.1)?;
+        let (_, depth_srv, dsv) = factory.create_depth_stencil(dim.0, dim.1)?;
         
         IntermediateTarget {
             rtv,
@@ -46,6 +47,8 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     
     builder.add_pass(pass);
     builder.add_pass_output("intermediate_target", intermediate_target);
+
+    Ok(())
 }
 
 pub struct ResourcePass<R: gfx::Resources> {
@@ -56,8 +59,12 @@ impl<R, C> Pass<R, C> for ResourcePass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources) {
+    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
+        -> Result<(), RunError>
+    {
         encoder.clear(&self.intermediate_target.rtv, [0.0; 4]);
         encoder.clear_depth(&self.intermediate_target.dsv, 1.0);
+        
+        Ok(())
     }
 }

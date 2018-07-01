@@ -14,7 +14,7 @@ use gfx::handle::ShaderResourceView;
 
 use std::io::Cursor;
 
-pub use image::{PNG, JPEG};
+pub use image::{ImageError, PNG, JPEG};
 pub use format::{Rgba8, Srgba8};
 
 /// Loads a texture from the provided data

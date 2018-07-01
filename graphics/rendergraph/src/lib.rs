@@ -3,12 +3,14 @@
 #![deny(missing_docs)]
 
 extern crate common;
+extern crate image_utils;
 
 use common::{glutin, shred, gfx};
 
 pub mod pass;
 pub mod module;
 pub mod builder;
+pub mod error;
 
 use shred::{Resources, ResourceId};
 use glutin::GlContext;
@@ -61,14 +63,16 @@ impl<R, C, D> RenderGraph<R, C, D>
     }
 
     /// Executes all passes in the `RenderGraph`
-    pub fn execute_passes(&mut self) {
+    pub fn execute_passes(&mut self) -> Result<(), error::RunError> {
         self.device.cleanup();
 
         for pass in &mut self.passes {
-            pass.execute_pass(&mut self.encoder, &mut self.resources)
+            pass.execute_pass(&mut self.encoder, &mut self.resources)?
         }
 
         self.encoder.flush(&mut self.device);
-        self.window.swap_buffers().expect("Failed to swap buffers");
+        self.window.swap_buffers()?;
+
+        Ok(())
     }
 }

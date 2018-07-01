@@ -3,6 +3,7 @@
 use gfx::{self, texture, state, handle};
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
+use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 use assets;
 
@@ -38,7 +39,7 @@ impl<R: gfx::Resources> PostPass<R> {
         factory: &mut F,
         texture: handle::ShaderResourceView<R, [f32; 4]>,
         main_color: handle::RenderTargetView<R, types::ColorFormat>,
-    ) -> Result<Self, passes::PassError>
+    ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
         let pso = passes::load_pso(
@@ -73,6 +74,7 @@ impl<R: gfx::Resources> PostPass<R> {
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
+    -> Result<(), BuildError<String>>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -81,21 +83,27 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         builder.main_color().clone()
     };
 
-    let srv = builder.get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")
-                     .unwrap()
+    let srv =
+        builder.get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
                      .srv
                      .clone();
 
-    let pass = PostPass::new(builder.factory(), srv, main_color).unwrap();
+    let pass = PostPass::new(builder.factory(), srv, main_color)?;
 
     builder.add_pass(pass);
+
+    Ok(())
 }
 
 impl<R, C> Pass<R, C> for PostPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources) {
+    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
+        -> Result<(), RunError>
+    {
         self.bundle.encode(encoder);
+        
+        Ok(())
     }
 }
