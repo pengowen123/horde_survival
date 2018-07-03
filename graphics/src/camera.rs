@@ -3,7 +3,6 @@
 use common::specs::{self, ReadStorage, Join};
 use common::cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
 use common;
-use math::functions;
 use window::info;
 
 use std::sync::{Arc, Mutex};

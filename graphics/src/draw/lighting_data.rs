@@ -4,11 +4,10 @@ use common::specs::{self, Join, DispatcherBuilder};
 use common::cgmath;
 use common;
 
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{Arc, Mutex};
 use std::vec::Drain;
 
 use draw::passes::main::lighting;
-use draw::types::AspectRatio;
 use draw::components;
 
 /// Data for every light in the world
@@ -81,31 +80,13 @@ impl LightingData {
     }
 }
 
-pub struct System {
-    aspect_ratio_point: (AspectRatio, mpsc::Receiver<AspectRatio>),
-    aspect_ratio_spot: (AspectRatio, mpsc::Receiver<AspectRatio>),
-}
-
-impl System {
-    fn update_shadow_map_aspect_ratios(&mut self) {
-        let update = |pair: &mut (AspectRatio, mpsc::Receiver<AspectRatio>)| if let Ok(a) =
-            pair.1.try_recv()
-        {
-            pair.0 = a;
-        };
-
-        update(&mut self.aspect_ratio_point);
-        update(&mut self.aspect_ratio_spot);
-    }
-}
+pub struct System;
 
 impl<'a> specs::System<'a> for System {
     type SystemData = SystemData<'a>;
 
     fn run(&mut self, data: Self::SystemData) {
         let mut light_info = data.light_info.lock().unwrap();
-
-        self.update_shadow_map_aspect_ratios();
 
         // Clear all lights (reset them to default values so the shaders can use them without
         // consequence)
@@ -163,22 +144,16 @@ pub struct SystemData<'a> {
 pub fn init<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
-) -> (DispatcherBuilder<'a, 'b>, mpsc::Sender<AspectRatio>, mpsc::Sender<AspectRatio>) {
+) -> DispatcherBuilder<'a, 'b> {
 
     // Add resources
     world.add_resource(Arc::new(Mutex::new(LightingData::default())));
 
-    let (point_send, point_recv) = mpsc::channel();
-    let (spot_send, spot_recv) = mpsc::channel();
-
     // Initialize systems
-    let system = System {
-        aspect_ratio_point: (Default::default(), point_recv),
-        aspect_ratio_spot: (Default::default(), spot_recv),
-    };
+    let system = System;
 
     // Add systems
     let dispatcher = dispatcher.add(system, "light-info", &[]);
 
-    (dispatcher, point_send, spot_send)
+    dispatcher
 }

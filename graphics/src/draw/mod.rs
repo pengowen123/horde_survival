@@ -26,17 +26,16 @@ pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, handle};
-use common::specs;
+use common::{shred, specs};
 use rendergraph::{RenderGraph, builder, module, pass};
-use rendergraph::error::BuildError;
 use window;
 
-use std::sync::{Arc, Mutex, mpsc};
+use std::sync::{Arc, Mutex};
 
 use self::passes::{postprocessing, skybox, resource_pass, shadow};
 use self::passes::main::{geometry_pass, lighting};
-use self::types::AspectRatio;
-use camera;
+use self::lighting_data::LightingData;
+use camera::Camera;
 
 /// A `specs::Storage` for the `Drawable` component
 pub type DrawableStorage<'a, R> =
@@ -84,8 +83,6 @@ where
 {
     factory: F,
     graph: RenderGraph<R, C, D>,
-    aspect_ratio_point: mpsc::Sender<AspectRatio>,
-    aspect_ratio_spot: mpsc::Sender<AspectRatio>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -96,20 +93,19 @@ where
     D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     // TODO: Make this return result so the application can handle the error
-    pub fn new(
+    pub fn new<'a>(
         mut factory: F,
         window: window::Window,
         device: D,
         out_color: handle::RenderTargetView<R, types::ColorFormat>,
         out_depth: handle::DepthStencilView<R, types::DepthFormat>,
         encoder: gfx::Encoder<R, C>,
-        (aspect_ratio_point, aspect_ratio_spot):
-        (mpsc::Sender<AspectRatio>, mpsc::Sender<AspectRatio>),
-        // Shared resources between the `specs::World` and the rendergraph
-        camera: Arc<Mutex<camera::Camera>>,
-        lighting_data: Arc<Mutex<lighting_data::LightingData>>,
-        dir_shadow_source: Arc<Mutex<shadow::DirShadowSource>>,
+        resources: &'a shred::Resources,
     ) -> Self {
+        let camera = resources.fetch::<Arc<Mutex<Camera>>>(0).clone();
+        let lighting_data = resources.fetch::<Arc<Mutex<LightingData>>>(0).clone();
+        let dir_shadow_source = resources.fetch::<Arc<Mutex<DirShadowSource>>>(0).clone();
+
         // Build the rendergraph
         let graph = {
             let mut builder = builder::GraphBuilder::new(&mut factory, out_color, out_depth);
@@ -157,19 +153,11 @@ where
         Self {
             factory,
             graph,
-            aspect_ratio_point,
-            aspect_ratio_spot,
         }
     }
 
     pub fn factory(&self) -> &F {
         &self.factory
-    }
-
-    /// Reloads the shaders
-    fn reload_shaders(&mut self) -> Result<(), BuildError<String>> {
-        // TODO
-        Ok(())
     }
 }
 
@@ -196,6 +184,6 @@ where
 
         self.graph.execute_passes().unwrap_or_else(|e| panic!("Error executing passes: {}", e));
 
-        self.graph.add_resource(DrawableStorageRef::<R>::new_null())
+        self.graph.add_resource(DrawableStorageRef::<R>::new_null());
     }
 }

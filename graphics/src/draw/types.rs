@@ -1,6 +1,6 @@
 //! Types for graphics
 
-use gfx::{self, format, handle};
+use gfx::{self, format};
 use rendergraph::builder;
 
 /// A `GraphBuilder` with color and depth format types specific to this crate
@@ -37,34 +37,3 @@ pub type TextureView<R> = gfx::handle::ShaderResourceView<R, [f32; 4]>;
 
 /// A vertex buffer
 pub type VertexBuffer<R, V> = gfx::handle::Buffer<R, V>;
-
-/// The aspect ratio of a render target
-#[derive(Clone, Copy, Debug)]
-pub struct AspectRatio(pub f32);
-
-impl AspectRatio {
-    pub fn from_render_target<R, CF>(rtv: &handle::RenderTargetView<R, CF>) -> Self
-    where
-        R: gfx::Resources,
-    {
-        let (width, height, _, _) = rtv.get_dimensions();
-
-        AspectRatio(width as f32 / height as f32)
-    }
-
-    pub fn from_depth_stencil<R, DF>(dsv: &handle::DepthStencilView<R, DF>) -> Self
-    where
-        R: gfx::Resources,
-    {
-        let (width, height, _, _) = dsv.get_dimensions();
-
-        AspectRatio(width as f32 / height as f32)
-    }
-}
-
-impl Default for AspectRatio {
-    fn default() -> Self {
-        // NOTE: This cannot be 0.0 or a panic will happen when creating a projection matrix
-        AspectRatio(1.0)
-    }
-}

@@ -9,7 +9,6 @@ use window;
 use std::sync::{Arc, Mutex};
 
 use super::{param, components, lighting_data, passes};
-use camera;
 
 use gfx_device_gl;
 /// Initializes rendering-related components and systems
@@ -55,7 +54,7 @@ pub fn initialize<'a, 'b>(
 
     // Initialize subsystems
     let dispatcher = param::init(world, dispatcher);
-    let (dispatcher, point_send, spot_send) = lighting_data::init(world, dispatcher);
+    let dispatcher = lighting_data::init(world, dispatcher);
 
     // Add test entities
     // TODO: Remove this when the game has a better initialization system
@@ -64,11 +63,6 @@ pub fn initialize<'a, 'b>(
     init_test_entities(world, &mut factory);
 
     // Initialize systems
-    let camera = world.read_resource::<Arc<Mutex<camera::Camera>>>().clone();
-    let lighting_data = world.read_resource::<Arc<Mutex<lighting_data::LightingData>>>().clone();
-    let shadow_source =
-        world.read_resource::<Arc<Mutex<passes::shadow::DirShadowSource>>>().clone();
-
     let draw = super::System::new(
             factory,
             window.clone(),
@@ -76,10 +70,7 @@ pub fn initialize<'a, 'b>(
             main_color,
             main_depth,
             encoder,
-            (point_send, spot_send),
-            camera,
-            lighting_data,
-            shadow_source,
+            &world.res,
     );
 
     // Add systems

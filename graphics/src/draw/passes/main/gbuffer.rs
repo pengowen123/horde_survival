@@ -1,8 +1,7 @@
 //! Geometry-buffer creation for deferred shading
 
-use gfx::{self, texture, handle};
+use gfx::{self, texture};
 
-use draw::types;
 use draw::render_target::ViewPair;
 
 /// A geometry buffer
@@ -38,9 +37,9 @@ impl<R: gfx::Resources> GeometryBuffer<R> {
         // NOTE: Replace this with RGB textures to save memory if necessary
 
         // Create buffers
-        let position = ViewPair::new(factory, width, height, 2)?;
-        let normal = ViewPair::new(factory, width, height, 3)?;
-        let color = ViewPair::new(factory, width, height, 4)?;
+        let position = ViewPair::new(factory, width, height)?;
+        let normal = ViewPair::new(factory, width, height)?;
+        let color = ViewPair::new(factory, width, height)?;
 
         Ok(GeometryBuffer {
             position,
