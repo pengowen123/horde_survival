@@ -52,14 +52,7 @@ impl<R: gfx::Resources> SkyboxPass<R> {
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = passes::load_pso(
-            factory,
-            assets::get_shader_path("skybox_vertex"),
-            assets::get_shader_path("skybox_fragment"),
-            gfx::Primitive::TriangleList,
-            state::Rasterizer::new_fill(),
-            pipe::new(),
-        )?;
+        let pso = Self::load_pso(factory)?;
 
         // Create a screen quad to render to
         let vertices = [
@@ -109,6 +102,19 @@ impl<R: gfx::Resources> SkyboxPass<R> {
             bundle: gfx::Bundle::new(slice, pso, data),
         })
     }
+    
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
+    {
+        passes::load_pso(
+            factory,
+            assets::get_shader_path("skybox_vertex"),
+            assets::get_shader_path("skybox_fragment"),
+            gfx::Primitive::TriangleList,
+            state::Rasterizer::new_fill(),
+            pipe::new(),
+        )
+    }
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
@@ -134,9 +140,10 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-impl<R, C> Pass<R, C> for SkyboxPass<R>
+impl<R, C, F> Pass<R, C, F> for SkyboxPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
+          F: gfx::Factory<R>,
 {
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
         -> Result<(), RunError>
@@ -155,6 +162,11 @@ impl<R, C> Pass<R, C> for SkyboxPass<R>
 
         self.bundle.encode(encoder);
         
+        Ok(())
+    }
+
+    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory)?;
         Ok(())
     }
 }

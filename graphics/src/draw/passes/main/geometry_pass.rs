@@ -68,21 +68,7 @@ impl<R: gfx::Resources> GeometryPass<R> {
     where
         F: gfx::Factory<R>,
     {
-        // TODO: maybe enable culling
-        let rasterizer = state::Rasterizer {
-            //samples: Some(state::MultiSample),
-            cull_face: state::CullFace::Back,
-            ..state::Rasterizer::new_fill()
-        };
-
-        let pso = passes::load_pso(
-            factory,
-            assets::get_shader_path("geometry_pass_vertex"),
-            assets::get_shader_path("geometry_pass_fragment"),
-            gfx::Primitive::TriangleList,
-            rasterizer,
-            pipe::new(),
-        )?;
+        let pso = Self::load_pso(factory)?;
 
         // Create dummy data
         let vbuf = factory.create_vertex_buffer(&[]);
@@ -125,6 +111,24 @@ impl<R: gfx::Resources> GeometryPass<R> {
 
         Ok((pass, output))
     }
+    
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
+    {
+        let rasterizer = state::Rasterizer {
+            cull_face: state::CullFace::Back,
+            ..state::Rasterizer::new_fill()
+        };
+
+        passes::load_pso(
+            factory,
+            assets::get_shader_path("geometry_pass_vertex"),
+            assets::get_shader_path("geometry_pass_fragment"),
+            gfx::Primitive::TriangleList,
+            rasterizer,
+            pipe::new(),
+        )
+    }
 }
 
 pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
@@ -150,9 +154,10 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-impl<R, C> Pass<R, C> for GeometryPass<R>
+impl<R, C, F> Pass<R, C, F> for GeometryPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
+          F: gfx::Factory<R>,
 {
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
         -> Result<(), RunError>
@@ -205,6 +210,11 @@ impl<R, C> Pass<R, C> for GeometryPass<R>
             );
         }
         
+        Ok(())
+    }
+
+    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory)?;
         Ok(())
     }
 }

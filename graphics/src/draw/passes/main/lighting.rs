@@ -186,14 +186,7 @@ impl<R: gfx::Resources> LightingPass<R> {
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = passes::load_pso(
-            factory,
-            assets::get_shader_path("lighting_vertex"),
-            assets::get_shader_path("lighting_fragment"),
-            gfx::Primitive::TriangleList,
-            state::Rasterizer::new_fill(),
-            pipe::new(),
-        )?;
+        let pso = Self::load_pso(factory)?;
 
         // Create a screen quad
         let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
@@ -234,6 +227,19 @@ impl<R: gfx::Resources> LightingPass<R> {
         };
 
         Ok(pass)
+    }
+    
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
+    {
+        passes::load_pso(
+            factory,
+            assets::get_shader_path("lighting_vertex"),
+            assets::get_shader_path("lighting_fragment"),
+            gfx::Primitive::TriangleList,
+            state::Rasterizer::new_fill(),
+            pipe::new(),
+        )
     }
 }
 
@@ -282,9 +288,10 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-impl<R, C> Pass<R, C> for LightingPass<R>
+impl<R, C, F> Pass<R, C, F> for LightingPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
+          F: gfx::Factory<R>,
 {
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
         -> Result<(), RunError>
@@ -329,6 +336,11 @@ impl<R, C> Pass<R, C> for LightingPass<R>
         // Calculate lighting
         self.bundle.encode(encoder);
 
+        Ok(())
+    }
+
+    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory)?;
         Ok(())
     }
 }

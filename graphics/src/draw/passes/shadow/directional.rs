@@ -56,15 +56,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             out_depth: dsv,
         };
 
-        let pso = passes::load_pso(
-            factory,
-            assets::get_shader_path("dir_shadow_vertex"),
-            assets::get_shader_path("dir_shadow_fragment"),
-            gfx::Primitive::TriangleList,
-            state::Rasterizer::new_fill(),
-            pipe::new(),
-        )?;
-        
+        let pso = Self::load_pso(factory)?;
         let pass = Self {
             bundle: gfx::Bundle::new(slice, pso, data),
         };
@@ -74,6 +66,19 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
         };
         
         Ok((pass, output))
+    }
+
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
+    {
+        passes::load_pso(
+            factory,
+            assets::get_shader_path("dir_shadow_vertex"),
+            assets::get_shader_path("dir_shadow_fragment"),
+            gfx::Primitive::TriangleList,
+            state::Rasterizer::new_fill(),
+            pipe::new(),
+        )
     }
 }
 
@@ -92,9 +97,10 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 }
 
 
-impl<R, C> Pass<R, C> for DirectionalShadowPass<R>
+impl<R, C, F> Pass<R, C, F> for DirectionalShadowPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
+          F: gfx::Factory<R>,
 {
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
         -> Result<(), RunError>
@@ -126,6 +132,11 @@ impl<R, C> Pass<R, C> for DirectionalShadowPass<R>
             self.bundle.encode(encoder);
         }
         
+        Ok(())
+    }
+
+    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory)?;
         Ok(())
     }
 }

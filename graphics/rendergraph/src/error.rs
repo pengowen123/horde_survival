@@ -8,7 +8,7 @@ use std::{fmt, io, error};
 
 use builder::PassOutputError;
 
-/// An error while building a `RenderGraph`
+/// An error while building a `RenderGraph` or some component of it (such as when reloading shaders)
 #[derive(Debug)]
 pub enum BuildError<S> {
     /// Pass output access error

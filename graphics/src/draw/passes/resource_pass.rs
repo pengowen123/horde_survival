@@ -55,9 +55,10 @@ pub struct ResourcePass<R: gfx::Resources> {
     intermediate_target: IntermediateTarget<R>,
 }
 
-impl<R, C> Pass<R, C> for ResourcePass<R>
+impl<R, C, F> Pass<R, C, F> for ResourcePass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
+          F: gfx::Factory<R>,
 {
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
         -> Result<(), RunError>
@@ -65,6 +66,10 @@ impl<R, C> Pass<R, C> for ResourcePass<R>
         encoder.clear(&self.intermediate_target.rtv, [0.0; 4]);
         encoder.clear_depth(&self.intermediate_target.dsv, 1.0);
         
+        Ok(())
+    }
+
+    fn reload_shaders(&mut self, _: &mut F) -> Result<(), BuildError<String>> {
         Ok(())
     }
 }

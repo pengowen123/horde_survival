@@ -28,6 +28,7 @@ pub use self::param::ShaderParam;
 use gfx::{self, handle};
 use common::{shred, specs};
 use rendergraph::{RenderGraph, builder, module, pass};
+use rendergraph::error::BuildError;
 use window;
 
 use std::sync::{Arc, Mutex};
@@ -82,7 +83,7 @@ where
     D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     factory: F,
-    graph: RenderGraph<R, C, D>,
+    graph: RenderGraph<R, C, D, F>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -158,6 +159,11 @@ where
 
     pub fn factory(&self) -> &F {
         &self.factory
+    }
+
+    /// Reloads the shaders
+    fn reload_shaders(&mut self) -> Result<(), BuildError<String>> {
+        self.graph.reload_shaders(&mut self.factory)
     }
 }
 

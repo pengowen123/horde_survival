@@ -66,7 +66,7 @@ where R: gfx::Resources,
       C: gfx::CommandBuffer<R> + 'a,
       F: gfx::Factory<R> + 'a,
 {
-    passes: Vec<Box<Pass<R, C>>>,
+    passes: Vec<Box<Pass<R, C, F>>>,
     pass_outputs: HashMap<String, Box<Any>>,
     resources: Resources,
     factory: &'a mut F,
@@ -110,7 +110,7 @@ where R: gfx::Resources,
 
     /// Adds the provided pass to the `GraphBuilder`
     pub fn add_pass<P>(&mut self, pass: P)
-        where P: Pass<R, C> + 'static,
+        where P: Pass<R, C, F> + 'static,
     {
         let pass: Box<P> = pass.into();
         self.passes.push(pass);
@@ -172,7 +172,7 @@ where R: gfx::Resources,
         device: D,
         encoder: gfx::Encoder<R, C>,
         window: Arc<glutin::GlWindow>
-    ) -> RenderGraph<R, C, D>
+    ) -> RenderGraph<R, C, D, F>
         where D: gfx::Device<Resources = R, CommandBuffer = C>
     {
         RenderGraph::new(self.passes, self.resources, encoder, device, window)

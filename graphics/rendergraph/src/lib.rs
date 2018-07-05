@@ -18,27 +18,29 @@ use glutin::GlContext;
 use std::sync::Arc;
 
 /// A type that stores all passes and can run them
-pub struct RenderGraph<R, C, D>
+pub struct RenderGraph<R, C, D, F>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           D: gfx::Device,
+          F: gfx::Factory<R>,
 {
-    passes: Vec<Box<pass::Pass<R, C>>>,
+    passes: Vec<Box<pass::Pass<R, C, F>>>,
     resources: Resources,
     encoder: gfx::Encoder<R, C>,
     device: D,
     window: Arc<glutin::GlWindow>,
 }
 
-impl<R, C, D> RenderGraph<R, C, D>
+impl<R, C, D, F> RenderGraph<R, C, D, F>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           D: gfx::Device<Resources = R, CommandBuffer = C>,
+          F: gfx::Factory<R>,
 {
     /// Returns a new `RenderGraph` that contains the provided passes and resources
     ///
     /// Requires ownership of the device, and an encoder.
-    pub fn new(passes: Vec<Box<pass::Pass<R, C>>>,
+    pub fn new(passes: Vec<Box<pass::Pass<R, C, F>>>,
                resources: Resources,
                encoder: gfx::Encoder<R, C>,
                device: D,
@@ -73,6 +75,14 @@ impl<R, C, D> RenderGraph<R, C, D>
         self.encoder.flush(&mut self.device);
         self.window.swap_buffers()?;
 
+        Ok(())
+    }
+
+    /// Reloads the shaders for all passes in the `RenderGraph`
+    pub fn reload_shaders(&mut self, factory: &mut F) -> Result<(), error::BuildError<String>> {
+        for pass in &mut self.passes {
+            pass.reload_shaders(factory)?;
+        }
         Ok(())
     }
 }

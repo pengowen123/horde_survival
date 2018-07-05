@@ -49,7 +49,7 @@ where R: gfx::Resources,
 }
 
 /// A trait that represents a rendering pass
-pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>> {
+pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>> {
     /// Executes the pass, adding graphics commands to the `Encoder`
     ///
     /// The pass has access to the `RenderGraph`'s resources.
@@ -58,4 +58,7 @@ pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>> {
         encoder: &mut gfx::Encoder<R, C>,
         resources: &mut Resources,
     ) -> Result<(), RunError>;
+    /// Reloads the shaders for the pass
+    fn reload_shaders(&mut self, factory: &mut F)
+        -> Result<(), BuildError<String>>;
 }
