@@ -70,7 +70,7 @@ pub fn initialize<'a, 'b>(
             main_color,
             main_depth,
             encoder,
-            &world.res,
+            &mut world.res,
     );
 
     // Add systems

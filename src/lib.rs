@@ -31,10 +31,7 @@ pub fn run() {
     let dispatcher = common::initialize(&mut world, dispatcher);
     let dispatcher = window::initialize(&mut world, dispatcher);
         
-    let dispatcher = {
-        let mut event_channel = world.write_resource::<window_event::EventChannel>();
-        player_control::initialize(dispatcher, &mut event_channel)
-    };
+    let dispatcher = player_control::initialize(&mut world, dispatcher);
     
     let dispatcher = control::initialize(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);

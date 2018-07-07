@@ -40,8 +40,8 @@ impl System {
 
         for e in event_channel.read(&mut self.reader_id) {
             match e {
-                Event::CameraRotation(rot) => self.rotate_direction = Some(*rot),
-                Event::MovementKeyChange(direction, state) => {
+                Event::RotateCamera(rot) => self.rotate_direction = Some(*rot),
+                Event::ChangeMovementKeyState(direction, state) => {
                     let input = input::InputState::from_bits(*direction as _).unwrap();
 
                     match state {
@@ -49,6 +49,7 @@ impl System {
                         State::Disabled => self.input_state.remove(input),
                     }
                 }
+                _ => {},
             }
         }
     }
@@ -112,10 +113,11 @@ impl<'a> specs::System<'a> for System {
 
 /// Initializes the player control system
 pub fn initialize<'a, 'b>(
+    world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
-    event_channel: &mut window_event::EventChannel,
 ) -> DispatcherBuilder<'a, 'b> {
 
+    let mut event_channel = world.write_resource::<window_event::EventChannel>();
     let reader_id = event_channel.register_reader();
     // Initialize systems
     let control = System::new(reader_id);

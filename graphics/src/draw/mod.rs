@@ -29,7 +29,7 @@ use gfx::{self, handle};
 use common::{shred, specs};
 use rendergraph::{RenderGraph, builder, module, pass};
 use rendergraph::error::BuildError;
-use window;
+use window::{self, window_event};
 
 use std::sync::{Arc, Mutex};
 
@@ -84,6 +84,7 @@ where
 {
     factory: F,
     graph: RenderGraph<R, C, D, F>,
+    reader_id: window_event::ReaderId,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -101,11 +102,15 @@ where
         out_color: handle::RenderTargetView<R, types::ColorFormat>,
         out_depth: handle::DepthStencilView<R, types::DepthFormat>,
         encoder: gfx::Encoder<R, C>,
-        resources: &'a shred::Resources,
+        resources: &'a mut shred::Resources,
     ) -> Self {
         let camera = resources.fetch::<Arc<Mutex<Camera>>>(0).clone();
         let lighting_data = resources.fetch::<Arc<Mutex<LightingData>>>(0).clone();
         let dir_shadow_source = resources.fetch::<Arc<Mutex<DirShadowSource>>>(0).clone();
+        let reader_id = {
+            let mut event_channel = resources.fetch_mut::<window_event::EventChannel>(0);
+            event_channel.register_reader()
+        };
 
         // Build the rendergraph
         let graph = {
@@ -154,6 +159,7 @@ where
         Self {
             factory,
             graph,
+            reader_id,
         }
     }
 
@@ -163,6 +169,7 @@ where
 
     /// Reloads the shaders
     fn reload_shaders(&mut self) -> Result<(), BuildError<String>> {
+        println!("Reloading shaders");
         self.graph.reload_shaders(&mut self.factory)
     }
 }
@@ -170,6 +177,7 @@ where
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, components::Drawable<R>>,
+    event_channel: specs::Fetch<'a, window_event::EventChannel>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -182,6 +190,13 @@ where
     type SystemData = Data<'a, R>;
 
     fn run(&mut self, data: Self::SystemData) {
+        // Check if shaders should be reloaded
+        for e in data.event_channel.read(&mut self.reader_id) {
+            if let &window_event::Event::ReloadShaders = e {
+                self.reload_shaders().unwrap_or_else(|e| panic!("Error reloading shaders: {}", e));
+            }
+        }
+
         // This has the lifetime of this function, and the DrawableStorageRef is set to null before
         // the function ends, so there shouldn't be any dangling pointers
         let drawable: &DrawableStorage<R> = &data.drawable;

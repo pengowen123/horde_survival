@@ -46,8 +46,9 @@ impl CameraRotation {
 
 /// The event type that is sent through the event channel
 pub enum Event {
-    MovementKeyChange(Direction, State),
-    CameraRotation(CameraRotation),
+    ChangeMovementKeyState(Direction, State),
+    RotateCamera(CameraRotation),
+    ReloadShaders,
 }
 
 /// Processes the provided window event, sending the processed version to the event channel
@@ -87,7 +88,7 @@ pub fn process_window_event(
             let rot_yaw = diff_yaw as ::Float * sensitivity;
             let camera_rot = CameraRotation::new(cgmath::Rad(rot_pitch), cgmath::Rad(rot_yaw));
 
-            channel.single_write(Event::CameraRotation(camera_rot));
+            channel.single_write(Event::RotateCamera(camera_rot));
         }
         WindowEvent::KeyboardInput {
             input: KeyboardInput {
@@ -114,6 +115,11 @@ pub fn process_window_event(
                     VirtualKeyCode::D => {
                         event = Some(get_movement_event(Direction::Right, state))
                     }
+                    VirtualKeyCode::F1 => {
+                        if let ElementState::Pressed = state {
+                            event = Some(Event::ReloadShaders);
+                        }
+                    },
                     _ => {}
                 }
             }
@@ -134,5 +140,5 @@ fn get_movement_event(direction: Direction, state: ElementState) -> Event {
         ElementState::Released => State::Disabled,
     };
 
-    Event::MovementKeyChange(direction, state)
+    Event::ChangeMovementKeyState(direction, state)
 }
