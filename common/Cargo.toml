@@ -16,6 +16,7 @@ gfx = "0.17"
 gfx_device_gl = "0.15.2"
 gfx_window_glutin = "0.20"
 shrev = "1.0.1"
+slog = "2.2.3"
 
 [dependencies.nphysics3d]
 branch = "horde"

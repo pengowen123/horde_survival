@@ -11,10 +11,7 @@ pub struct Delta(Duration);
 impl Delta {
     pub fn to_float(&self) -> ::Float {
         // One billion divided by the number of nanoseconds
-        self.0.num_nanoseconds().unwrap_or_else(|| {
-            warn!("Delta time overflow");
-            1_000_000_000
-        }) as ::Float / 1_000_000_000.0
+        self.0.num_nanoseconds().expect("Delta time overflow") as ::Float / 1_000_000_000.0
     }
 }
 
@@ -25,7 +22,7 @@ impl Default for Delta {
 }
 
 /// A system to update the delta time
-pub(crate) struct System {
+pub struct System {
     last_update: Instant,
 }
 

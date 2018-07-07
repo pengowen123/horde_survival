@@ -2,6 +2,10 @@
 
 #[macro_use]
 extern crate shred_derive;
+#[macro_use]
+extern crate slog;
+extern crate slog_term;
+extern crate slog_async;
 extern crate common;
 extern crate math;
 extern crate physics;
@@ -13,6 +17,7 @@ extern crate graphics;
 mod dev;
 
 mod player_control;
+mod logging;
 
 use common::{specs, glutin};
 use common::shred::{self, RunNow};
@@ -26,6 +31,10 @@ pub fn run() {
     // Create world
     let mut world = specs::World::new();
     let dispatcher = specs::DispatcherBuilder::new();
+
+    // Initialize logger
+    let logger = logging::init_logger();
+    world.add_resource(logger);
 
     // Call initialization functions (initializes their components and systems)
     let dispatcher = common::initialize(&mut world, dispatcher);

@@ -21,8 +21,7 @@ pub extern crate gfx_device_gl;
 
 // Misc
 pub extern crate time;
-#[macro_use]
-pub extern crate log;
+extern crate slog;
 
 mod delta;
 mod components;
@@ -32,6 +31,9 @@ pub use self::delta::*;
 
 /// The float type used in `horde_survival`
 pub type Float = f64;
+
+/// The message that gets printed when Horde Survival crashes
+pub const CRASH_MSG: &str = "An error has occurred";
 
 /// Registers all components and systems in this crate
 pub fn initialize<'a, 'b>(

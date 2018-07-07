@@ -16,6 +16,8 @@ extern crate regex;
 extern crate obj;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate slog;
 
 pub mod draw;
 pub mod assets;

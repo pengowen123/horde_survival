@@ -26,10 +26,11 @@ pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, handle};
-use common::{shred, specs};
+use common::{self, shred, specs};
 use rendergraph::{RenderGraph, builder, module, pass};
 use rendergraph::error::BuildError;
 use window::{self, window_event};
+use slog;
 
 use std::sync::{Arc, Mutex};
 
@@ -111,6 +112,7 @@ where
             let mut event_channel = resources.fetch_mut::<window_event::EventChannel>(0);
             event_channel.register_reader()
         };
+        let log = resources.fetch::<slog::Logger>(0);
 
         // Build the rendergraph
         let graph = {
@@ -140,16 +142,17 @@ where
                 .add_pass(postprocessing::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
 
             let modules = vec![
-                resource_module,
-                shadow_module,
-                main_module,
-                skybox_module,
-                postprocessing_module,
+                (resource_module, "resource"),
+                (shadow_module, "shadow"),
+                (main_module, "main"),
+                (skybox_module, "skybox"),
+                (postprocessing_module, "postprocessing"),
             ];
 
-            for module in modules {
+            for (module, name) in modules {
                 module.setup_passes(&mut builder).unwrap_or_else(|e| {
-                    panic!("Error setting up module: {}", e)
+                    error!(log, "Error setting up `{}` module: {}", name, e);
+                    panic!(common::CRASH_MSG);
                 });
             }
 
@@ -168,8 +171,8 @@ where
     }
 
     /// Reloads the shaders
-    fn reload_shaders(&mut self) -> Result<(), BuildError<String>> {
-        println!("Reloading shaders");
+    fn reload_shaders(&mut self, log: &slog::Logger) -> Result<(), BuildError<String>> {
+        info!(log, "Reloading shaders";);
         self.graph.reload_shaders(&mut self.factory)
     }
 }
@@ -178,6 +181,7 @@ where
 pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, components::Drawable<R>>,
     event_channel: specs::Fetch<'a, window_event::EventChannel>,
+    log: specs::Fetch<'a, slog::Logger>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -193,7 +197,11 @@ where
         // Check if shaders should be reloaded
         for e in data.event_channel.read(&mut self.reader_id) {
             if let &window_event::Event::ReloadShaders = e {
-                self.reload_shaders().unwrap_or_else(|e| panic!("Error reloading shaders: {}", e));
+                self.reload_shaders(&data.log)
+                    .unwrap_or_else(|e| {
+                        error!(data.log, "Error reloading shaders: {}", e;);
+                        panic!(common::CRASH_MSG);
+                    });
             }
         }
 
@@ -203,7 +211,10 @@ where
 
         self.graph.add_resource(DrawableStorageRef::new(drawable));
 
-        self.graph.execute_passes().unwrap_or_else(|e| panic!("Error executing passes: {}", e));
+        self.graph.execute_passes().unwrap_or_else(|e| {
+            error!(data.log, "Error executing passes: {}", e;);
+            panic!(common::CRASH_MSG);
+        });
 
         self.graph.add_resource(DrawableStorageRef::<R>::new_null());
     }
