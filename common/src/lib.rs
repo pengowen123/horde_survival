@@ -3,6 +3,7 @@
 // ECS
 pub extern crate specs;
 pub extern crate shred;
+pub extern crate shrev;
 
 // Math
 pub extern crate cgmath;

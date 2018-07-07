@@ -18,6 +18,7 @@ use common::{specs, glutin};
 use common::shred::{self, RunNow};
 
 use common::Float;
+use window::window_event;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
@@ -29,11 +30,16 @@ pub fn run() {
     // Call initialization functions (initializes their components and systems)
     let dispatcher = common::initialize(&mut world, dispatcher);
     let dispatcher = window::initialize(&mut world, dispatcher);
-    let (dispatcher, sender) = player_control::initialize(dispatcher);
+        
+    let dispatcher = {
+        let mut event_channel = world.write_resource::<window_event::EventChannel>();
+        player_control::initialize(dispatcher, &mut event_channel)
+    };
+    
     let dispatcher = control::initialize(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);
     let (dispatcher, window, mut events) = graphics::initialize(&mut world, dispatcher,
-                                                                Box::new(dev::add_test_entities));
+                                                                    Box::new(dev::add_test_entities));
 
     // Build the dispatcher
     let mut dispatcher = dispatcher.build();
@@ -42,31 +48,34 @@ pub fn run() {
 
     // Run systems
     while running {
-        let mut latest_mouse_move = None;
+        {
+            let mut channel = world.write_resource::<window_event::EventChannel>();
+            let mut latest_mouse_move = None;
 
-        events.poll_events(|e| match e {
-            glutin::Event::WindowEvent { event, .. } => {
-                // Collect the latest mouse event
-                if let glutin::WindowEvent::CursorMoved { .. } = event {
-                    latest_mouse_move = Some(event);
-                    return;
-                // Test if `Escape` was pressed, and if so, end the event loop
-                } else if let glutin::WindowEvent::KeyboardInput { input, .. } = event {
-                    if let Some(glutin::VirtualKeyCode::Escape) = input.virtual_keycode {
-                        if let glutin::ElementState::Pressed = input.state {
-                            running = false;
+            events.poll_events(|e| match e {
+                glutin::Event::WindowEvent { event, .. } => {
+                    // Collect the latest mouse event
+                    if let glutin::WindowEvent::CursorMoved { .. } = event {
+                        latest_mouse_move = Some(event);
+                        return;
+                    // Test if `Escape` was pressed, and if so, end the event loop
+                    } else if let glutin::WindowEvent::KeyboardInput { input, .. } = event {
+                        if let Some(glutin::VirtualKeyCode::Escape) = input.virtual_keycode {
+                            if let glutin::ElementState::Pressed = input.state {
+                                running = false;
+                            }
                         }
                     }
+
+                    window_event::process_window_event(&mut channel, &window, event);
                 }
+                _ => {}
+            });
 
-                sender.process_window_event(&window, event);
+            // Only process the latest mouse movement event
+            if let Some(event) = latest_mouse_move {
+                window_event::process_window_event(&mut channel, &window, event)
             }
-            _ => {}
-        });
-
-        // Only process the latest mouse movement event
-        if let Some(event) = latest_mouse_move {
-            sender.process_window_event(&window, event)
         }
 
         dispatcher.dispatch(&mut world.res);

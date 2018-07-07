@@ -10,7 +10,6 @@ extern crate bitflags;
 pub mod info;
 pub mod window_event;
 pub mod input;
-pub mod player_event;
 
 use common::{Float, glutin};
 
@@ -25,6 +24,7 @@ pub fn initialize<'a, 'b>(
 ) -> specs::DispatcherBuilder<'a, 'b> {
 
     world.add_resource(info::WindowInfo::default());
+    world.add_resource(window_event::EventChannel::new());
 
     dispatcher.add(info::System, "window-info", &[])
 }

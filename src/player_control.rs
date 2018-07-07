@@ -3,8 +3,8 @@
 use common;
 use common::specs::{self, Join, DispatcherBuilder};
 use common::cgmath::{self, Quaternion, Rotation3, Rad};
-use window::player_event::{self, Event};
-use window::{window_event, input};
+use window::window_event::{self, Event, State};
+use window::input;
 use control;
 
 use math::functions;
@@ -15,10 +15,10 @@ const PLAYER_SPEED: ::Float = 25.0;
 type Euler = cgmath::Euler<Rad<::Float>>;
 
 pub struct System {
-    /// Receives events
-    input: player_event::EventReceiver,
+    /// The ID of the event reader for this system
+    reader_id: window_event::ReaderId,
     /// The rotation to apply to the player entity
-    rotate_direction: Option<player_event::CameraRotation>,
+    rotate_direction: Option<window_event::CameraRotation>,
     /// Internally used for clamping the camera controls
     current_direction: Euler,
     /// Input state
@@ -26,39 +26,35 @@ pub struct System {
 }
 
 impl System {
-    pub fn new(input: player_event::EventReceiver) -> Self {
+    pub fn new(reader_id: window_event::ReaderId) -> Self {
         Self {
-            input: input,
+            reader_id,
             rotate_direction: None,
             current_direction: cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0)).into(),
             input_state: Default::default(),
         }
     }
 
-    fn check_input(&mut self) {
+    fn check_input(&mut self, event_channel: &window_event::EventChannel) {
         self.rotate_direction = None;
 
-        while let Ok(e) = self.input.try_recv() {
+        for e in event_channel.read(&mut self.reader_id) {
             match e {
-                Event::RotateCamera(rot) => self.rotate_direction = Some(rot),
-                Event::EnableMoveDirection(direction) => {
-                    self.input_state.insert(
-                        input::InputState::from_bits(direction as _)
-                            .unwrap(),
-                    );
-                }
-                Event::DisableMoveDirection(direction) => {
-                    self.input_state.remove(
-                        input::InputState::from_bits(direction as _)
-                            .unwrap(),
-                    );
+                Event::CameraRotation(rot) => self.rotate_direction = Some(*rot),
+                Event::MovementKeyChange(direction, state) => {
+                    let input = input::InputState::from_bits(*direction as _).unwrap();
+
+                    match state {
+                        State::Enabled => self.input_state.insert(input),
+                        State::Disabled => self.input_state.remove(input),
+                    }
                 }
             }
         }
     }
 
     /// Applies the provided rotation to the current direction, and returns the new value
-    fn update_direction(&mut self, rot: player_event::CameraRotation) -> Quaternion<::Float> {
+    fn update_direction(&mut self, rot: window_event::CameraRotation) -> Quaternion<::Float> {
         let current = &mut self.current_direction;
 
         // The pitch, yaw, and roll values are stored internally
@@ -80,6 +76,7 @@ impl System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
+    event_channel: specs::Fetch<'a, window_event::EventChannel>,
     player: specs::ReadStorage<'a, common::Player>,
     control: specs::WriteStorage<'a, control::Control>,
     // Direction is directly accessed because it is special for the player (it is not tied to
@@ -92,7 +89,7 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         // TODO: Maybe use delta time here for controls
-        self.check_input();
+        self.check_input(&data.event_channel);
 
         // Apply the input to the player entity
         for (d, c, _) in (&mut data.direction, &mut data.control, &data.player).join() {
@@ -116,14 +113,13 @@ impl<'a> specs::System<'a> for System {
 /// Initializes the player control system
 pub fn initialize<'a, 'b>(
     dispatcher: DispatcherBuilder<'a, 'b>,
-) -> (DispatcherBuilder<'a, 'b>, window_event::SenderHub) {
+    event_channel: &mut window_event::EventChannel,
+) -> DispatcherBuilder<'a, 'b> {
 
+    let reader_id = event_channel.register_reader();
     // Initialize systems
-    let (snd, recv) = window_event::SenderHub::new();
-    let control = System::new(recv.into_receiver());
+    let control = System::new(reader_id);
 
     // Add systems
-    let dispatcher = dispatcher.add(control, "player-control", &[]);
-
-    (dispatcher, snd)
+    dispatcher.add(control, "player-control", &[])
 }

@@ -62,6 +62,7 @@ impl InputState {
 }
 
 /// A movement direction
+#[derive(Clone, Copy)]
 #[repr(u8)]
 pub enum Direction {
     Forward = InputState::FORWARD.bits,
