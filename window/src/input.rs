@@ -61,6 +61,12 @@ impl InputState {
     }
 }
 
+impl From<Direction> for InputState {
+    fn from(dir: Direction) -> Self {
+        Self::from_bits(dir as _).unwrap()
+    }
+}
+
 /// A movement direction
 #[derive(Clone, Copy)]
 #[repr(u8)]

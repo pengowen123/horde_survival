@@ -2,9 +2,11 @@
 
 use specs::{self, DispatcherBuilder};
 use common::glutin::{self, EventsLoop, GlContext};
+use common;
 use gfx_window_glutin;
 use gfx;
 use window;
+use slog;
 
 use std::sync::{Arc, Mutex};
 
@@ -36,8 +38,14 @@ pub fn initialize<'a, 'b>(
             &events,
         );
 
-    unsafe {
-        window.make_current().unwrap();
+    {
+        let log = world.read_resource::<slog::Logger>();
+        unsafe {
+            window.make_current().unwrap_or_else(|e| {
+                error!(log, "Failed to set make GL context the current one: {}", e;);
+                panic!(common::CRASH_MSG);
+            });
+        }
     }
 
     let window = Arc::new(window);

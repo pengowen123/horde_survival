@@ -41,8 +41,14 @@ pub fn initialize<'a, 'b>(
     let (dispatcher, window, events) = draw::initialize(world, dispatcher, init_test_entities);
 
     // Add resources
-    let (w, h) = window.get_inner_size().unwrap();
     {
+        let (w, h) = {
+            let log = world.read_resource::<slog::Logger>();
+            window.get_inner_size().unwrap_or_else(|| {
+                error!(log, "Failed to get window size (window probably doesn't exist anymore)";);
+                panic!(common::CRASH_MSG);
+            })
+        };
         let camera = world.write_resource::<Arc<Mutex<camera::Camera>>>();
         *camera.lock().unwrap() = camera::Camera::new_default(w as f32 / h as f32);
     }

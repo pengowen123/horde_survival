@@ -7,6 +7,8 @@ extern crate common;
 extern crate math;
 #[macro_use]
 extern crate shred_derive;
+#[macro_use]
+extern crate slog;
 
 mod init;
 mod output;
@@ -32,6 +34,7 @@ pub struct Data<'a> {
     delta: specs::Fetch<'a, Delta>,
     entities: specs::Entities<'a>,
     scale: specs::WriteStorage<'a, Scale>,
+    log: specs::Fetch<'a, slog::Logger>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -45,6 +48,8 @@ impl<'a> specs::System<'a> for System {
             let mut new_handle = None;
             if let physics::Handle::Init(ref mut init) = *p.handle_mut() {
                 let mut init = init.take().expect(
+                    // This shouldn't happen because the handle is changed from Init to Body after
+                    // initialization
                     "Attempt to initialize physics body multiple times",
                 );
 
@@ -62,10 +67,12 @@ impl<'a> specs::System<'a> for System {
 
                     let new_handle = {
                         let rb = p.handle_mut().get_body_mut().expect(
+                            // This shouldn't happen because all uninitialized bodies are
+                            // initialized in the code above
                             "Found uninitialized handle",
                         );
 
-                        let new_rb = scale::scale_body(&*rb, relative_scale as ::Float);
+                        let new_rb = scale::scale_body(&*rb, relative_scale as ::Float, &data.log);
 
                         self.replace_rigid_body(rb, new_rb)
                     };

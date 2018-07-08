@@ -52,6 +52,7 @@ pub enum Event {
 }
 
 /// Processes the provided window event, sending the processed version to the event channel
+///
 pub fn process_window_event(
     channel: &mut EventChannel,
     window: &glutin::Window,
@@ -70,8 +71,9 @@ pub fn process_window_event(
             };
             let middle = (w as ::Float / 2.0, h as ::Float / 2.0);
 
-            window
-                .set_cursor_position(middle.0 as i32, middle.1 as i32)
+            // TODO: Move this to somewhere that makes more sense, and remove the return type from
+            //       this function
+            window.set_cursor_position(middle.0 as i32, middle.1 as i32)
                 .expect("Failed to set cursor position");
 
             let diff_pitch = y as ::Float - middle.1;

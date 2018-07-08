@@ -1,6 +1,7 @@
 //! Temporary hacks to set the game up for testing
 //! Will be removed when no longer needed
 
+use slog;
 use common::{specs, gfx};
 use common::cgmath::*;
 use common::na::{self, Translation3};
@@ -183,7 +184,8 @@ fn create_test_entity<'a, R, F, P>(
     let pos = pos.into();
     let space = pos.map(|p| Position(Point3::new(p[0], p[1], p[2])));
     let scale = Scale::new(scale);
-    let objects = obj::load_obj(factory, name, material).unwrap();
+    let objects = obj::load_obj(factory, name, material, &world.read_resource::<slog::Logger>())
+        .unwrap();
     let shader_param = draw::ShaderParam::default();
 
     for (drawable, mesh) in objects {

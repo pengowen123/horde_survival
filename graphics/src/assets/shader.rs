@@ -3,7 +3,7 @@
 use regex::bytes::{Regex, Replacer, Captures};
 use rendergraph::error::BuildError;
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::io;
 use std::string::FromUtf8Error;
 
@@ -13,21 +13,32 @@ const MAX_RECURSION_DEPTH: usize = 32;
 
 /// A wrapper for `std::io::Error` that includes the file path
 #[derive(Debug)]
-pub struct IoError(String, io::Error);
+pub struct IoError(pub PathBuf, pub io::Error);
+
+impl IoError {
+    pub fn path(&self) -> &Path {
+        self.0.as_path()
+    }
+
+    pub fn err(&self) -> &io::Error {
+        &self.1
+    }
+}
 
 quick_error! {
     /// An error while loading a shader from a file
     #[derive(Debug)]
     pub enum ShaderLoadingError {
         Io(err: IoError) {
-            display("Io error while reading `{}`: {}", err.0, err.1)
+            display("Io error while reading `{}`: {}",
+                    err.path().to_str().expect("Path contained invalid UTF-8"), err.err())
             from()
         }
         MaxIncludeRecursion {
             display("Maximum recursion depth reached while processing `#include` directives")
         }
         Utf8(err: FromUtf8Error) {
-            display("Shader name contained invalid Utf8: {}", err)
+            display("Invalid UTF-8 in shader name: {:?}", err)
             from()
         }
     }
@@ -52,7 +63,9 @@ fn load_shader_file_impl(path: &Path, recurses: usize) -> Result<Vec<u8>, Shader
     }
 
     let bytes = utils::read_bytes(path)
-        .map_err(|err| ShaderLoadingError::Io(IoError(path.to_str().unwrap().to_string(), err)))?;
+        .map_err(|err| {
+            ShaderLoadingError::Io(IoError(path.to_owned(), err))
+        })?;
 
     lazy_static! {
         static ref FIND_INCLUDE: Regex = Regex::new(r#"#include "(.*)""#).unwrap();
@@ -111,7 +124,7 @@ impl<'a> Replacer for &'a mut IncludeReplacer {
 /// error handling
 fn replace_include(caps: &Captures, recurses: usize) -> Result<Vec<u8>, ShaderLoadingError> {
     let name = caps[1].to_vec();
-    let name = String::from_utf8(name)?;
+    let name = String::from_utf8(name).map_err(|e| ShaderLoadingError::Utf8(e))?;
     let path = super::get_shader_path(&name);
 
     load_shader_file_impl(&Path::new(&path), recurses + 1)

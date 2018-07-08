@@ -72,7 +72,7 @@ impl<R: gfx::Resources> DrawableStorageRef<R> {
 
     /// Returns a non-null pointer to the `DrawableStorage`
     pub fn get<'a>(&'a self) -> *const DrawableStorage<'a, R> {
-        self.0.unwrap()
+        self.0.expect("`DrawableStorageRef::get` called on a null pointer")
     }
 }
 

@@ -42,7 +42,7 @@ impl System {
             match e {
                 Event::RotateCamera(rot) => self.rotate_direction = Some(*rot),
                 Event::ChangeMovementKeyState(direction, state) => {
-                    let input = input::InputState::from_bits(*direction as _).unwrap();
+                    let input = input::InputState::from(*direction);
 
                     match state {
                         State::Enabled => self.input_state.insert(input),

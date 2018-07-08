@@ -80,7 +80,7 @@ pub fn run() {
 
             // Only process the latest mouse movement event
             if let Some(event) = latest_mouse_move {
-                window_event::process_window_event(&mut channel, &window, event)
+                window_event::process_window_event(&mut channel, &window, event);
             }
         }
 

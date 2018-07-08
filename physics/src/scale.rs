@@ -6,17 +6,23 @@ use nphysics3d::volumetric::Volumetric;
 use nphysics3d::math::AngularInertia;
 use ncollide::shape;
 use na;
+use slog;
+use common;
 
 use std::sync::Arc;
 
 /// Returns the provided rigid body scaled by the provided amount
 // NOTE: This is implemented by creating a new rigid body, because rigid bodies can't be modified
-pub fn scale_body(rb: &RigidBodyHandle<::Float>, scale: ::Float) -> RigidBody<::Float> {
+pub fn scale_body(rb: &RigidBodyHandle<::Float>, scale: ::Float, log: &slog::Logger)
+    -> RigidBody<::Float> {
     let rb = rb.borrow();
     let shape = rb.shape();
 
     let (new_shape, mass_properties) =
-        try_all_shapes(&**shape, scale, rb.density()).expect("Unknown shape");
+        try_all_shapes(&**shape, scale, rb.density()).unwrap_or_else(|| {
+            error!(log, "Attempt to scale unknown shape";);
+            panic!(common::CRASH_MSG);
+        });
 
     rb.with_new_shape(new_shape, mass_properties)
 }
@@ -36,7 +42,7 @@ macro_rules! try_shapes {
     (DYNAMIC, $shape:expr, $scale:expr, $density:expr, [$($shape_type:path,)*]) => {{
         $(
             if let Some(s) = $shape.as_shape::<$shape_type>() {
-                let new_shape = s.scale($scale);
+                let new_shape = s.scale($scale)?;
                 let mass_properties = $density.map(|d| new_shape.mass_properties(d));
 
                 return Some((shape::ShapeHandle3::new(new_shape), mass_properties))
@@ -47,7 +53,7 @@ macro_rules! try_shapes {
     (STATIC, $shape:expr, $scale:expr, [$($shape_type:path,)*]) => {{
         $(
             if let Some(s) = $shape.as_shape::<$shape_type>() {
-                let new_shape = s.scale($scale);
+                let new_shape = s.scale($scale)?;
 
                 return Some((shape::ShapeHandle3::new(new_shape), None))
             }
@@ -99,28 +105,28 @@ fn try_all_shapes(
 }
 
 /// A trait implemented by all `nphysics` shape types
-trait Scale {
+trait Scale: Sized {
     /// Returns `self` scaled by the provided amount
-    fn scale(&self, scale: ::Float) -> Self;
+    fn scale(&self, scale: ::Float) -> Option<Self>;
 }
 
 impl Scale for shape::Ball3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.radius() * scale)
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.radius() * scale))
     }
 }
 
 // NOTE: This is useless because `Capsule` does not implement `Shape`
 impl Scale for shape::Capsule3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.half_height() * scale, self.radius() * scale)
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.half_height() * scale, self.radius() * scale))
     }
 }
 
 // Scale compound shapes by recursively scaling their sub-shapes
 impl Scale for shape::Compound3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(
             self.shapes()
                 .iter()
                 .map(|&(transform, ref shape)| {
@@ -128,51 +134,49 @@ impl Scale for shape::Compound3<::Float> {
                         na::Translation3::from_vector(transform.translation.vector),
                         transform.rotation,
                     );
-                    (
+                    Some((
                         new_transform,
-                        try_all_shapes(&**shape, scale, None)
-                            .expect("Unknown shape in `Compound`")
-                            .0,
-                    )
+                        try_all_shapes(&**shape, scale, None)?.0,
+                    ))
                 })
-                .collect(),
-        )
+                .collect::<Option<_>>()?,
+        ))
     }
 }
 
 impl Scale for shape::Cone3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.half_height() * scale, self.radius() * scale)
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.half_height() * scale, self.radius() * scale))
     }
 }
 
 impl Scale for shape::ConvexHull3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.points().iter().map(|p| p * scale).collect())
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.points().iter().map(|p| p * scale).collect()))
     }
 }
 
 impl Scale for shape::Cuboid3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.half_extents() * scale)
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.half_extents() * scale))
     }
 }
 
 impl Scale for shape::Cylinder3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.half_height() * scale, self.radius() * scale)
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.half_height() * scale, self.radius() * scale))
     }
 }
 
 // Planes can't be scaled
 impl Scale for shape::Plane3<::Float> {
-    fn scale(&self, _: ::Float) -> Self {
-        self.clone()
+    fn scale(&self, _: ::Float) -> Option<Self> {
+        Some(self.clone())
     }
 }
 
 impl Scale for shape::Polyline3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
+    fn scale(&self, scale: ::Float) -> Option<Self> {
         // Vertices are copied because they must be modified
         let old_vertices = (&**self.vertices()).iter().cloned();
         let new_vertices: Vec<_> = old_vertices
@@ -184,24 +188,24 @@ impl Scale for shape::Polyline3<::Float> {
         // Indices are shared between original and scaled mesh
         let indices: Arc<Vec<_>> = self.indices().clone();
 
-        Self::new(Arc::new(new_vertices), indices, None, None)
+        Some(Self::new(Arc::new(new_vertices), indices, None, None))
     }
 }
 
 impl Scale for shape::Segment3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.a() * scale, self.b() * scale)
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.a() * scale, self.b() * scale))
     }
 }
 
 impl Scale for shape::Triangle3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
-        Self::new(self.a() * scale, self.b() * scale, self.c() * scale)
+    fn scale(&self, scale: ::Float) -> Option<Self> {
+        Some(Self::new(self.a() * scale, self.b() * scale, self.c() * scale))
     }
 }
 
 impl Scale for shape::TriMesh3<::Float> {
-    fn scale(&self, scale: ::Float) -> Self {
+    fn scale(&self, scale: ::Float) -> Option<Self> {
         // Vertices are copied because they must be modified
         let old_vertices = (&**self.vertices()).iter().cloned();
         let new_vertices: Vec<_> = old_vertices
@@ -213,6 +217,6 @@ impl Scale for shape::TriMesh3<::Float> {
         // Indices are shared between original and scaled mesh
         let indices: Arc<Vec<_>> = self.indices().clone();
 
-        Self::new(Arc::new(new_vertices), indices, None, None)
+        Some(Self::new(Arc::new(new_vertices), indices, None, None))
     }
 }

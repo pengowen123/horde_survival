@@ -3,17 +3,18 @@
 use gfx::traits::FactoryExt;
 use gfx::{self, handle, format};
 use common::ncollide::shape;
-use common::na;
+use common::{self, na};
 use image_utils;
 use obj;
 use genmesh::{self, Triangulate};
+use slog;
 
 use std::io::{self, BufReader};
-use std::path::Path;
+use std::path::{PathBuf, Path};
 use std::sync::Arc;
 
 use draw::{Vertex, Drawable, Material};
-use super::utils;
+use assets::{self, shader, utils};
 
 type Polygon = genmesh::Polygon<obj::IndexTuple>;
 
@@ -23,27 +24,39 @@ pub fn load_obj<R, F>(
     factory: &mut F,
     name: &str,
     material: Material,
+    log: &slog::Logger,
 ) -> Result<Vec<(Drawable<R>, shape::TriMesh3<::Float>)>, ObjError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
     // Read data from the file
-    let data = utils::read_bytes(super::get_model_file_path(name, ".obj"))?;
+    let path: PathBuf = Path::new(&assets::get_model_file_path(name, ".obj")).to_owned();
+    let data = utils::read_bytes(&path).map_err(|e| {
+        ObjError::Io(shader::IoError(path.clone(), e))
+    })?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
-    let mut obj = obj::Obj::load_buf(&mut buf_reader)?;
+    let mut obj = obj::Obj::load_buf(&mut buf_reader).map_err(|e| {
+        ObjError::Io(shader::IoError(path, e))
+    })?;
 
     for path in &mut obj.material_libs {
         *path = super::get_model_file_path(path, "");
     }
 
-    obj.load_mtls().unwrap();
+    obj.load_mtls().map_err(|e| {
+        let first_error = e.into_iter().next().unwrap();
+        ObjError::MtlError(MtlError {
+            path: first_error.0,
+            err: first_error.1,
+        })
+    })?;
 
     obj.objects
         .iter()
         .flat_map(|o| {
-            load_object(&obj, o)
+            load_object(&obj, o, log)
                 .into_iter()
                 .map(|(vertices, diffuse_tex_path)| {
                     let tex_path = diffuse_tex_path.replace("_diffuse.png", "");
@@ -83,7 +96,7 @@ where
                         let mut mesh_indices = Vec::new();
                         let mut i = 0;
 
-                        while i < mesh_vertices.len().checked_sub(1).unwrap() {
+                        while i < mesh_vertices.len() - 1 {
                             mesh_indices.push(na::Point3::new(i, i + 1, i + 2));
                             i += 3;
                         }
@@ -112,6 +125,7 @@ where
 fn load_object<'a>(
     obj: &obj::Obj<'a, Polygon>,
     object: &obj::Object<'a, Polygon>,
+    log: &slog::Logger,
 ) -> Vec<(Vec<Vertex>, String)> {
     let mut objects = Vec::new();
 
@@ -133,13 +147,19 @@ fn load_object<'a>(
             }
         }
 
-        let material = group.material.as_ref().expect("Missing material");
+        let material = group.material.as_ref().unwrap_or_else(|| {
+            error!(log, "Missing material for group `{}`", group.name;);
+            // TODO: Just use a default material instead of crashing here
+            panic!(common::CRASH_MSG);
+        });
 
         objects.push((
             vertices,
-            material.map_kd.clone().expect(
-                "Material has no diffuse texture",
-            ),
+            material.map_kd.clone().unwrap_or_else(|| {
+                error!(log, "Material `{}` has no diffuse texture", material.name;);
+                // TODO: Just use a default texture instead of crashing here
+                panic!(common::CRASH_MSG);
+            })
         ));
     }
 
@@ -151,12 +171,19 @@ fn transform_coords(arr: [f32; 3]) -> [f32; 3] {
     [arr[0] * -1.0, arr[2], arr[1]]
 }
 
+#[derive(Debug)]
+pub struct MtlError {
+    path: String,
+    err: io::Error,
+}
+
 quick_error! {
     /// An error while loading an OBJ file
     #[derive(Debug)]
     pub enum ObjError {
-        Io(err: io::Error) {
-            display("IO error: {}", err)
+        Io(err: shader::IoError) {
+            display("IO error while reading `{}``: {}",
+                    err.path().to_str().expect("Path contained invalid UTF-8"), err.err())
             from()
         }
         Texture(err: image_utils::TextureError) {
@@ -165,6 +192,9 @@ quick_error! {
         }
         EmptyObj {
             display("OBJ with no vertices")
+        }
+        MtlError(err: MtlError) {
+            display("Error loading material at path `{}`: {}", err.path, err.err)
         }
     }
 }
@@ -184,7 +214,9 @@ where
     CF::Channel: format::TextureChannel,
     CF::Surface: format::TextureSurface,
 {
-    let data = utils::read_bytes(path)?;
+    let data = utils::read_bytes(&path).map_err(|e| {
+        ObjError::Io(shader::IoError(path.as_ref().to_owned(), e))
+    })?;
 
     image_utils::load_texture::<_, _, CF>(factory, &data, image_utils::PNG).map_err(|e| e.into())
 }
