@@ -200,7 +200,6 @@ where
                 self.reload_shaders(&data.log)
                     .unwrap_or_else(|e| {
                         error!(data.log, "Error reloading shaders: {}", e;);
-                        panic!(common::CRASH_MSG);
                     });
             }
         }
