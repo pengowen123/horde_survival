@@ -26,7 +26,11 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
           F: gfx::Factory<R>,
 {
     let intermediate_target = {
-        let dim = builder.get_resources().fetch::<WindowInfo>(0).dimensions();
+        let dim: (u32, u32) = builder
+            .get_resources()
+            .fetch::<WindowInfo>(0)
+            .physical_dimensions()
+            .into();
         let factory = builder.factory();
         let dim = (dim.0 as texture::Size, dim.1 as texture::Size);
         let (_, srv, rtv) = factory

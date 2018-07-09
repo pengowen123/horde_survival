@@ -137,7 +137,8 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
-    let window_dim = builder.get_resources().fetch::<WindowInfo>(0).dimensions();
+    let window_dim = builder.get_resources().fetch::<WindowInfo>(0).physical_dimensions();
+    let window_dim: (u32, u32) = window_dim.into();
     
     let dsv = builder
         .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?

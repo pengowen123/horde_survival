@@ -5,7 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 cgmath = "0.15.0"
-glutin = "0.12"
+glutin = "0.17"
 log = "0.3.8"
 nalgebra = "0.11"
 ncollide = "0.11"
@@ -14,7 +14,7 @@ specs = "0.10.0"
 time = "0.1.37"
 gfx = "0.17"
 gfx_device_gl = "0.15.2"
-gfx_window_glutin = "0.20"
+gfx_window_glutin = "0.25"
 shrev = "1.0.1"
 slog = "2.2.3"
 

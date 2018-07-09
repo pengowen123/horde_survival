@@ -42,7 +42,7 @@ pub fn initialize<'a, 'b>(
 
     // Add resources
     {
-        let (w, h) = {
+        let window_size = {
             let log = world.read_resource::<slog::Logger>();
             window.get_inner_size().unwrap_or_else(|| {
                 error!(log, "Failed to get window size (window probably doesn't exist anymore)";);
@@ -50,7 +50,8 @@ pub fn initialize<'a, 'b>(
             })
         };
         let camera = world.write_resource::<Arc<Mutex<camera::Camera>>>();
-        *camera.lock().unwrap() = camera::Camera::new_default(w as f32 / h as f32);
+        *camera.lock().unwrap() = camera::Camera::new_default(window_size.width as f32 /
+                                                              window_size.height as f32);
     }
     world.add_resource(window.clone());
 
