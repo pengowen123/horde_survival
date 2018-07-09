@@ -24,10 +24,10 @@ pub fn initialize<'a, 'b>(
     let events = EventsLoop::new();
     let context_builder = glutin::ContextBuilder::new();
     let window_builder = {
-        let size = glutin::dpi::LogicalSize::new(800.0, 600.0);
+        let (w, h) = (800, 600);
         glutin::WindowBuilder::new()
             .with_title("Horde Survival")
-            .with_min_dimensions(size)
+            .with_min_dimensions(w, h)
     };
 
     // Initialize gfx structs

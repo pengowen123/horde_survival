@@ -5,24 +5,21 @@ use common::{self, glutin, specs};
 
 #[derive(Clone, Copy, Debug)]
 pub struct WindowInfo {
-    dimensions: glutin::dpi::LogicalSize,
+    dimensions: (u32, u32),
     aspect_ratio: f32,
-    dpi: f32,
 }
 
 impl Default for WindowInfo {
     fn default() -> Self {
         Self {
-            dimensions: glutin::dpi::LogicalSize::new(100.0, 100.0),
+            dimensions: (100, 100),
             aspect_ratio: 1.0,
-            dpi: 1.0,
         }
     }
 }
 
 impl WindowInfo {
     pub fn new(window: &glutin::Window) -> Self {
-        let dpi = window.get_hidpi_factor();
         let dimensions = match window.get_inner_size() {
             Some(d) => d,
             // This should only happen when the window gets closed, so it's okay to return a
@@ -30,29 +27,20 @@ impl WindowInfo {
             None => return Default::default(),
         };
 
-        let aspect_ratio = dimensions.width as f32 / dimensions.height as f32;
+        let aspect_ratio = dimensions.0 as f32 / dimensions.1 as f32;
 
         Self {
             dimensions,
             aspect_ratio,
-            dpi: dpi as f32,
         }
     }
 
-    pub fn dimensions(&self) -> glutin::dpi::LogicalSize {
+    pub fn dimensions(&self) -> (u32, u32) {
         self.dimensions
-    }
-
-    pub fn physical_dimensions(&self) -> glutin::dpi::PhysicalSize {
-        self.dimensions.to_physical(self.dpi.into())
     }
 
     pub fn aspect_ratio(&self) -> f32 {
         self.aspect_ratio
-    }
-
-    pub fn dpi(&self) -> f32 {
-        self.dpi
     }
 }
 

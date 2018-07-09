@@ -2,7 +2,7 @@
 //!
 //! Turns raw window events into a single, high level event type
 
-use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState, dpi};
+use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState};
 use common::cgmath::{self, Rad};
 use common::shrev;
 
@@ -62,25 +62,22 @@ pub fn process_window_event(
         WindowEvent::CursorMoved {
             device_id: _,
             modifiers: _,
-            position,
+            position: (x, y),
         } => {
             // TODO: Refactor this to make this code cleaner
-            let window_size = match window.get_inner_size() {
+            let (w, h) = match window.get_inner_size() {
                 Some(s) => s,
                 None => return,
             };
-            let middle = dpi::LogicalPosition::new(
-                window_size.width / 2.0,
-                window_size.height / 2.0,
-            );
+            let middle = (w as ::Float / 2.0, h as ::Float / 2.0);
 
             // TODO: Move this to somewhere that makes more sense, and remove the return type from
             //       this function
-            window.set_cursor_position(middle)
+            window.set_cursor_position(middle.0 as i32, middle.1 as i32)
                 .expect("Failed to set cursor position");
 
-            let diff_pitch = position.y as ::Float - middle.y;
-            let diff_yaw = position.x as ::Float - middle.x;
+            let diff_pitch = y as ::Float - middle.1;
+            let diff_yaw = x as ::Float - middle.0;
 
             let sensitivity = 0.0035;
 
