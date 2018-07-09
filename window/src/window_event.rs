@@ -79,8 +79,8 @@ pub fn process_window_event(
             window.set_cursor_position(middle)
                 .expect("Failed to set cursor position");
 
-            let diff_pitch = position.y  - middle.y;
-            let diff_yaw = position.x  - middle.x;
+            let diff_pitch = position.y as ::Float - middle.y;
+            let diff_yaw = position.x as ::Float - middle.x;
 
             let sensitivity = 0.0035;
 
