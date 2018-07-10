@@ -29,7 +29,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         let dim: (u32, u32) = builder
             .get_resources()
             .fetch::<WindowInfo>(0)
-            .physical_dimensions()
+            .dimensions()
             .into();
         let factory = builder.factory();
         let dim = (dim.0 as texture::Size, dim.1 as texture::Size);
