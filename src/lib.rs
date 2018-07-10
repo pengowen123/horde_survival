@@ -12,6 +12,7 @@ extern crate physics;
 extern crate window;
 extern crate control;
 extern crate graphics;
+extern crate ui;
 
 // TODO: Remove when no longer needed
 mod dev;
@@ -44,8 +45,10 @@ pub fn run() {
     
     let dispatcher = control::initialize(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);
+    ui::add_resources(&mut world);
     let (dispatcher, window, mut events) = graphics::initialize(&mut world, dispatcher,
-                                                                    Box::new(dev::add_test_entities));
+                                                                Box::new(dev::add_test_entities));
+    let mut ui = ui::initialize(&mut world, window.get_inner_size().unwrap().into());
 
     // Build the dispatcher
     let mut dispatcher = dispatcher.build();
@@ -84,6 +87,9 @@ pub fn run() {
             }
         }
 
+        // UI is independent so it can continue to run while the game is paused
+        ui.run_now(&mut world.res);
+        
         dispatcher.dispatch(&mut world.res);
 
         // nphysics world is not threadsafe so the system is run manually

@@ -10,6 +10,7 @@ shred-derive = "0.3.0"
 slog-term = "2.4.0"
 slog-async = "2.3.0"
 slog = "2.2.3"
+ui = { path = "ui" }
 
 [dependencies.common]
 path = "common"
@@ -41,4 +42,5 @@ members = [
 	"math",
 	"physics",
 	"window",
+	"ui",
 ]

@@ -19,6 +19,9 @@ pub extern crate gfx;
 pub extern crate gfx_window_glutin;
 pub extern crate gfx_device_gl;
 
+// UI
+pub extern crate conrod;
+
 // Misc
 pub extern crate time;
 extern crate slog;

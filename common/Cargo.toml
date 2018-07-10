@@ -18,6 +18,10 @@ gfx_window_glutin = "0.25"
 shrev = "1.0.1"
 slog = "2.2.3"
 
+[dependencies.conrod]
+branch = "update_winit"
+git = "https://github.com/pengowen123/conrod"
+
 [dependencies.nphysics3d]
 branch = "horde"
 features = ["threadsafe"]

@@ -1,0 +1,10 @@
+[package]
+name = "ui"
+version = "0.1.0"
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+
+[dependencies]
+specs = "0.10.0"
+shred = "0.5.0"
+shred-derive = "0.3.0"
+common = { path = "../common" }
