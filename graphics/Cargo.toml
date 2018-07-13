@@ -11,6 +11,7 @@ quick-error = "1.2"
 regex = "0.2"
 shred-derive = "0.3.0"
 slog = "2.2.3"
+ui = { path = "../ui" }
 
 [dependencies.common]
 path = "../common"

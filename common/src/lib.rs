@@ -16,6 +16,7 @@ pub extern crate nphysics3d;
 // Graphics
 pub extern crate glutin;
 pub extern crate gfx;
+pub extern crate gfx_core;
 pub extern crate gfx_window_glutin;
 pub extern crate gfx_device_gl;
 
@@ -28,9 +29,12 @@ extern crate slog;
 
 mod delta;
 mod components;
+mod resources;
+pub mod utils;
 
 pub use self::components::*;
 pub use self::delta::*;
+pub use self::resources::*;
 
 /// The float type used in `horde_survival`
 pub type Float = f64;
@@ -54,5 +58,7 @@ pub fn initialize<'a, 'b>(
 
     world.add_resource(Delta::default());
 
+    // NOTE: This system will be added to the graphics dispatcher, if other systems are added here
+    //       in the future the main dispatcher must be added as an argument to this function
     dispatcher.add(System::new(), "delta-time", &[])
 }

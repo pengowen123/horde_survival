@@ -68,7 +68,7 @@ impl<R: gfx::Resources> SkyboxPass<R> {
 
         // Create the skybox
         // TODO: load this from individual map files
-        let path = |p| env!("CARGO_MANIFEST_DIR").to_string() + p;
+        let path = |p| format!("{}{}{}", env!("CARGO_MANIFEST_DIR").to_string(), "/../", p);
 
         let read_image = |s| {
             let p = path(s);
@@ -77,18 +77,20 @@ impl<R: gfx::Resources> SkyboxPass<R> {
         let cubemap = image_utils::load_cubemap::<_, _, image_utils::Srgba8>(
             factory,
             image_utils::CubemapData {
-                up: &read_image("/test_assets/skybox/top.jpg")?,
-                down: &read_image("/test_assets/skybox/bottom.jpg")?,
-                front: &read_image("/test_assets/skybox/front.jpg")?,
-                back: &read_image("/test_assets/skybox/back.jpg")?,
-                left: &read_image("/test_assets/skybox/left.jpg")?,
-                right: &read_image("/test_assets/skybox/right.jpg")?,
+                up: &read_image("test_assets/skybox/top.jpg")?,
+                down: &read_image("test_assets/skybox/bottom.jpg")?,
+                front: &read_image("test_assets/skybox/front.jpg")?,
+                back: &read_image("test_assets/skybox/back.jpg")?,
+                left: &read_image("test_assets/skybox/left.jpg")?,
+                right: &read_image("test_assets/skybox/right.jpg")?,
             },
             image_utils::JPEG,
         )?;
         
-        let sampler_info =
-            gfx::texture::SamplerInfo::new(gfx::texture::FilterMethod::Bilinear, gfx::texture::WrapMode::Clamp);
+        let sampler_info = gfx::texture::SamplerInfo::new(
+            gfx::texture::FilterMethod::Bilinear,
+            gfx::texture::WrapMode::Clamp
+        );
 
         let data = pipe::Data {
             vbuf,

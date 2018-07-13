@@ -17,9 +17,11 @@ gfx_device_gl = "0.15.2"
 gfx_window_glutin = "0.25"
 shrev = "1.0.1"
 slog = "2.2.3"
+gfx_core = "0.8.2"
 
 [dependencies.conrod]
-branch = "update_winit"
+branch = "horde"
+features = ["winit", "gfx_rs"]
 git = "https://github.com/pengowen123/conrod"
 
 [dependencies.nphysics3d]

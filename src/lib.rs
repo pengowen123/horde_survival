@@ -22,78 +22,119 @@ mod logging;
 
 use common::{specs, glutin};
 use common::shred::{self, RunNow};
-
 use common::Float;
 use window::window_event;
+
+use std::sync::mpsc;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
 pub fn run() {
     // Create world
     let mut world = specs::World::new();
+    // Create a dispatcher for main systems (such as controls)
     let dispatcher = specs::DispatcherBuilder::new();
+    // Create a dispatcher for graphics systems (such as graphics and ui)
+    // This dispatcher is also used to run systems that must be run while not in-game (such as when
+    // in a menu)
+    let dispatcher_graphics = specs::DispatcherBuilder::new();
 
     // Initialize logger
     let logger = logging::init_logger();
     world.add_resource(logger);
 
     // Call initialization functions (initializes their components and systems)
-    let dispatcher = common::initialize(&mut world, dispatcher);
-    let dispatcher = window::initialize(&mut world, dispatcher);
+    let dispatcher_graphics = common::initialize(&mut world, dispatcher_graphics);
+    let dispatcher_graphics = window::initialize(&mut world, dispatcher_graphics);
         
     let dispatcher = player_control::initialize(&mut world, dispatcher);
     
     let dispatcher = control::initialize(&mut world, dispatcher);
     let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);
     ui::add_resources(&mut world);
-    let (dispatcher, window, mut events) = graphics::initialize(&mut world, dispatcher,
-                                                                Box::new(dev::add_test_entities));
-    let mut ui = ui::initialize(&mut world, window.get_inner_size().unwrap().into());
+    let (dispatcher, dispatcher_graphics, window, mut events) = graphics::initialize(
+        &mut world,
+        dispatcher,
+        dispatcher_graphics,
+        Box::new(dev::add_test_entities),
+    );
+    let (ui_event_sender, ui_event_receiver) = mpsc::channel();
+    let dispatcher_graphics = ui::initialize(
+        &mut world,
+        dispatcher_graphics,
+        window.get_inner_size().unwrap().into(),
+        ui_event_receiver
+    );
 
-    // Build the dispatcher
+    // Build the dispatchers
     let mut dispatcher = dispatcher.build();
-
-    let mut running = true;
+    let mut dispatcher_graphics = dispatcher_graphics.build();
 
     // Run systems
-    while running {
+    loop {
+        let ui_state = *world.read_resource::<common::UiState>();
+        if ui_state.should_exit() {
+            break;
+        }
+
         {
             let mut channel = world.write_resource::<window_event::EventChannel>();
             let mut latest_mouse_move = None;
 
-            events.poll_events(|e| match e {
-                glutin::Event::WindowEvent { event, .. } => {
-                    // Collect the latest mouse event
-                    if let glutin::WindowEvent::CursorMoved { .. } = event {
-                        latest_mouse_move = Some(event);
-                        return;
-                    // Test if `Escape` was pressed, and if so, end the event loop
-                    } else if let glutin::WindowEvent::KeyboardInput { input, .. } = event {
-                        if let Some(glutin::VirtualKeyCode::Escape) = input.virtual_keycode {
-                            if let glutin::ElementState::Pressed = input.state {
-                                running = false;
-                            }
-                        }
-                    }
+            events.poll_events(|e| {
+                ui_event_sender
+                    .send(e.clone())
+                    .expect("Failed to send window event to UI system");
 
-                    window_event::process_window_event(&mut channel, &window, event);
+                match e {
+                    glutin::Event::WindowEvent { event, .. } => {
+                        let mut ui_state = world.write_resource::<common::UiState>();
+
+                        window_event::process_window_event_graphics(
+                            &mut channel,
+                            &window,
+                            &event,
+                            &mut ui_state,
+                        );
+
+                         // If the game isn't running, only call process_window_event_graphics
+                        if !ui_state.is_in_game() {
+                            return;
+                        }
+
+                       // Collect the latest mouse event
+                        if let glutin::WindowEvent::CursorMoved { .. } = event {
+                            latest_mouse_move = Some(event);
+                            return;
+                        }
+                        
+                        window_event::process_window_event(
+                            &mut channel,
+                            &window,
+                            &event,
+                        );
+                    }
+                    _ => {}
                 }
-                _ => {}
             });
 
             // Only process the latest mouse movement event
+            // NOTE: This won't be run if !ui_state.is_in_game() because of the above code
             if let Some(event) = latest_mouse_move {
-                window_event::process_window_event(&mut channel, &window, event);
+                window_event::process_window_event(&mut channel, &window, &event);
             }
         }
 
-        // UI is independent so it can continue to run while the game is paused
-        ui.run_now(&mut world.res);
-        
-        dispatcher.dispatch(&mut world.res);
+        // If the game is running (not in a menu), run main systems
+        if ui_state.is_in_game() {
+            dispatcher.dispatch(&mut world.res);
 
-        // nphysics world is not threadsafe so the system is run manually
-        physics.run_now(&mut world.res);
+            // nphysics world is not threadsafe so the system is run manually
+            physics.run_now(&mut world.res);
+        }
+
+        // Run graphics systems regardless of the UI state
+        dispatcher_graphics.dispatch(&mut world.res);
 
         // NOTE: Running this after dispatch may be a problem (but so is running it before dispatch)
         world.maintain();

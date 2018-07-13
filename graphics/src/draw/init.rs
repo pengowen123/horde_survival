@@ -7,6 +7,7 @@ use gfx_window_glutin;
 use gfx;
 use window;
 use slog;
+use ui;
 
 use std::sync::{Arc, Mutex};
 
@@ -14,11 +15,16 @@ use super::{param, components, lighting_data, passes};
 
 use gfx_device_gl;
 /// Initializes rendering-related components and systems
-pub fn initialize<'a, 'b>(
+pub fn initialize<'a, 'b, 'c, 'd>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
+    dispatcher_graphics: DispatcherBuilder<'c, 'd>,
     init_test_entities: Box<Fn(&mut specs::World, &mut gfx_device_gl::Factory)>,
-) -> (DispatcherBuilder<'a, 'b>, window::Window, EventsLoop) {
+) -> (DispatcherBuilder<'a, 'b>,
+      DispatcherBuilder<'c, 'd>,
+      window::Window,
+      EventsLoop)
+{
 
     // Initialize window settings
     let events = EventsLoop::new();
@@ -52,7 +58,7 @@ pub fn initialize<'a, 'b>(
     let encoder = factory.create_command_buffer().into();
 
     // Register components
-    register_drawable(world, &factory);
+    register_components(world, &factory);
     world.register::<components::DirectionalLight>();
     world.register::<components::PointLight>();
     world.register::<components::SpotLight>();
@@ -96,17 +102,19 @@ pub fn initialize<'a, 'b>(
             passes::shadow::ShadowSourceSystem,
             "shadow-source",
             &[],
-            )
-        .add_thread_local(draw);
+            );
 
-    (dispatcher, window, events)
+    let dispatcher_graphics = dispatcher_graphics.add_thread_local(draw);
+
+    (dispatcher, dispatcher_graphics, window, events)
 }
 
-/// A hack to register `Drawable<R>` without specifying the type of `R`
-fn register_drawable<R, F>(world: &mut specs::World, _: &F)
+/// A hack to register components with a `gfx::Resource` type parameter
+fn register_components<R, F>(world: &mut specs::World, _: &F)
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
     world.register::<components::Drawable<R>>();
+    world.add_resource(ui::ImageMap::<R>::new())
 }

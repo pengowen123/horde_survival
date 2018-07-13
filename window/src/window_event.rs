@@ -2,15 +2,18 @@
 //!
 //! Turns raw window events into a single, high level event type
 
-use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState, dpi};
+use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState};
 use common::cgmath::{self, Rad};
-use common::shrev;
+use common::{self, UiState, shrev};
 
 use input::Direction;
 
 /// A type alias for an event channel that uses `Event`
 pub type EventChannel = shrev::EventChannel<Event>;
 pub type ReaderId = shrev::ReaderId<Event>;
+
+/// Camera sensitivity
+const SENSITIVITY: ::Float = 0.0035;
 
 /// A state flag used for state change events
 pub enum State {
@@ -46,51 +49,45 @@ impl CameraRotation {
 
 /// The event type that is sent through the event channel
 pub enum Event {
+    /// A movement key was pressed or released
     ChangeMovementKeyState(Direction, State),
+    /// The camera has rotated
     RotateCamera(CameraRotation),
+    /// The shaders should be reloaded
     ReloadShaders,
+    /// The game was unpaused
+    Unpaused,
 }
 
 /// Processes the provided window event, sending the processed version to the event channel
-///
 pub fn process_window_event(
     channel: &mut EventChannel,
     window: &glutin::Window,
-    event: WindowEvent,
+    event: &WindowEvent,
 ) {
-    match event {
+    match *event {
         WindowEvent::CursorMoved {
             device_id: _,
             modifiers: _,
             position,
         } => {
-            // TODO: Refactor this to make this code cleaner
-            let window_size = match window.get_inner_size() {
-                Some(s) => s,
+            common::utils::set_cursor_pos_to_window_center(window);
+
+            let center = match common::utils::get_window_center(window) {
+                Some(c) => c,
                 None => return,
             };
-            let middle = dpi::LogicalPosition::new(
-                window_size.width / 2.0,
-                window_size.height / 2.0,
-            );
 
-            // TODO: Move this to somewhere that makes more sense, and remove the return type from
-            //       this function
-            window.set_cursor_position(middle)
-                .expect("Failed to set cursor position");
-
-            let diff_pitch = position.y  - middle.y;
-            let diff_yaw = position.x  - middle.x;
-
-            let sensitivity = 0.0035;
+            let diff_pitch = position.y  - center.y;
+            let diff_yaw = position.x  - center.x;
 
             // Yaw control is inverted, so invert it again to fix it
             let diff_yaw = -diff_yaw;
             // Pitch control is also inverted
             let diff_pitch = -diff_pitch;
             
-            let rot_pitch = diff_pitch as ::Float * sensitivity;
-            let rot_yaw = diff_yaw as ::Float * sensitivity;
+            let rot_pitch = diff_pitch as ::Float * SENSITIVITY;
+            let rot_yaw = diff_yaw as ::Float * SENSITIVITY;
             let camera_rot = CameraRotation::new(cgmath::Rad(rot_pitch), cgmath::Rad(rot_yaw));
 
             channel.single_write(Event::RotateCamera(camera_rot));
@@ -137,6 +134,54 @@ pub fn process_window_event(
     }
 }
 
+/// Like `process_window_event`, but deals solely with graphics-related events and is run even while
+/// not in game
+pub fn process_window_event_graphics(
+    channel: &mut EventChannel,
+    window: &glutin::Window,
+    event: &WindowEvent,
+    ui_state: &mut UiState,
+) {
+    match *event {
+        WindowEvent::KeyboardInput {
+            input: KeyboardInput {
+                state,
+                virtual_keycode,
+                modifiers: _,
+                ..
+            },
+            ..
+        } => {
+            let mut event = None;
+
+            if let Some(key) = virtual_keycode {
+                match key {
+                    VirtualKeyCode::Escape => {
+                        if let ElementState::Pressed = state {
+                            match *ui_state {
+                                UiState::InGame => {
+                                    window.hide_cursor(false);
+                                    *ui_state = UiState::PauseMenu;
+                                }
+                                UiState::PauseMenu => {
+                                    unpause(ui_state, window, channel);
+                                }
+                                _ => {},
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+
+            if let Some(e) = event {
+                channel.single_write(e);
+            }
+        }
+        _ => {}
+    }
+}
+
 /// Returns an event that enables or disables the provided movement direction, depending on whether
 /// `state` is `ElementState::Pressed`
 fn get_movement_event(direction: Direction, state: ElementState) -> Event {
@@ -146,4 +191,20 @@ fn get_movement_event(direction: Direction, state: ElementState) -> Event {
     };
 
     Event::ChangeMovementKeyState(direction, state)
+}
+
+
+/// Unpauses the game
+pub fn unpause(
+    ui_state: &mut UiState,
+    window: &glutin::Window,
+    event_channel: &mut EventChannel,
+) {
+    // Center the cursor so the camera doesn't jump when the game
+    // unpauses
+    common::utils::set_cursor_pos_to_window_center(window);
+
+    window.hide_cursor(true);
+    *ui_state = UiState::InGame;
+    event_channel.single_write(Event::Unpaused);
 }

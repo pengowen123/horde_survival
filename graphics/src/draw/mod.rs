@@ -26,11 +26,12 @@ pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, handle};
-use common::{self, shred, specs};
+use common::{self, shred, specs, conrod};
 use rendergraph::{RenderGraph, builder, module, pass};
 use rendergraph::error::BuildError;
-use window::{self, window_event};
+use window::{self, info, window_event};
 use slog;
+use ui;
 
 use std::sync::{Arc, Mutex};
 
@@ -84,8 +85,9 @@ where
     D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     factory: F,
-    graph: RenderGraph<R, C, D, F>,
+    graph: RenderGraph<R, C, D, F, ColorFormat, DepthFormat>,
     reader_id: window_event::ReaderId,
+    ui_renderer: conrod::backend::gfx::Renderer<'static, R>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -105,6 +107,7 @@ where
         encoder: gfx::Encoder<R, C>,
         resources: &'a mut shred::Resources,
     ) -> Self {
+        // Read resources from the specs World
         let camera = resources.fetch::<Arc<Mutex<Camera>>>(0).clone();
         let lighting_data = resources.fetch::<Arc<Mutex<LightingData>>>(0).clone();
         let dir_shadow_source = resources.fetch::<Arc<Mutex<DirShadowSource>>>(0).clone();
@@ -114,9 +117,12 @@ where
         };
         let log = resources.fetch::<slog::Logger>(0);
 
+        let dpi = window.get_hidpi_factor();
+
         // Build the rendergraph
         let graph = {
-            let mut builder = builder::GraphBuilder::new(&mut factory, out_color, out_depth);
+            let mut builder =
+                builder::GraphBuilder::new(&mut factory, out_color.clone(), out_depth);
 
             builder.add_resource(window::info::WindowInfo::new(window.window()));
             builder.add_resource(camera);
@@ -158,11 +164,22 @@ where
 
             builder.build(device, encoder, window)
         };
+        
+        // Build the UI renderer
+        let ui_renderer = conrod::backend::gfx::Renderer::new(
+            &mut factory,
+            &out_color,
+            dpi,
+        ).unwrap_or_else(|e| {
+            error!(log, "Error building UI renderer: {}", e;);
+            panic!(common::CRASH_MSG);
+        });
 
         Self {
             factory,
             graph,
             reader_id,
+            ui_renderer,
         }
     }
 
@@ -181,6 +198,10 @@ where
 pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, components::Drawable<R>>,
     event_channel: specs::Fetch<'a, window_event::EventChannel>,
+    ui_state: specs::Fetch<'a, common::UiState>,
+    ui_draw_list: specs::Fetch<'a, ui::UiDrawList>,
+    ui_image_map: specs::Fetch<'a, ui::ImageMap<R>>,
+    window_info: specs::Fetch<'a, info::WindowInfo>,
     log: specs::Fetch<'a, slog::Logger>,
 }
 
@@ -210,8 +231,34 @@ where
 
         self.graph.add_resource(DrawableStorageRef::new(drawable));
 
-        self.graph.execute_passes().unwrap_or_else(|e| {
-            error!(data.log, "Error executing passes: {}", e;);
+        self.graph.clear_targets();
+
+        // Only run the main graphics pipeline if a menu is not open
+        if data.ui_state.is_in_game() {
+            self.graph.execute_passes().unwrap_or_else(|e| {
+                error!(data.log, "Error executing passes: {}", e;);
+                panic!(common::CRASH_MSG);
+            });
+        }
+
+        let (win_w, win_h): (f64, f64) = data.window_info.physical_dimensions().into();
+        let image_map = &*data.ui_image_map.get();
+        
+        if let Some(draw_list) = data.ui_draw_list.walk() {
+            self.ui_renderer.fill(
+                self.graph.encoder(),
+                (win_w as _, win_h as _),
+                draw_list,
+                image_map,
+            );
+        } else {
+            warn!(data.log, "UI draw list not found";);
+        }
+
+        self.ui_renderer.draw(&mut self.factory, self.graph.encoder(), image_map);
+
+        self.graph.finish_frame().unwrap_or_else(|e| {
+            error!(data.log, "Error finishing frame: {}", e);
             panic!(common::CRASH_MSG);
         });
 

@@ -144,8 +144,9 @@ name = "common"
 version = "0.1.0"
 dependencies = [
  "cgmath 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "conrod 0.60.0 (git+https://github.com/pengowen123/conrod?branch=update_winit)",
+ "conrod 0.60.0 (git+https://github.com/pengowen123/conrod?branch=horde)",
  "gfx 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gfx_core 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "gfx_device_gl 0.15.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "gfx_window_glutin 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -163,14 +164,17 @@ dependencies = [
 [[package]]
 name = "conrod"
 version = "0.60.0"
-source = "git+https://github.com/pengowen123/conrod?branch=update_winit#0b33b4566244dbf687bb981fbe6a58666c496deb"
+source = "git+https://github.com/pengowen123/conrod?branch=horde#0b33b4566244dbf687bb981fbe6a58666c496deb"
 dependencies = [
  "conrod_derive 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "daggy 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gfx 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gfx_core 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)",
  "pistoncore-input 0.21.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rusttype 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "winit 0.16.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -482,6 +486,7 @@ dependencies = [
  "rendergraph 0.1.0",
  "shred-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "slog 2.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ui 0.1.0",
  "window 0.1.0",
 ]
 
@@ -1464,9 +1469,12 @@ name = "ui"
 version = "0.1.0"
 dependencies = [
  "common 0.1.0",
+ "conrod 0.60.0 (git+https://github.com/pengowen123/conrod?branch=horde)",
  "shred 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "shred-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "slog 2.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "specs 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "window 0.1.0",
 ]
 
 [[package]]
@@ -1643,7 +1651,7 @@ dependencies = [
 "checksum chrono 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "6962c635d530328acc53ac6a955e83093fedc91c5809dfac1fa60fa470830a37"
 "checksum cocoa 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7b44bd25bd275e9d74a5dff8ca55f2fb66c9ad5e12170d58697701df21a56e0e"
 "checksum color_quant 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a475fc4af42d83d28adf72968d9bcfaf035a1a9381642d8e85d8a04957767b0d"
-"checksum conrod 0.60.0 (git+https://github.com/pengowen123/conrod?branch=update_winit)" = "<none>"
+"checksum conrod 0.60.0 (git+https://github.com/pengowen123/conrod?branch=horde)" = "<none>"
 "checksum conrod_derive 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "53b7c11bc6fb4e9ef60cb6caf5dd304ca451946e0f951d82deaabd5b7460ce87"
 "checksum core-foundation 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c7caa6cb9e76ddddbea09a03266d6b3bc98cd41e9fb9b017c473e7cca593ec25"
 "checksum core-foundation-sys 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b2a53cce0ddcf7e7e1f998738d757d5a3bf08bf799a180e50ebe50d298f52f5a"

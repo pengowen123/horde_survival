@@ -172,9 +172,17 @@ where R: gfx::Resources,
         device: D,
         encoder: gfx::Encoder<R, C>,
         window: Arc<glutin::GlWindow>
-    ) -> RenderGraph<R, C, D, F>
+    ) -> RenderGraph<R, C, D, F, CF, DF>
         where D: gfx::Device<Resources = R, CommandBuffer = C>
     {
-        RenderGraph::new(self.passes, self.resources, encoder, device, window)
+        RenderGraph::new(
+            self.passes,
+            self.resources,
+            encoder,
+            device,
+            window,
+            self.main_color,
+            self.main_depth,
+        )
     }
 }

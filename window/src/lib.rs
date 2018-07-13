@@ -26,5 +26,7 @@ pub fn initialize<'a, 'b>(
     world.add_resource(info::WindowInfo::default());
     world.add_resource(window_event::EventChannel::new());
 
+    // NOTE: This system will be added to the graphics dispatcher, if other systems are added here
+    //       in the future the main dispatcher must be added as an argument to this function
     dispatcher.add(info::System, "window-info", &[])
 }
