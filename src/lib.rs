@@ -89,12 +89,14 @@ pub fn run() {
                 match e {
                     glutin::Event::WindowEvent { event, .. } => {
                         let mut ui_state = world.write_resource::<common::UiState>();
+                        let log = world.read_resource::<slog::Logger>();
 
                         window_event::process_window_event_graphics(
                             &mut channel,
                             &window,
                             &event,
                             &mut ui_state,
+                            &log,
                         );
 
                          // If the game isn't running, only call process_window_event_graphics

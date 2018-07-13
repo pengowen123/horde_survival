@@ -5,6 +5,7 @@
 use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState};
 use common::cgmath::{self, Rad};
 use common::{self, UiState, shrev};
+use slog;
 
 use input::Direction;
 
@@ -57,6 +58,8 @@ pub enum Event {
     ReloadShaders,
     /// The game was unpaused
     Unpaused,
+    /// The window was resized
+    WindowResized(glutin::dpi::LogicalSize),
 }
 
 /// Processes the provided window event, sending the processed version to the event channel
@@ -141,6 +144,7 @@ pub fn process_window_event_graphics(
     window: &glutin::Window,
     event: &WindowEvent,
     ui_state: &mut UiState,
+    log: &slog::Logger,
 ) {
     match *event {
         WindowEvent::KeyboardInput {
@@ -177,6 +181,11 @@ pub fn process_window_event_graphics(
             if let Some(e) = event {
                 channel.single_write(e);
             }
+        }
+        WindowEvent::Resized(new_size) => {
+            let physical_size = new_size.to_physical(window.get_hidpi_factor());
+            info!(log, "Window resized"; o!("new_dimensions" => format!("{:?}", physical_size)));
+            channel.single_write(Event::WindowResized(new_size));
         }
         _ => {}
     }

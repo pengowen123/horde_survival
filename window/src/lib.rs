@@ -6,6 +6,8 @@ extern crate shred_derive;
 use common::{shred, specs};
 #[macro_use]
 extern crate bitflags;
+#[macro_use]
+extern crate slog;
 
 pub mod info;
 pub mod window_event;

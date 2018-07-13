@@ -1589,6 +1589,7 @@ dependencies = [
  "bitflags 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "common 0.1.0",
  "shred-derive 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "slog 2.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
