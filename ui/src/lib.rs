@@ -65,6 +65,7 @@ pub struct System {
     events: EventReceiver,
     // Used to limit the UPS of the UI
     last_run: Option<Instant>,
+    cursor: conrod::cursor::MouseCursor,
     reader_id: window_event::ReaderId,
 }
 
@@ -89,13 +90,27 @@ impl System {
             panic!(common::CRASH_MSG);
         });
 
+        let cursor = conrod::cursor::MouseCursor::Arrow;
+
         Self {
             ui,
             menus,
             events,
+            cursor,
             last_run: None,
             reader_id,
         }
+    }
+
+    /// Sets the cursor appearance if the cursor type has changed
+    fn set_cursor_if_changed(&mut self, window: &glutin::Window) {
+        let cursor = self.ui.mouse_cursor();
+
+        if !(cursor == self.cursor) {
+            window.set_cursor(conrod::backend::winit::convert_mouse_cursor(cursor));
+        }
+
+        self.cursor = cursor;
     }
 }
 
@@ -130,10 +145,12 @@ impl<'a> specs::System<'a> for System {
         }
         self.last_run = Some(Instant::now());
 
+        // Send the draw list to the renderer
         if let Some(primitives) = self.ui.draw_if_changed() {
             data.draw_list.0 = Some(primitives.owned());
         }
 
+        // Update the UI
         while let Ok(event) = self.events.try_recv() {
             if let Some(event) = conrod::backend::winit::convert_event(event, data.window.window())
             {
@@ -141,6 +158,10 @@ impl<'a> specs::System<'a> for System {
             }
         }
 
+        // Update the cursor appearance
+        self.set_cursor_if_changed(&data.window);
+
+        // Whether to rebuild the UI widgets
         let rebuild_widgets =
             // Build widgets if the draw list is empty
             data.draw_list.0.is_none() ||
@@ -149,7 +170,8 @@ impl<'a> specs::System<'a> for System {
             // Rebuild widgets regardless of events if the in-game menu is active
             data.ui_state.is_in_game();
 
-        if rebuild_widgets || true {
+        // Rebuild the UI widgets based on the UI state
+        if rebuild_widgets {
             let mut ui = self.ui.set_widgets();
             
             match *data.ui_state {
