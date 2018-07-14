@@ -66,7 +66,7 @@ where R: gfx::Resources,
       C: gfx::CommandBuffer<R> + 'a,
       F: gfx::Factory<R> + 'a,
 {
-    passes: Vec<Box<Pass<R, C, F>>>,
+    passes: Vec<Box<Pass<R, C, F, CF, DF>>>,
     pass_outputs: HashMap<String, Box<Any>>,
     resources: Resources,
     factory: &'a mut F,
@@ -110,7 +110,7 @@ where R: gfx::Resources,
 
     /// Adds the provided pass to the `GraphBuilder`
     pub fn add_pass<P>(&mut self, pass: P)
-        where P: Pass<R, C, F> + 'static,
+        where P: Pass<R, C, F, CF, DF> + 'static,
     {
         let pass: Box<P> = pass.into();
         self.passes.push(pass);

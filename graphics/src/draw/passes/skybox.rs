@@ -5,6 +5,7 @@ use gfx::traits::FactoryExt;
 use image_utils;
 use assets::{self, read_bytes};
 use rendergraph::pass::Pass;
+use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 
@@ -142,7 +143,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-impl<R, C, F> Pass<R, C, F> for SkyboxPass<R>
+impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -169,6 +170,22 @@ impl<R, C, F> Pass<R, C, F> for SkyboxPass<R>
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
         self.bundle.pso = Self::load_pso(factory)?;
+        Ok(())
+    }
+
+    fn handle_window_resize(
+        &mut self,
+        _: (u16, u16),
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        _: &mut F,
+    ) -> Result<(), BuildError<String>> {
+        let intermediate_target = framebuffers
+            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+
+        // Update shader outputs to the resized intermediate targets
+        self.bundle.data.out_color = intermediate_target.rtv.clone();
+        self.bundle.data.out_depth = intermediate_target.dsv.clone();
+
         Ok(())
     }
 }

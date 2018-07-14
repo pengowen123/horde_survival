@@ -11,10 +11,11 @@ pub mod pass;
 pub mod module;
 pub mod builder;
 pub mod error;
+pub mod framebuffer;
 
 use shred::{Resources, ResourceId};
 use glutin::GlContext;
-use gfx::format;
+use gfx::{handle, format};
 
 use std::sync::Arc;
 
@@ -25,13 +26,13 @@ pub struct RenderGraph<R, C, D, F, CF, DF>
           D: gfx::Device,
           F: gfx::Factory<R>,
 {
-    passes: Vec<Box<pass::Pass<R, C, F>>>,
+    passes: Vec<Box<pass::Pass<R, C, F, CF, DF>>>,
     resources: Resources,
     encoder: gfx::Encoder<R, C>,
     device: D,
     window: Arc<glutin::GlWindow>,
-    main_color: gfx::handle::RenderTargetView<R, CF>,
-    main_depth: gfx::handle::DepthStencilView<R, DF>,
+    main_color: handle::RenderTargetView<R, CF>,
+    main_depth: handle::DepthStencilView<R, DF>,
 }
 
 impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
@@ -44,13 +45,13 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
     ///
     /// Requires ownership of the device, and an encoder.
     pub fn new(
-        passes: Vec<Box<pass::Pass<R, C, F>>>,
+        passes: Vec<Box<pass::Pass<R, C, F, CF, DF>>>,
         resources: Resources,
         encoder: gfx::Encoder<R, C>,
         device: D,
         window: Arc<glutin::GlWindow>,
-        main_color: gfx::handle::RenderTargetView<R, CF>,
-        main_depth: gfx::handle::DepthStencilView<R, DF>,
+        main_color: handle::RenderTargetView<R, CF>,
+        main_depth: handle::DepthStencilView<R, DF>,
     ) -> Self {
         Self {
             passes,
@@ -100,6 +101,34 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
         Ok(())
     }
 
+    /// Handles the window being resized for all passes in the `RenderGraph`
+    pub fn handle_window_resize(
+        &mut self,
+        resized_main_color: handle::RenderTargetView<R, CF>,
+        resized_main_depth: handle::DepthStencilView<R, DF>,
+        factory: &mut F,
+    ) -> Result<(), error::BuildError<String>> {
+        let new_dimensions = resized_main_color.get_dimensions();
+        let new_dimensions = (new_dimensions.0, new_dimensions.1);
+        
+        self.main_color = resized_main_color;
+        self.main_depth = resized_main_depth;
+        
+        let mut framebuffers = framebuffer::Framebuffers::new(
+            self.main_color.clone(),
+            self.main_depth.clone(),
+        );
+
+        for pass in &mut self.passes {
+            pass.handle_window_resize(new_dimensions, &mut framebuffers, factory)?;
+        }
+        Ok(())
+    }
+    
+    /// Returns a reference to the window used by the `RenderGraph`
+    pub fn window(&self) -> &glutin::GlWindow {
+        &*self.window
+    }
     /// Returns a mutable reference to the `gfx::Encoder` used by the `RenderGraph`
     pub fn encoder(&mut self) -> &mut gfx::Encoder<R, C> {
         &mut self.encoder

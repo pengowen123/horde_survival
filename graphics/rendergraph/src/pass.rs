@@ -5,6 +5,7 @@ use shred::Resources;
 
 use builder::GraphBuilder;
 use error::{RunError, BuildError};
+use framebuffer::Framebuffers;
 
 /// A function used to setup a pass and its resources
 pub type SetupFn<R, C, F, CF, DF> =
@@ -49,7 +50,7 @@ where R: gfx::Resources,
 }
 
 /// A trait that represents a rendering pass
-pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>> {
+pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>, CF, DF> {
     /// Executes the pass, adding graphics commands to the `Encoder`
     ///
     /// The pass has access to the `RenderGraph`'s resources.
@@ -61,4 +62,11 @@ pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>> 
     /// Reloads the shaders for the pass
     fn reload_shaders(&mut self, factory: &mut F)
         -> Result<(), BuildError<String>>;
+    /// Handles the window being resized
+    fn handle_window_resize(
+        &mut self,
+        new_dimensions: (u16, u16),
+        framebuffers: &mut Framebuffers<R, CF, DF>,
+        factory: &mut F,
+    ) -> Result<(), BuildError<String>>;
 }

@@ -3,6 +3,7 @@
 use gfx::{self, texture, state, handle};
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
+use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 use assets;
@@ -45,19 +46,17 @@ impl<R: gfx::Resources> PostPass<R> {
         let pso = Self::load_pso(factory)?;
         // Create a screen quad to render to
         let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
-        let vbuf = factory.create_vertex_buffer(&vertices);
+        let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
 
         // Create texture sampler info
         let sampler_info =
             texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Clamp);
 
         let data = pipe::Data {
-            vbuf: vbuf,
+            vbuf,
             texture: (texture, factory.create_sampler(sampler_info)),
             screen_color: main_color,
         };
-
-        let slice = gfx::Slice::new_match_vertex_buffer(&data.vbuf);
 
         Ok(PostPass {
             bundle: gfx::Bundle::new(slice, pso, data),
@@ -100,7 +99,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-impl<R, C, F> Pass<R, C, F> for PostPass<R>
+impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -115,6 +114,24 @@ impl<R, C, F> Pass<R, C, F> for PostPass<R>
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
         self.bundle.pso = Self::load_pso(factory)?;
+        Ok(())
+    }
+
+    fn handle_window_resize(
+        &mut self,
+        _: (u16, u16),
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        _: &mut F,
+    ) -> Result<(), BuildError<String>> {
+        let intermediate_target = framebuffers
+            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+
+        // Update shader input to the resized intermediate target
+        self.bundle.data.texture.0 = intermediate_target.srv.clone();
+
+        // Update shader output to the resized main color target
+        self.bundle.data.screen_color = framebuffers.get_main_color().clone();
+
         Ok(())
     }
 }

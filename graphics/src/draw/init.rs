@@ -11,7 +11,7 @@ use ui;
 
 use std::sync::{Arc, Mutex};
 
-use super::{param, components, lighting_data, passes};
+use draw::{self, param, components, lighting_data, passes};
 
 use gfx_device_gl;
 /// Initializes rendering-related components and systems
@@ -38,7 +38,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
 
     // Initialize gfx structs
     let (window, device, mut factory, main_color, main_depth) =
-        gfx_window_glutin::init::<super::ColorFormat, super::DepthFormat>(
+        gfx_window_glutin::init::<draw::ColorFormat, draw::DepthFormat>(
             window_builder,
             context_builder,
             &events,
@@ -77,7 +77,9 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     init_test_entities(world, &mut factory);
 
     // Initialize systems
-    let draw = super::System::new(
+    let create_new_window_views = |window: &glutin::GlWindow| gfx_window_glutin::new_views(window);
+    let create_new_window_views = Box::new(create_new_window_views);
+    let draw = draw::System::new(
             factory,
             window.clone(),
             device,
@@ -85,6 +87,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
             main_depth,
             encoder,
             &mut world.res,
+            create_new_window_views,
     );
 
     // Add systems

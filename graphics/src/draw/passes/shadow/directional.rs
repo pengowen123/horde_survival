@@ -5,6 +5,7 @@ use gfx::traits::FactoryExt;
 use specs::Join;
 use cgmath::{Matrix4, SquareMatrix};
 use rendergraph::pass::Pass;
+use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred;
 
@@ -97,7 +98,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 }
 
 
-impl<R, C, F> Pass<R, C, F> for DirectionalShadowPass<R>
+impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for DirectionalShadowPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -137,6 +138,15 @@ impl<R, C, F> Pass<R, C, F> for DirectionalShadowPass<R>
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
         self.bundle.pso = Self::load_pso(factory)?;
+        Ok(())
+    }
+
+    fn handle_window_resize(
+        &mut self,
+        _: (u16, u16),
+        _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        _: &mut F,
+    ) -> Result<(), BuildError<String>> {
         Ok(())
     }
 }

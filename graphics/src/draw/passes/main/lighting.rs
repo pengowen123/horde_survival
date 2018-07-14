@@ -5,6 +5,7 @@
 use gfx::{self, format, handle, state, texture};
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
+use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 use cgmath::{self, SquareMatrix};
@@ -288,7 +289,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-impl<R, C, F> Pass<R, C, F> for LightingPass<R>
+impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for LightingPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -341,6 +342,29 @@ impl<R, C, F> Pass<R, C, F> for LightingPass<R>
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
         self.bundle.pso = Self::load_pso(factory)?;
+        Ok(())
+    }
+
+    fn handle_window_resize(
+        &mut self,
+        _: (u16, u16),
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        _: &mut F,
+    ) -> Result<(), BuildError<String>> {
+        let intermediate_target = framebuffers
+            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+
+        let gbuffer = framebuffers.get_framebuffer::<gbuffer::GeometryBuffer<R>>("gbuffer")?;
+
+        // Update shader inputs to the resized geometry buffer textures
+        self.bundle.data.g_position.0 = gbuffer.position.srv().clone();
+        self.bundle.data.g_normal.0 = gbuffer.normal.srv().clone();
+        self.bundle.data.g_color.0 = gbuffer.color.srv().clone();
+
+        // Update shader outputs to the resized intermediate targets
+        self.bundle.data.out_color = intermediate_target.rtv.clone();
+        self.bundle.data.out_depth = intermediate_target.dsv.clone();
+
         Ok(())
     }
 }

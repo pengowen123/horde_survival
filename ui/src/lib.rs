@@ -18,7 +18,7 @@ mod theme;
 mod consts;
 
 use common::conrod::{self, Ui, UiBuilder, Dimensions, render, gfx};
-use common::glutin::Event;
+use common::glutin;
 use common::UiState;
 use window::window_event;
 
@@ -29,7 +29,7 @@ pub const UPS: u64 = 60;
 const UPDATE_INTERVAL: Duration = Duration::from_nanos(1_000_000_000 / UPS);
 
 /// A type that receives window events through a channel
-pub type EventReceiver = mpsc::Receiver<Event>;
+pub type EventReceiver = mpsc::Receiver<glutin::Event>;
 
 /// The UI represented as a list of objects to draw
 pub struct UiDrawList(Option<render::OwnedPrimitives>);
@@ -65,10 +65,16 @@ pub struct System {
     events: EventReceiver,
     // Used to limit the UPS of the UI
     last_run: Option<Instant>,
+    reader_id: window_event::ReaderId,
 }
 
 impl System {
-    fn new(window_dim: Dimensions, events: EventReceiver, log: &slog::Logger) -> Self {
+    fn new(
+        window_dim: Dimensions,
+        events: EventReceiver,
+        log: &slog::Logger,
+        reader_id: window_event::ReaderId,
+    ) -> Self {
         let mut ui = UiBuilder::new(window_dim)
             .theme(theme::default_theme())
             .build();
@@ -88,6 +94,7 @@ impl System {
             menus,
             events,
             last_run: None,
+            reader_id,
         }
     }
 }
@@ -104,6 +111,17 @@ impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
     fn run(&mut self, mut data: Self::SystemData) {
+        // Handle window resize events
+        for event in data.event_channel.read(&mut self.reader_id) {
+            if let window_event::Event::WindowResized(new_size) = *event {
+                let (new_width, new_height): (u32, u32) =
+                    new_size.to_physical(data.window.get_hidpi_factor()).into();
+
+                self.ui.win_w = new_width as conrod::Scalar;
+                self.ui.win_h = new_height as conrod::Scalar;
+            }
+        }
+
         // Limit UPS to the UPS constant
         if let Some(t) = self.last_run {
             if t.elapsed() < UPDATE_INTERVAL {
@@ -169,7 +187,8 @@ pub fn initialize<'a, 'b>(
 ) -> specs::DispatcherBuilder<'a, 'b> {
     let log = world.read_resource::<slog::Logger>();
     let window_dim: Dimensions = [window_dim.0.into(), window_dim.1.into()];
-    let ui = System::new(window_dim, events, &log);
+    let reader_id = world.write_resource::<window_event::EventChannel>().register_reader();
+    let ui = System::new(window_dim, events, &log, reader_id);
 
     dispatcher.add(ui, "ui", &[])
 }

@@ -26,7 +26,7 @@ pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, handle};
-use common::{self, shred, specs, conrod};
+use common::{self, shred, specs, conrod, glutin};
 use rendergraph::{RenderGraph, builder, module, pass};
 use rendergraph::error::BuildError;
 use window::{self, info, window_event};
@@ -39,6 +39,12 @@ use self::passes::{postprocessing, skybox, resource_pass, shadow};
 use self::passes::main::{geometry_pass, lighting};
 use self::lighting_data::LightingData;
 use camera::Camera;
+
+/// A function that creates new window target views
+pub type CreateNewWindowViews<R> =
+    Box<Fn(&glutin::GlWindow) ->
+        (handle::RenderTargetView<R, types::ColorFormat>,
+         handle::DepthStencilView<R, types::DepthFormat>)>;
 
 /// A `specs::Storage` for the `Drawable` component
 pub type DrawableStorage<'a, R> =
@@ -88,6 +94,11 @@ where
     graph: RenderGraph<R, C, D, F, ColorFormat, DepthFormat>,
     reader_id: window_event::ReaderId,
     ui_renderer: conrod::backend::gfx::Renderer<'static, R>,
+    // NOTE: This field is just a hack to avoid calling `gfx_window_glutin::new_views` in a generic
+    //       context. This is necessary because that function returns types that use
+    //       `gfx_device_gl::Resources`, which is a concrete type, and the code here attempts to use
+    //       its return value where `R`, a type parameter, is expected
+    create_new_window_views: CreateNewWindowViews<R>,
 }
 
 impl<F, C, R, D> System<F, C, R, D>
@@ -106,6 +117,7 @@ where
         out_depth: handle::DepthStencilView<R, types::DepthFormat>,
         encoder: gfx::Encoder<R, C>,
         resources: &'a mut shred::Resources,
+        create_new_window_views: CreateNewWindowViews<R>,
     ) -> Self {
         // Read resources from the specs World
         let camera = resources.fetch::<Arc<Mutex<Camera>>>(0).clone();
@@ -180,6 +192,7 @@ where
             graph,
             reader_id,
             ui_renderer,
+            create_new_window_views,
         }
     }
 
@@ -215,13 +228,32 @@ where
     type SystemData = Data<'a, R>;
 
     fn run(&mut self, data: Self::SystemData) {
-        // Check if shaders should be reloaded
+        // Check for relevant window events
         for e in data.event_channel.read(&mut self.reader_id) {
-            if let &window_event::Event::ReloadShaders = e {
-                self.reload_shaders(&data.log)
-                    .unwrap_or_else(|e| {
-                        error!(data.log, "Error reloading shaders: {}", e;);
+            match *e {
+                window_event::Event::ReloadShaders => {
+                    self.reload_shaders(&data.log)
+                        .unwrap_or_else(|e| {
+                            error!(data.log, "Error reloading shaders: {}", e;);
+                        });
+                }
+                window_event::Event::WindowResized(_) => {
+                    let (resized_main_color, resized_main_depth) =
+                        (self.create_new_window_views)(self.graph.window());
+
+                    // Handle window resize for render passes
+                    self.graph.handle_window_resize(
+                        resized_main_color.clone(),
+                        resized_main_depth,
+                        &mut self.factory,
+                    ).unwrap_or_else(|e| {
+                        error!(data.log, "Error handling window resize: {}", e;);
                     });
+                    
+                    // Handle window resize for UI renderer
+                    self.ui_renderer.use_render_target(resized_main_color);
+                }
+                _ => {},
             }
         }
 

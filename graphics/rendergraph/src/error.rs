@@ -7,12 +7,15 @@ use image_utils;
 use std::{fmt, io, error};
 
 use builder::PassOutputError;
+use framebuffer::FramebufferError;
 
 /// An error while building a `RenderGraph` or some component of it (such as when reloading shaders)
 #[derive(Debug)]
 pub enum BuildError<S> {
     /// Pass output access error
     PassOutput(PassOutputError),
+    /// Framebuffer access error
+    Framebuffer(FramebufferError),
     /// Pipeline state creation error
     PipelineState(gfx::PipelineStateError<S>),
     /// Buffer creation error
@@ -42,6 +45,7 @@ impl<S: fmt::Debug + fmt::Display> fmt::Display for BuildError<S> {
         use self::BuildError::*;
         match self {
             PassOutput(e) => writeln!(fmt, "Error accessing pass output: {}", e),
+            Framebuffer(e) => writeln!(fmt, "Error accessing framebuffer: {}", e),
             PipelineState(e) => writeln!(fmt, "Error building pipeline state: {}", e),
             BufferCreation(e) => writeln!(fmt, "Error creating buffer: {}", e),
             TextureCreation(e) => writeln!(fmt, "Error creating texture: {}", e),
@@ -67,6 +71,12 @@ impl<S: fmt::Debug + fmt::Display + 'static> error::Error for BuildError<S> {
 impl<S> From<PassOutputError> for BuildError<S> {
     fn from(e: PassOutputError) -> Self {
         BuildError::PassOutput(e)
+    }
+}
+
+impl<S> From<FramebufferError> for BuildError<S> {
+    fn from(e: FramebufferError) -> Self {
+        BuildError::Framebuffer(e)
     }
 }
 

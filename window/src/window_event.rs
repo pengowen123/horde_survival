@@ -156,8 +156,6 @@ pub fn process_window_event_graphics(
             },
             ..
         } => {
-            let mut event = None;
-
             if let Some(key) = virtual_keycode {
                 match key {
                     VirtualKeyCode::Escape => {
@@ -177,15 +175,15 @@ pub fn process_window_event_graphics(
                     _ => {}
                 }
             }
-
-            if let Some(e) = event {
-                channel.single_write(e);
-            }
         }
         WindowEvent::Resized(new_size) => {
+            channel.single_write(Event::WindowResized(new_size));
+
+            // Center the cursor so the camera doesn't jump when the window resizes
+            common::utils::set_cursor_pos_to_window_center(window);
+
             let physical_size = new_size.to_physical(window.get_hidpi_factor());
             info!(log, "Window resized"; o!("new_dimensions" => format!("{:?}", physical_size)));
-            channel.single_write(Event::WindowResized(new_size));
         }
         _ => {}
     }
@@ -209,8 +207,8 @@ pub fn unpause(
     window: &glutin::Window,
     event_channel: &mut EventChannel,
 ) {
-    // Center the cursor so the camera doesn't jump when the game
-    // unpauses
+    // Center the cursor so the camera doesn't jump when the game unpauses
+    // FIXME: This only mitigates the issue but doesn't fix it entirely
     common::utils::set_cursor_pos_to_window_center(window);
 
     window.hide_cursor(true);

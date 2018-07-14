@@ -6,6 +6,7 @@ use gfx::{self, state, texture, handle};
 use gfx::traits::FactoryExt;
 use shred;
 use rendergraph::pass::Pass;
+use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use window::info::WindowInfo;
 use cgmath::{Matrix4, SquareMatrix};
@@ -155,7 +156,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-impl<R, C, F> Pass<R, C, F> for GeometryPass<R>
+impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for GeometryPass<R>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
@@ -216,6 +217,32 @@ impl<R, C, F> Pass<R, C, F> for GeometryPass<R>
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
         self.bundle.pso = Self::load_pso(factory)?;
+        Ok(())
+    }
+
+    fn handle_window_resize(
+        &mut self,
+        new_dimensions: (u16, u16),
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        factory: &mut F,
+    ) -> Result<(), BuildError<String>> {
+
+        // Build a new geometry buffer using the new window dimensions
+        let gbuffer = gbuffer::GeometryBuffer::new(factory, new_dimensions.0, new_dimensions.1)?;
+
+        // Update shader outputs to the resized geometry buffer targets
+        self.bundle.data.out_pos = gbuffer.position.rtv().clone();
+        self.bundle.data.out_normal = gbuffer.normal.rtv().clone();
+        self.bundle.data.out_color = gbuffer.color.rtv().clone();
+        // Update shader depth output to the resized intermediate depth target
+        {
+            let intermediate_target = framebuffers
+                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+            self.bundle.data.out_depth = intermediate_target.dsv.clone();
+        }
+
+        framebuffers.add_framebuffer("gbuffer", gbuffer);
+
         Ok(())
     }
 }

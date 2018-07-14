@@ -62,7 +62,7 @@ pub fn run() {
     let dispatcher_graphics = ui::initialize(
         &mut world,
         dispatcher_graphics,
-        window.get_inner_size().unwrap().into(),
+        window.get_inner_size().unwrap().to_physical(window.get_hidpi_factor()).into(),
         ui_event_receiver
     );
 
