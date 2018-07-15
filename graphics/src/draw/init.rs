@@ -34,6 +34,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
         glutin::WindowBuilder::new()
             .with_title("Horde Survival")
             .with_min_dimensions(size)
+            .with_resizable(false)
     };
 
     // Initialize gfx structs
