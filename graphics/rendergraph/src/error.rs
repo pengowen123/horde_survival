@@ -9,6 +9,76 @@ use std::{fmt, io, error};
 use builder::PassOutputError;
 use framebuffer::FramebufferError;
 
+/// The top-level error type for this crate
+///
+/// Stores the name of the pass that caused the error and can be either a `BuildError` or `RunError`
+#[derive(Debug)]
+pub struct Error<S> {
+    pass_name: String,
+    kind: ErrorKind<S>,
+}
+
+impl<S> Error<S> {
+    /// Constructs a new `Error` from the name of the pass that caused it and the error itself
+    pub fn new(pass_name: String, kind: ErrorKind<S>) -> Self {
+        Self {
+            pass_name,
+            kind,
+        }
+    }
+
+    /// Returns the name of the pass that caused the error
+    pub fn pass_name(&self) -> &str {
+        &self.pass_name
+    }
+
+    /// Returns the kind of this error
+    pub fn error_kind(&self) -> &ErrorKind<S> {
+        &self.kind
+    }
+
+    /// Consumes the error, returning its error kind
+    pub fn into_error_kind(self) -> ErrorKind<S> {
+        self.kind
+    }
+}
+
+impl<S: fmt::Debug + fmt::Display> fmt::Display for Error<S> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(fmt, "Error in pass `{}`: {}", self.pass_name, self.kind)
+    }
+}
+
+impl<S: fmt::Debug + fmt::Display + 'static> error::Error for Error<S> {
+    fn cause(&self) -> Option<&error::Error> {
+        None
+    }
+}
+
+/// A `BuildError` or `RunError`
+#[derive(Debug)]
+pub enum ErrorKind<S> {
+    /// A `BuildError`
+    Build(BuildError<S>),
+    /// A `RunError`
+    Run(RunError),
+}
+
+impl<S: fmt::Debug + fmt::Display> fmt::Display for ErrorKind<S> {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            ErrorKind::Build(ref e) => writeln!(fmt, "Error building component of render graph: {}", e),
+            ErrorKind::Run(ref e) => writeln!(fmt, "Error running render graph: {}", e),
+        }
+    }
+}
+
+impl<S: fmt::Debug + fmt::Display + 'static> error::Error for ErrorKind<S> {
+    fn cause(&self) -> Option<&error::Error> {
+        None
+    }
+}
+
 /// An error while building a `RenderGraph` or some component of it (such as when reloading shaders)
 #[derive(Debug)]
 pub enum BuildError<S> {

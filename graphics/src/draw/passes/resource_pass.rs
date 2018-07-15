@@ -73,6 +73,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Resource
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
+    fn name(&self) -> &str {
+        "resource"
+    }
+
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
         -> Result<(), RunError>
     {

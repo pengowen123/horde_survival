@@ -51,6 +51,8 @@ where R: gfx::Resources,
 
 /// A trait that represents a rendering pass
 pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>, CF, DF> {
+    /// Returns the name of the pass
+    fn name(&self) -> &str;
     /// Executes the pass, adding graphics commands to the `Encoder`
     ///
     /// The pass has access to the `RenderGraph`'s resources.

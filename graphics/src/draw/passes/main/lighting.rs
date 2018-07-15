@@ -294,6 +294,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
+    fn name(&self) -> &str {
+        "lighting"
+    }
+
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
         -> Result<(), RunError>
     {

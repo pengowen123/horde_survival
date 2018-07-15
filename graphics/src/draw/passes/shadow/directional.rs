@@ -103,6 +103,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
+    fn name(&self) -> &str {
+        "directional_light_shadows"
+    }
+
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
         -> Result<(), RunError>
     {

@@ -76,9 +76,10 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
     /// Executes all passes in the `RenderGraph`
     ///
     /// `RenderGraph::finish` must be called after this to display the results to the window.
-    pub fn execute_passes(&mut self) -> Result<(), error::RunError> {
+    pub fn execute_passes(&mut self) -> Result<(), error::Error<String>> {
         for pass in &mut self.passes {
-            pass.execute_pass(&mut self.encoder, &mut self.resources)?
+            pass.execute_pass(&mut self.encoder, &mut self.resources)
+                .map_err(|e| error::Error::new(pass.name().to_string(), error::ErrorKind::Run(e)))?
         }
 
         Ok(())
@@ -94,9 +95,15 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
     }
 
     /// Reloads the shaders for all passes in the `RenderGraph`
-    pub fn reload_shaders(&mut self, factory: &mut F) -> Result<(), error::BuildError<String>> {
+    pub fn reload_shaders(&mut self, factory: &mut F) -> Result<(), error::Error<String>> {
         for pass in &mut self.passes {
-            pass.reload_shaders(factory)?;
+            pass.reload_shaders(factory)
+                .map_err(|e|  {
+                    error::Error::new(
+                        pass.name().to_string(),
+                        error::ErrorKind::Build(e),
+                    )
+                })?;
         }
         Ok(())
     }
@@ -107,7 +114,7 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
         resized_main_color: handle::RenderTargetView<R, CF>,
         resized_main_depth: handle::DepthStencilView<R, DF>,
         factory: &mut F,
-    ) -> Result<(), error::BuildError<String>> {
+    ) -> Result<(), error::Error<String>> {
         let new_dimensions = resized_main_color.get_dimensions();
         let new_dimensions = (new_dimensions.0, new_dimensions.1);
         
@@ -120,7 +127,13 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
         );
 
         for pass in &mut self.passes {
-            pass.handle_window_resize(new_dimensions, &mut framebuffers, factory)?;
+            pass.handle_window_resize(new_dimensions, &mut framebuffers, factory)
+                .map_err(|e| {
+                    error::Error::new(
+                        pass.name().to_string(),
+                        error::ErrorKind::Build(e),
+                    )
+                })?;
         }
         Ok(())
     }

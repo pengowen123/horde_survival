@@ -104,6 +104,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
+    fn name(&self) -> &str {
+        "postprocessing"
+    }
+
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
         -> Result<(), RunError>
     {

@@ -28,7 +28,7 @@ pub use self::param::ShaderParam;
 use gfx::{self, handle};
 use common::{self, shred, specs, conrod, glutin};
 use rendergraph::{RenderGraph, builder, module, pass};
-use rendergraph::error::BuildError;
+use rendergraph::error::Error;
 use window::{self, info, window_event};
 use slog;
 use ui;
@@ -201,7 +201,7 @@ where
     }
 
     /// Reloads the shaders
-    fn reload_shaders(&mut self, log: &slog::Logger) -> Result<(), BuildError<String>> {
+    fn reload_shaders(&mut self, log: &slog::Logger) -> Result<(), Error<String>> {
         info!(log, "Reloading shaders";);
         self.graph.reload_shaders(&mut self.factory)
     }
