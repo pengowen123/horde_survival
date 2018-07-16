@@ -5,6 +5,8 @@ extern crate shred_derive;
 extern crate slog;
 extern crate slog_term;
 extern crate slog_async;
+#[macro_use]
+extern crate serde_derive;
 extern crate common;
 extern crate math;
 extern crate physics;
@@ -16,6 +18,7 @@ extern crate ui;
 // TODO: Remove when no longer needed
 mod dev;
 
+pub mod config;
 mod player_control;
 
 use common::{specs, glutin};
@@ -27,7 +30,7 @@ use std::sync::mpsc;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
-pub fn run(logger: slog::Logger) {
+pub fn run(config: config::Config, logger: slog::Logger) -> config::Config {
     // Create world
     let mut world = specs::World::new();
     // Create a dispatcher for main systems (such as controls)
@@ -62,6 +65,9 @@ pub fn run(logger: slog::Logger) {
         window.get_inner_size().unwrap().to_physical(window.get_hidpi_factor()).into(),
         ui_event_receiver
     );
+
+    // Add config resource
+    world.add_resource(config);
 
     // Build the dispatchers
     let mut dispatcher = dispatcher.build();
@@ -138,4 +144,8 @@ pub fn run(logger: slog::Logger) {
         // NOTE: Running this after dispatch may be a problem (but so is running it before dispatch)
         world.maintain();
     }
+
+    // Return the config so it can be written to the config file
+    let config = world.read_resource::<config::Config>();
+    config.clone()
 }
