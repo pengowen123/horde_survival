@@ -2,7 +2,6 @@
 
 #[macro_use]
 extern crate shred_derive;
-#[macro_use]
 extern crate slog;
 extern crate slog_term;
 extern crate slog_async;
@@ -18,7 +17,6 @@ extern crate ui;
 mod dev;
 
 mod player_control;
-mod logging;
 
 use common::{specs, glutin};
 use common::shred::{self, RunNow};
@@ -29,7 +27,7 @@ use std::sync::mpsc;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
-pub fn run() {
+pub fn run(logger: slog::Logger) {
     // Create world
     let mut world = specs::World::new();
     // Create a dispatcher for main systems (such as controls)
@@ -39,8 +37,7 @@ pub fn run() {
     // in a menu)
     let dispatcher_graphics = specs::DispatcherBuilder::new();
 
-    // Initialize logger
-    let logger = logging::init_logger();
+    // Add logger resource
     world.add_resource(logger);
 
     // Call initialization functions (initializes their components and systems)
