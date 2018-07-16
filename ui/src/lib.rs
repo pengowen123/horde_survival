@@ -2,8 +2,6 @@
 //!
 //! The UI is only calculated here; a draw list is sent to the graphics system to be rendered
 
-extern crate specs;
-extern crate shred;
 #[macro_use]
 extern crate shred_derive;
 extern crate common;
@@ -12,6 +10,7 @@ extern crate conrod as conrod_macros;
 extern crate window;
 #[macro_use]
 extern crate slog;
+use common::{specs, shred};
 
 mod menus;
 mod theme;
