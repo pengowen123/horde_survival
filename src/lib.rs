@@ -5,10 +5,6 @@ extern crate shred_derive;
 extern crate slog;
 extern crate slog_term;
 extern crate slog_async;
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate structopt;
 extern crate common;
 extern crate math;
 extern crate physics;
@@ -20,12 +16,10 @@ extern crate ui;
 // TODO: Remove when no longer needed
 mod dev;
 
-pub mod config;
 mod player_control;
 
-use common::{specs, glutin};
+use common::{Float, specs, glutin, config};
 use common::shred::{self, RunNow};
-use common::Float;
 use window::window_event;
 
 use std::sync::mpsc;
@@ -48,6 +42,8 @@ pub fn run(
 
     // Add logger resource
     world.add_resource(logger);
+    // Add config resource
+    world.add_resource(config);
 
     // Call initialization functions (initializes their components and systems)
     let dispatcher_graphics = common::initialize(&mut world, dispatcher_graphics);
@@ -72,9 +68,6 @@ pub fn run(
         ui_event_receiver
     );
 
-    // Add config resource
-    world.add_resource(config);
-
     // Build the dispatchers
     let mut dispatcher = dispatcher.build();
     let mut dispatcher_graphics = dispatcher_graphics.build();
@@ -87,7 +80,9 @@ pub fn run(
         }
 
         {
+            let config = world.read_resource::<config::Config>();
             let mut channel = world.write_resource::<window_event::EventChannel>();
+
             let mut latest_mouse_move = None;
 
             events.poll_events(|e| {
@@ -120,6 +115,7 @@ pub fn run(
                         }
                         
                         window_event::process_window_event(
+                            &config,
                             &mut channel,
                             &window,
                             &event,
@@ -132,7 +128,7 @@ pub fn run(
             // Only process the latest mouse movement event
             // NOTE: This won't be run if !ui_state.is_in_game() because of the above code
             if let Some(event) = latest_mouse_move {
-                window_event::process_window_event(&mut channel, &window, &event);
+                window_event::process_window_event(&config, &mut channel, &window, &event);
             }
         }
 

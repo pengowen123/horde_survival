@@ -1,24 +1,23 @@
-extern crate horde_survival;
 #[macro_use]
 extern crate quick_error;
 #[macro_use]
 extern crate slog;
 extern crate slog_term;
 extern crate slog_async;
-extern crate serde;
 extern crate ron;
 extern crate directories;
-extern crate structopt;
+extern crate horde_survival;
+extern crate common;
 
 use slog::Drain;
 use directories::ProjectDirs;
-use structopt::StructOpt;
+use common::structopt::StructOpt;
 
 use std::fs;
 use std::path::PathBuf;
 use std::io::{self, Read, Write};
 
-use horde_survival::config;
+use common::config;
 
 const CONFIG_FILE_NAME: &str = "settings.ron";
 

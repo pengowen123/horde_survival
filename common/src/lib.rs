@@ -25,11 +25,17 @@ pub extern crate conrod;
 
 // Misc
 pub extern crate time;
+#[macro_use]
+pub extern crate structopt;
 extern crate slog;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
 
 mod delta;
 mod components;
 mod resources;
+pub mod config;
 pub mod utils;
 
 pub use self::components::*;

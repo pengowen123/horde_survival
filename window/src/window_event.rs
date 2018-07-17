@@ -4,7 +4,7 @@
 
 use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState};
 use common::cgmath::{self, Rad};
-use common::{self, UiState, shrev};
+use common::{self, UiState, shrev, config};
 use slog;
 
 use input::Direction;
@@ -64,6 +64,7 @@ pub enum Event {
 
 /// Processes the provided window event, sending the processed version to the event channel
 pub fn process_window_event(
+    config: &config::Config,
     channel: &mut EventChannel,
     window: &glutin::Window,
     event: &WindowEvent,
@@ -89,6 +90,8 @@ pub fn process_window_event(
             // Pitch control is also inverted
             let diff_pitch = -diff_pitch;
             
+            // TODO: Investigate how sensitivity scales with monitor size, and maybe fix the
+            //       handling of it
             let rot_pitch = diff_pitch as ::Float * SENSITIVITY;
             let rot_yaw = diff_yaw as ::Float * SENSITIVITY;
             let camera_rot = CameraRotation::new(cgmath::Rad(rot_pitch), cgmath::Rad(rot_yaw));
@@ -99,33 +102,52 @@ pub fn process_window_event(
             input: KeyboardInput {
                 state,
                 virtual_keycode,
-                modifiers: _,
+                modifiers,
                 ..
             },
             ..
         } => {
             let mut event = None;
 
-            if let Some(key) = virtual_keycode {
-                match key {
-                    VirtualKeyCode::W => {
-                        event = Some(get_movement_event(Direction::Forward, state))
+            let virtual_keycode = match virtual_keycode {
+                Some(c) => c,
+                // Do nothing if there is no virtual keycode (such as when Ctrl+Shift+Alt is
+                // pressed)
+                None => return,
+            };
+            let key: config::Key = virtual_keycode.into();
+
+            let current_bind = config::Bind::new(key.clone(), modifiers.into());
+
+            // Handle movement keys
+            event = event.or_else(|| get_movement_event(&current_bind,
+                                                        &config.bindings.move_forward,
+                                                        state,
+                                                        Direction::Forward));
+
+            event = event.or_else(|| get_movement_event(&current_bind,
+                                                        &config.bindings.move_backward,
+                                                        state,
+                                                        Direction::Backward));
+
+            event = event.or_else(|| get_movement_event(&current_bind,
+                                                        &config.bindings.move_left,
+                                                        state,
+                                                        Direction::Left));
+
+            event = event.or_else(|| get_movement_event(&current_bind,
+                                                        &config.bindings.move_right,
+                                                        state,
+                                                        Direction::Right));
+
+
+            match state {
+                ElementState::Pressed => {
+                    if current_bind == config.bindings.reload_shaders {
+                        event = Some(Event::ReloadShaders);
                     }
-                    VirtualKeyCode::A => {
-                        event = Some(get_movement_event(Direction::Left, state))
-                    }
-                    VirtualKeyCode::S => {
-                        event = Some(get_movement_event(Direction::Backward, state))
-                    }
-                    VirtualKeyCode::D => {
-                        event = Some(get_movement_event(Direction::Right, state))
-                    }
-                    VirtualKeyCode::F1 => {
-                        if let ElementState::Pressed = state {
-                            event = Some(Event::ReloadShaders);
-                        }
-                    },
-                    _ => {}
+                }
+                ElementState::Released => {
                 }
             }
 
@@ -134,6 +156,43 @@ pub fn process_window_event(
             }
         }
         _ => {}
+    }
+}
+
+/// Returns an event that enables or disables the provided movement direction, based on the provided
+/// binding comparison and element state
+fn get_movement_event(
+    // The current binding based on the latest window event
+    current_bind: &config::Bind,
+    // The binding to compare to
+    test_bind: &config::Bind,
+    state: ElementState,
+    direction: Direction,
+) -> Option<Event> {
+    match state {
+        ElementState::Pressed => {
+            if current_bind.key == test_bind.key {
+                // While holding a movement key down, if the modifiers no longer match, disable
+                // that movement direction
+                let state = if current_bind.modifiers == test_bind.modifiers {
+                    State::Enabled
+                } else {
+                    State::Disabled
+                };
+                Some(Event::ChangeMovementKeyState(direction, state))
+            } else {
+                None
+            }
+        }
+        ElementState::Released => {
+            // If a movement key is released, disable that movement direction regardless of modifier
+            // state
+            if current_bind.key == test_bind.key {
+                Some(Event::ChangeMovementKeyState(direction, State::Disabled))
+            } else {
+                None
+            }
+        }
     }
 }
 
@@ -187,17 +246,6 @@ pub fn process_window_event_graphics(
         }
         _ => {}
     }
-}
-
-/// Returns an event that enables or disables the provided movement direction, depending on whether
-/// `state` is `ElementState::Pressed`
-fn get_movement_event(direction: Direction, state: ElementState) -> Event {
-    let state = match state {
-        ElementState::Pressed => State::Enabled,
-        ElementState::Released => State::Disabled,
-    };
-
-    Event::ChangeMovementKeyState(direction, state)
 }
 
 

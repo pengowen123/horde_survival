@@ -1,7 +1,7 @@
 //! Configuration of Horde Survival
 
-use common::gfx::texture;
-use common::glutin;
+use gfx::texture;
+use glutin;
 
 use std::fmt;
 use std::path::PathBuf;
@@ -21,11 +21,13 @@ pub struct CommandLineConfig {
 pub struct Config {
     pub graphics: GraphicsConfig,
     pub window: WindowConfig,
-    pub keyboard: BindConfig,
+    pub game: GameConfig,
+    pub bindings: BindConfig,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GraphicsConfig {
+    pub camera_fov: f32,
     pub postprocessing: bool,
     pub shadows: bool,
     pub shadow_map_size: texture::Size,
@@ -40,6 +42,11 @@ pub struct WindowConfig {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GameConfig {
+    pub sensitivity: ::Float,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BindConfig {
     pub move_forward: Bind,
     pub move_backward: Bind,
@@ -51,6 +58,7 @@ pub struct BindConfig {
 impl Default for GraphicsConfig {
     fn default() -> Self {
         Self {
+            camera_fov: 45.0,
             postprocessing: false,
             shadows: false,
             shadow_map_size: 1024,
@@ -91,6 +99,14 @@ impl Default for BindConfig {
                 modifiers: Default::default(),
                 key: Key::F1,
             },
+        }
+    }
+}
+
+impl Default for GameConfig {
+    fn default() -> Self {
+        Self {
+            sensitivity: 0.0035,
         }
     }
 }
@@ -137,6 +153,15 @@ impl Into<glutin::ModifiersState> for ModifiersState {
 pub struct Bind {
     pub key: Key,
     pub modifiers: ModifiersState,
+}
+
+impl Bind {
+    pub fn new(key: Key, modifiers: ModifiersState) -> Self {
+        Self {
+            key,
+            modifiers,
+        }
+    }
 }
 
 impl fmt::Display for Bind {
