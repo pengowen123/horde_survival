@@ -8,9 +8,11 @@ extern crate slog_async;
 extern crate serde;
 extern crate ron;
 extern crate directories;
+extern crate structopt;
 
 use slog::Drain;
 use directories::ProjectDirs;
+use structopt::StructOpt;
 
 use std::fs;
 use std::path::PathBuf;
@@ -131,8 +133,9 @@ fn load_config_or_default(log: &slog::Logger) -> config::Config {
 fn main() {
     let logger = init_logger();
     let config = load_config_or_default(&logger);
+    let cli_config = config::CommandLineConfig::from_args();
 
-    let new_config = horde_survival::run(config, logger.clone());
+    let new_config = horde_survival::run(config, cli_config, logger.clone());
 
     save_config(new_config)
         .unwrap_or_else(|e| {

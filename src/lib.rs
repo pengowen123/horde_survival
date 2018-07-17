@@ -7,6 +7,8 @@ extern crate slog_term;
 extern crate slog_async;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate structopt;
 extern crate common;
 extern crate math;
 extern crate physics;
@@ -30,7 +32,11 @@ use std::sync::mpsc;
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
-pub fn run(config: config::Config, logger: slog::Logger) -> config::Config {
+pub fn run(
+    config: config::Config,
+    cli_config: config::CommandLineConfig,
+    logger: slog::Logger
+) -> config::Config {
     // Create world
     let mut world = specs::World::new();
     // Create a dispatcher for main systems (such as controls)

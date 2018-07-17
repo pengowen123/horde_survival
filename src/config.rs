@@ -4,8 +4,19 @@ use common::gfx::texture;
 use common::glutin;
 
 use std::fmt;
+use std::path::PathBuf;
 
-/// A type that holds all configuration options
+// A type that holds all command-line configuration options
+/// A first-person, wave based game
+#[derive(StructOpt, Debug)]
+#[structopt(name = "horde_survival")]
+pub struct CommandLineConfig {
+    /// The path to the folder containing game assets
+    #[structopt(long = "assets_path", parse(from_os_str))]
+    assets_path: Option<PathBuf>,
+}
+
+/// A type that holds all configuration options that can be customized in the configuration file
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     pub graphics: GraphicsConfig,

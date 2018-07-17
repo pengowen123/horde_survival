@@ -16,6 +16,7 @@ serde_derive = "1.0.70"
 quick-error = "1.2.2"
 directories = "1.0.1"
 ron = "0.3.0"
+structopt = "0.2.10"
 
 [dependencies.common]
 path = "common"
