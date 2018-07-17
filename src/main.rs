@@ -6,7 +6,7 @@ extern crate slog;
 extern crate slog_term;
 extern crate slog_async;
 extern crate serde;
-extern crate toml;
+extern crate ron;
 extern crate directories;
 
 use slog::Drain;
@@ -18,17 +18,17 @@ use std::io::{self, Read, Write};
 
 use horde_survival::config;
 
-const CONFIG_FILE_NAME: &str = "settings.toml";
+const CONFIG_FILE_NAME: &str = "settings.ron";
 
 quick_error! {
     /// An error while loading or saving a `Config`
     #[derive(Debug)]
     enum ConfigError {
-        Deserialize(e: toml::ser::Error) {
+        Deserialize(e: ron::ser::Error) {
             display("Error deserializing `Config`: {}", e)
             from()
         }
-        Serialize(e: toml::de::Error) {
+        Serialize(e: ron::de::Error) {
             display("Error serializing `Config`: {}", e)
             from()
         }
@@ -96,14 +96,14 @@ fn load_config() -> Result<config::Config, ConfigError> {
     file.read_to_string(&mut data)
         .map_err(|e| ConfigError::Io((e, config_file_path_str.to_string())))?;
 
-    let config = toml::from_str(&data)?;
+    let config = ron::de::from_str(&data)?;
 
     Ok(config)
 }
 
 /// Writes the provided `Config` to the configuration file
 fn save_config(config: config::Config) -> Result<(), ConfigError> {
-    let serialized = toml::to_string_pretty(&config)?;
+    let serialized = ron::ser::to_string_pretty(&config, ron::ser::PrettyConfig::default())?;
 
     let config_file_path = get_config_dir_path()?.join(CONFIG_FILE_NAME);
     let config_file_path_str = config_file_path.to_str()
@@ -131,6 +131,7 @@ fn load_config_or_default(log: &slog::Logger) -> config::Config {
 fn main() {
     let logger = init_logger();
     let config = load_config_or_default(&logger);
+
     let new_config = horde_survival::run(config, logger.clone());
 
     save_config(new_config)
