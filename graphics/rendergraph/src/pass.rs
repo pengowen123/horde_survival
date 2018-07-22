@@ -2,6 +2,7 @@
 
 use gfx;
 use shred::Resources;
+use common::config;
 
 use builder::GraphBuilder;
 use error::{RunError, BuildError};
@@ -68,6 +69,13 @@ pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>, 
     fn handle_window_resize(
         &mut self,
         new_dimensions: (u16, u16),
+        framebuffers: &mut Framebuffers<R, CF, DF>,
+        factory: &mut F,
+    ) -> Result<(), BuildError<String>>;
+    /// Applies the `Config` to the pass
+    fn apply_config(
+        &mut self,
+        config: &config::GraphicsConfig,
         framebuffers: &mut Framebuffers<R, CF, DF>,
         factory: &mut F,
     ) -> Result<(), BuildError<String>>;

@@ -7,6 +7,7 @@ use cgmath::{Matrix4, SquareMatrix};
 use rendergraph::pass::Pass;
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
+use common::config;
 use shred;
 
 use std::sync::{Arc, Mutex};
@@ -36,6 +37,7 @@ gfx_defines! {
 
 pub struct DirectionalShadowPass<R: gfx::Resources> {
     bundle: gfx::Bundle<R, pipe::Data<R>>,
+    enabled: bool,
 }
 
 impl<R: gfx::Resources> DirectionalShadowPass<R> {
@@ -60,6 +62,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
         let pso = Self::load_pso(factory)?;
         let pass = Self {
             bundle: gfx::Bundle::new(slice, pso, data),
+            enabled: true,
         };
 
         let output = Output {
@@ -89,7 +92,9 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
-    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, super::SHADOW_MAP_SIZE)?;
+    // NOTE: Shadow map size is 1 here because it will be rebuilt with the correct size immediately
+    //       after the render graph is created
+    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, 1)?;
 
     builder.add_pass(pass);
     builder.add_pass_output("dir_shadow_map", output);
@@ -110,6 +115,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
         -> Result<(), RunError>
     {
+        if !self.enabled {
+            return Ok(());
+        }
+
         encoder.clear_depth(&self.bundle.data.out_depth, 1.0);
 
         let drawable = resources.fetch::<DrawableStorageRef<R>>(0);
@@ -151,6 +160,38 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
         _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
     ) -> Result<(), BuildError<String>> {
+        Ok(())
+    }
+
+    fn apply_config(
+        &mut self,
+        config: &config::GraphicsConfig,
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        factory: &mut F,
+    ) -> Result<(), BuildError<String>> {
+        // If the shadows setting was disabled, set the shadow map to a dummy texture to save memory
+        if !config.shadows && self.enabled {
+            println!("dir shadow pass: disabling shadows");
+            let (_, dummy_srv, dummy_dsv) = factory.create_depth_stencil(1, 1)?;
+            self.bundle.data.out_depth = dummy_dsv.clone();
+
+            framebuffers.add_framebuffer("dir_shadow_map", Output { srv: dummy_srv });
+        }
+
+        // If the shadows setting was enabled, make a new shadow map
+        if config.shadows && !self.enabled {
+            println!("dir shadow pass: enabling shadows");
+            let (_, srv, dsv) = factory.create_depth_stencil(
+                config.shadow_map_size,
+                config.shadow_map_size,
+            )?;
+            self.bundle.data.out_depth = dsv.clone();
+            
+            framebuffers.add_framebuffer("dir_shadow_map", Output { srv });
+        }
+
+        self.enabled = config.shadows;
+
         Ok(())
     }
 }

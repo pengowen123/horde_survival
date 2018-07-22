@@ -21,13 +21,12 @@ pub struct CommandLineConfig {
 pub struct Config {
     pub graphics: GraphicsConfig,
     pub window: WindowConfig,
-    pub game: GameConfig,
+    pub camera: CameraConfig,
     pub bindings: BindConfig,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GraphicsConfig {
-    pub camera_fov: f32,
     pub postprocessing: bool,
     pub shadows: bool,
     pub shadow_map_size: texture::Size,
@@ -42,8 +41,9 @@ pub struct WindowConfig {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct GameConfig {
+pub struct CameraConfig {
     pub sensitivity: ::Float,
+    pub fov: f32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -58,7 +58,6 @@ pub struct BindConfig {
 impl Default for GraphicsConfig {
     fn default() -> Self {
         Self {
-            camera_fov: 45.0,
             postprocessing: false,
             shadows: false,
             shadow_map_size: 1024,
@@ -103,10 +102,11 @@ impl Default for BindConfig {
     }
 }
 
-impl Default for GameConfig {
+impl Default for CameraConfig {
     fn default() -> Self {
         Self {
             sensitivity: 0.0035,
+            fov: 45.0,
         }
     }
 }

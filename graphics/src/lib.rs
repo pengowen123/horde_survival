@@ -24,7 +24,7 @@ pub mod draw;
 pub mod assets;
 mod camera;
 
-use common::{Float, cgmath, shred, glutin, gfx_window_glutin, gfx_device_gl};
+use common::{Float, cgmath, shred, glutin, gfx_window_glutin, gfx_device_gl, config};
 use common::specs::{self, DispatcherBuilder};
 
 use std::sync::{Arc, Mutex};
@@ -41,7 +41,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
       glutin::EventsLoop)
 {
     // The camera resource must exist before calling draw::initialize
-    world.add_resource(Arc::new(Mutex::new(camera::Camera::new_default(1.0))));
+    world.add_resource(Arc::new(Mutex::new(camera::Camera::new_default(1.0, 45.0))));
 
     // Initialize subsystems
     let (dispatcher, dispatcher_graphics, window, events) =
@@ -56,9 +56,10 @@ pub fn initialize<'a, 'b, 'c, 'd>(
                 panic!(common::CRASH_MSG);
             })
         };
-        let camera = world.write_resource::<Arc<Mutex<camera::Camera>>>();
-        *camera.lock().unwrap() = camera::Camera::new_default(window_size.width as f32 /
-                                                              window_size.height as f32);
+        let camera = world.read_resource::<Arc<Mutex<camera::Camera>>>();
+        let config = world.read_resource::<config::Config>();
+        let aspect_ratio = (window_size.width / window_size.height) as f32;
+        *camera.lock().unwrap() = camera::Camera::new_default(aspect_ratio, config.camera.fov);
     }
     world.add_resource(window.clone());
 

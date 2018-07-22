@@ -26,7 +26,7 @@ pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, handle};
-use common::{self, shred, specs, conrod, glutin};
+use common::{self, shred, specs, conrod, glutin, config};
 use rendergraph::{RenderGraph, builder, module, pass};
 use rendergraph::error::Error;
 use window::{self, info, window_event};
@@ -161,10 +161,10 @@ where
 
             let modules = vec![
                 (resource_module, "resource"),
-                (shadow_module, "shadow"),
-                (main_module, "main"),
+                //(shadow_module, "shadow"),
+                //(main_module, "main"),
                 (skybox_module, "skybox"),
-                (postprocessing_module, "postprocessing"),
+                //(postprocessing_module, "postprocessing"),
             ];
 
             for (module, name) in modules {
@@ -176,6 +176,20 @@ where
 
             builder.build(device, encoder, window)
         };
+
+        // Apply the configuration to the render graph
+        let graph = {
+            let mut graph = graph;
+            let config = resources.fetch::<config::Config>(0);
+
+            graph.apply_config(&config.graphics, &mut factory)
+                .unwrap_or_else(|e| {
+                    error!(log, "Failed to apply config to render graph: {}", e;);
+                });
+
+            graph
+        };
+
         
         // Build the UI renderer
         let ui_renderer = conrod::backend::gfx::Renderer::new(

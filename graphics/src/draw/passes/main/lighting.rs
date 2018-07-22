@@ -3,12 +3,14 @@
 //! Uses the data in the geometry buffer to calculate lighting.
 
 use gfx::{self, format, handle, state, texture};
+use gfx::memory::Typed;
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 use cgmath::{self, SquareMatrix};
+use common::config;
 use assets;
 
 use std::sync::{Arc, Mutex};
@@ -103,9 +105,10 @@ gfx_defines! {
         g_normal: gfx::TextureSampler<Vec4> = "t_Normal",
         g_color: gfx::TextureSampler<Vec4> = "t_Color",
         // Targets
-        out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
+        out_color: gfx::RawRenderTarget =
+            ("Target0", types::RGBA8, state::ColorMask::all(), None),
         // NOTE: This is `LESS_EQUAL_TEST` instead of `LESS_EQUAL_WRITE`
-        out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_TEST,
+        depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_TEST,
     }
 }
 
@@ -173,8 +176,26 @@ impl SpotLight {
     }
 }
 
+enum LightingPso<R: gfx::Resources> {
+    Srgba8(gfx::PipelineState<R, pipe::Meta>),
+    Rgba8(gfx::PipelineState<R, pipe::Meta>),
+}
+
+impl<R: gfx::Resources> LightingPso<R> {
+    fn get_pso(&self) -> &gfx::PipelineState<R, pipe::Meta> {
+        match *self {
+            LightingPso::Rgba8(ref pso) => pso,
+            LightingPso::Srgba8(ref pso) => pso,
+        }
+    }
+}
+
 pub struct LightingPass<R: gfx::Resources> {
-    bundle: gfx::Bundle<R, pipe::Data<R>>,
+    pso: LightingPso<R>,
+    data: pipe::Data<R>,
+    slice: gfx::Slice<R>,
+    shadows: bool,
+    postprocessing: bool,
 }
 
 impl<R: gfx::Resources> LightingPass<R> {
@@ -187,7 +208,7 @@ impl<R: gfx::Resources> LightingPass<R> {
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = Self::load_pso(factory)?;
+        let pso = Self::load_pso(factory, types::RGBA8, true)?;
 
         // Create a screen quad
         let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
@@ -217,29 +238,38 @@ impl<R: gfx::Resources> LightingPass<R> {
             g_position: (srv_pos, factory.create_sampler(sampler_info)),
             g_normal: (srv_normal, factory.create_sampler(sampler_info)),
             g_color: (srv_color, factory.create_sampler(sampler_info)),
-            out_color: rtv.clone(),
-            out_depth: dsv.clone(),
+            out_color: rtv.raw().clone(),
+            depth: dsv.clone(),
         };
 
         let slice = gfx::Slice::new_match_vertex_buffer(&data.vbuf);
 
         let pass = LightingPass {
-            bundle: gfx::Bundle::new(slice, pso, data),
+            pso: LightingPso::Rgba8(pso),
+            data,
+            slice,
+            shadows: true,
+            postprocessing: true,
         };
 
         Ok(pass)
     }
     
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
-        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
-    {
+    fn load_pso<F: gfx::Factory<R>>(
+        factory: &mut F, color_format:
+        format::Format,
+        shadows_enabled: bool
+    ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
         passes::load_pso(
             factory,
             assets::get_shader_path("lighting_vertex"),
             assets::get_shader_path("lighting_fragment"),
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
-            pipe::new(),
+            pipe::Init {
+                out_color: ("Target0", color_format, state::ColorMask::all(), None),
+                ..pipe::new()
+            },
         )
     }
 }
@@ -322,30 +352,36 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
             dir_light_space_matrix: dir_light_space_matrix.into(),
         };
 
-        let data = &self.bundle.data;
-
         let material = Material::new(32.0);
 
-        encoder.update_constant_buffer(&data.locals, &locals);
-        encoder.update_constant_buffer(&data.material, &material);
+        encoder.update_constant_buffer(&self.data.locals, &locals);
+        encoder.update_constant_buffer(&self.data.material, &material);
 
         // Update light buffers
         let dir_lights = lighting_data.take_dir_lights().collect::<Vec<_>>();
         let point_lights = lighting_data.take_point_lights().collect::<Vec<_>>();
         let spot_lights = lighting_data.take_spot_lights().collect::<Vec<_>>();
 
-        encoder.update_buffer(&data.dir_lights, &dir_lights, 0)?;
-        encoder.update_buffer(&data.point_lights, &point_lights, 0)?;
-        encoder.update_buffer(&data.spot_lights, &spot_lights, 0)?;
+        encoder.update_buffer(&self.data.dir_lights, &dir_lights, 0)?;
+        encoder.update_buffer(&self.data.point_lights, &point_lights, 0)?;
+        encoder.update_buffer(&self.data.spot_lights, &spot_lights, 0)?;
 
         // Calculate lighting
-        self.bundle.encode(encoder);
+        encoder.draw(&self.slice, self.pso.get_pso(), &self.data);
 
         Ok(())
     }
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory)?;
+        match self.pso {
+            LightingPso::Rgba8(ref mut pso) => {
+                *pso = Self::load_pso(factory, types::RGBA8, self.shadows)?;
+            }
+            LightingPso::Srgba8(ref mut pso) => {
+                *pso = Self::load_pso(factory, types::SRGBA8, self.shadows)?;
+            }
+        }
+
         Ok(())
     }
 
@@ -355,19 +391,86 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
     ) -> Result<(), BuildError<String>> {
-        let intermediate_target = framebuffers
-            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+        let (rtv, dsv) = if self.postprocessing {
+            let intermediate_target = framebuffers
+                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+
+            (intermediate_target.rtv.raw().clone(), intermediate_target.dsv.clone())
+        } else {
+            (framebuffers.get_main_color().raw().clone(), framebuffers.get_main_depth().clone())
+        };
 
         let gbuffer = framebuffers.get_framebuffer::<gbuffer::GeometryBuffer<R>>("gbuffer")?;
 
         // Update shader inputs to the resized geometry buffer textures
-        self.bundle.data.g_position.0 = gbuffer.position.srv().clone();
-        self.bundle.data.g_normal.0 = gbuffer.normal.srv().clone();
-        self.bundle.data.g_color.0 = gbuffer.color.srv().clone();
+        self.data.g_position.0 = gbuffer.position.srv().clone();
+        self.data.g_normal.0 = gbuffer.normal.srv().clone();
+        self.data.g_color.0 = gbuffer.color.srv().clone();
 
         // Update shader outputs to the resized intermediate targets
-        self.bundle.data.out_color = intermediate_target.rtv.clone();
-        self.bundle.data.out_depth = intermediate_target.dsv.clone();
+        self.data.out_color = rtv;
+        self.data.depth = dsv;
+
+        Ok(())
+    }
+
+    fn apply_config(
+        &mut self,
+        config: &config::GraphicsConfig,
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        factory: &mut F,
+    ) -> Result<(), BuildError<String>> {
+        let mut reloaded_pso = false;
+
+        // If the postprocessing setting was disabled, use the main color target
+        if !config.postprocessing && self.postprocessing {
+            println!("lighting pass: disabling postprocessing");
+            self.data.out_color = framebuffers.get_main_color().raw().clone();
+            self.data.depth = framebuffers.get_main_depth().clone();
+            self.pso = LightingPso::Srgba8(
+                Self::load_pso(factory, types::SRGBA8, config.shadows)?
+            );
+            reloaded_pso = true;
+        }
+
+        // If the postprocessing setting was enabled, use the intermediate color target
+        if config.postprocessing && !self.postprocessing {
+            println!("lighting pass: enabling postprocessing");
+            let intermediate_target = framebuffers
+                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+
+            self.data.out_color = intermediate_target.rtv.raw().clone();
+            self.data.depth = intermediate_target.dsv.clone();
+            self.pso = LightingPso::Rgba8(
+                Self::load_pso(factory, types::RGBA8, config.shadows)?
+            );
+            reloaded_pso = true;
+        }
+
+        // If the shadows setting was changed, reload the shadow map (will be a dummy texture now)
+        // and reload the shaders with the new shadows setting applied
+        if config.shadows != self.shadows {
+            self.shadows = config.shadows;
+
+            self.data.dir_shadow_map.0 = framebuffers
+                .get_framebuffer::<shadow::directional::Output<R>>("dir_shadow_map")?
+                .srv
+                .clone();
+
+            if !reloaded_pso {
+                match self.pso {
+                    LightingPso::Rgba8(ref mut pso) => {
+                        *pso = Self::load_pso(factory, types::RGBA8, config.shadows)?;
+                    }
+                    LightingPso::Srgba8(ref mut pso) => {
+                        *pso = Self::load_pso(factory, types::SRGBA8, config.shadows)?;
+                    }
+                }
+            }
+        }
+
+        self.postprocessing = config.postprocessing;
+        self.shadows = config.shadows;
 
         Ok(())
     }

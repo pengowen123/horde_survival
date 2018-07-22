@@ -37,3 +37,11 @@ pub type TextureView<R> = gfx::handle::ShaderResourceView<R, [f32; 4]>;
 
 /// A vertex buffer
 pub type VertexBuffer<R, V> = gfx::handle::Buffer<R, V>;
+
+/// Run-time Rgba8 surface format
+pub const RGBA8: format::Format =
+    format::Format(format::SurfaceType::R8_G8_B8_A8, format::ChannelType::Unorm);
+
+/// Run-time Srgba8 surface format
+pub const SRGBA8: format::Format =
+    format::Format(format::SurfaceType::R8_G8_B8_A8, format::ChannelType::Srgb);

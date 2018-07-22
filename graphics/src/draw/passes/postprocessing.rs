@@ -1,11 +1,12 @@
 //! Postprocessing pass
 
-use gfx::{self, texture, state, handle};
+use gfx::{self, texture, state, handle, format};
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
+use common::config;
 use assets;
 
 use draw::{types, utils, passes};
@@ -33,6 +34,7 @@ impl Vertex {
 
 pub struct PostPass<R: gfx::Resources> {
     bundle: gfx::Bundle<R, pipe::Data<R>>,
+    enabled: bool,
 }
 
 impl<R: gfx::Resources> PostPass<R> {
@@ -60,6 +62,7 @@ impl<R: gfx::Resources> PostPass<R> {
 
         Ok(PostPass {
             bundle: gfx::Bundle::new(slice, pso, data),
+            enabled: true,
         })
     }
     
@@ -88,9 +91,10 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     };
 
     let srv =
-        builder.get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
-                     .srv
-                     .clone();
+        builder
+            .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
+            .srv
+            .clone();
 
     let pass = PostPass::new(builder.factory(), srv, main_color)?;
 
@@ -111,6 +115,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
         -> Result<(), RunError>
     {
+        if !self.enabled {
+            return Ok(());
+        }
+
         self.bundle.encode(encoder);
         
         Ok(())
@@ -127,14 +135,56 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
     ) -> Result<(), BuildError<String>> {
+        if !self.enabled {
+            return Ok(());
+        }
+
         let intermediate_target = framebuffers
-            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+            .get_framebuffer::<resource_pass::IntermediateTarget<R>>(
+                "intermediate_target"
+            )?;
 
         // Update shader input to the resized intermediate target
         self.bundle.data.texture.0 = intermediate_target.srv.clone();
 
         // Update shader output to the resized main color target
         self.bundle.data.screen_color = framebuffers.get_main_color().clone();
+
+        Ok(())
+    }
+
+    fn apply_config(
+        &mut self,
+        config: &config::GraphicsConfig,
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        factory: &mut F,
+    ) -> Result<(), BuildError<String>> {
+        // If the postprocessing setting was disabled, use a dummy texture as the shader input (the
+        // intermediate targets don't exist if postprocessing is disabled)
+        if !config.postprocessing && self.enabled {
+            println!("postprocessing pass: disabling postprocessing");
+            let texels = [[0x0; 4]];
+            let (_, srv) = factory
+                .create_texture_immutable::<format::Rgba8>(
+                    texture::Kind::D2(1, 1, texture::AaMode::Single),
+                    texture::Mipmap::Provided,
+                    &[&texels],
+                )?;
+
+            self.bundle.data.texture.0 = srv.clone();
+        }
+
+        // If the postprocessing setting was enabled, use the intermediate target as the shader
+        // input
+        if config.postprocessing && !self.enabled {
+            println!("postprocessing pass: disabling postprocessing");
+            let intermediate_target = framebuffers
+                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+
+            self.bundle.data.texture.0 = intermediate_target.srv.clone();
+        }
+
+        self.enabled = config.postprocessing;
 
         Ok(())
     }

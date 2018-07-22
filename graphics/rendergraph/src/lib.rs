@@ -5,7 +5,7 @@
 extern crate common;
 extern crate image_utils;
 
-use common::{glutin, shred, gfx, gfx_core};
+use common::{glutin, shred, gfx, gfx_core, config};
 
 pub mod pass;
 pub mod module;
@@ -135,6 +135,30 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
                     )
                 })?;
         }
+        Ok(())
+    }
+
+    /// Applies the provided `Config` to the `RenderGraph`
+    pub fn apply_config(
+        &mut self,
+        config: &config::GraphicsConfig,
+        factory: &mut F
+    ) -> Result<(), error::Error<String>> {
+        let mut framebuffers = framebuffer::Framebuffers::new(
+            self.main_color.clone(),
+            self.main_depth.clone(),
+        );
+
+        for pass in &mut self.passes {
+            pass.apply_config(config, &mut framebuffers, factory)
+                .map_err(|e| {
+                    error::Error::new(
+                        pass.name().to_string(),
+                        error::ErrorKind::Build(e),
+                    )
+                })?;
+        }
+
         Ok(())
     }
     

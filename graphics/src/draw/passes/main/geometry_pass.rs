@@ -10,6 +10,7 @@ use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use window::info::WindowInfo;
 use cgmath::{Matrix4, SquareMatrix};
+use common::config;
 use specs::Join;
 
 use std::sync::{Arc, Mutex};
@@ -105,7 +106,7 @@ impl<R: gfx::Resources> GeometryPass<R> {
         let slice = gfx::Slice::new_match_vertex_buffer(&data.vbuf);
 
         let pass = GeometryPass {
-            bundle: gfx::Bundle::new(slice, pso, data)
+            bundle: gfx::Bundle::new(slice, pso, data),
         };
 
         let output = Output { gbuffer };
@@ -238,15 +239,22 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
         self.bundle.data.out_pos = gbuffer.position.rtv().clone();
         self.bundle.data.out_normal = gbuffer.normal.rtv().clone();
         self.bundle.data.out_color = gbuffer.color.rtv().clone();
-        // Update shader depth output to the resized intermediate depth target
-        {
-            let intermediate_target = framebuffers
-                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
-            self.bundle.data.out_depth = intermediate_target.dsv.clone();
-        }
+        // Update shader depth output to the resized depth target
+        self.bundle.data.out_depth = framebuffers
+            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?.dsv
+            .clone();
 
         framebuffers.add_framebuffer("gbuffer", gbuffer);
 
+        Ok(())
+    }
+
+    fn apply_config(
+        &mut self,
+        _: &config::GraphicsConfig,
+        _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        _: &mut F,
+    ) -> Result<(), BuildError<String>> {
         Ok(())
     }
 }

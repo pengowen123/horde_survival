@@ -2,13 +2,10 @@
 
 use common::specs::{self, ReadStorage, Join};
 use common::cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
-use common;
+use common::{self, config};
 use window::info;
 
 use std::sync::{Arc, Mutex};
-
-/// Vertical field of view of the camera
-const FOV_Y: f32 = 45.0;
 
 /// Near plane distance for the camera
 // NOTE: This must not be greater than the near plane value used for light shadows, or instead of
@@ -36,9 +33,10 @@ impl Camera {
         pos: cgmath::Point3<f32>,
         direction: cgmath::Quaternion<f32>,
         aspect_ratio: f32,
+        fov: f32,
     ) -> Self {
 
-        let proj = cgmath::perspective(cgmath::Deg(FOV_Y), aspect_ratio, NEAR, FAR);
+        let proj = cgmath::perspective(cgmath::Deg(fov), aspect_ratio, NEAR, FAR);
         let pos_vec = pos.to_vec();
         let view = (cgmath::Matrix4::from_translation(pos_vec) * cgmath::Matrix4::from(direction))
             .invert()
@@ -51,12 +49,13 @@ impl Camera {
         }
     }
 
-    /// Returns the default camera given the aspect ratio
-    pub fn new_default(aspect_ratio: f32) -> Self {
+    /// Returns the default camera given the aspect ratio and vertical FOV
+    pub fn new_default(aspect_ratio: f32, fov: f32) -> Self {
         Camera::new(
             cgmath::Point3::new(0.0, 0.0, 0.0),
             cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0)),
             aspect_ratio,
+            fov,
         )
     }
 
@@ -93,6 +92,7 @@ pub struct Data<'a> {
     direction: ReadStorage<'a, common::Direction>,
     camera: specs::FetchMut<'a, Arc<Mutex<Camera>>>,
     window_info: specs::Fetch<'a, info::WindowInfo>,
+    config: specs::Fetch<'a, config::Config>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -104,6 +104,7 @@ impl<'a> specs::System<'a> for System {
                 s.0.cast(),
                 d.0.cast(),
                 data.window_info.aspect_ratio(),
+                data.config.camera.fov,
             );
         }
     }

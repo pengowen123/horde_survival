@@ -2,7 +2,7 @@
 
 use specs::{self, DispatcherBuilder};
 use common::glutin::{self, EventsLoop, GlContext};
-use common;
+use common::{self, config};
 use gfx_window_glutin;
 use gfx;
 use window;
@@ -28,13 +28,26 @@ pub fn initialize<'a, 'b, 'c, 'd>(
 
     // Initialize window settings
     let events = EventsLoop::new();
-    let context_builder = glutin::ContextBuilder::new();
-    let window_builder = {
-        let size = glutin::dpi::LogicalSize::new(800.0, 600.0);
-        glutin::WindowBuilder::new()
+    let (window_builder, context_builder) = {
+        let config = world.read_resource::<config::Config>();
+        let context_builder = glutin::ContextBuilder::new()
+            .with_vsync(config.window.vsync);
+        let size = glutin::dpi::LogicalSize::new(
+            config.window.width as f64,
+            config.window.height as f64,
+        );
+        let fullscreen = if config.window.fullscreen {
+            Some(events.get_primary_monitor())
+        } else {
+            None
+        };
+        let window_builder = glutin::WindowBuilder::new()
             .with_title("Horde Survival")
             .with_min_dimensions(size)
-            .with_resizable(false)
+            .with_fullscreen(fullscreen)
+            .with_resizable(false);
+
+        (window_builder, context_builder)
     };
 
     // Initialize gfx structs

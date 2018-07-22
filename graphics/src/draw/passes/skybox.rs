@@ -1,6 +1,7 @@
 //! Skybox pass
 
 use gfx::{self, state, handle, format};
+use gfx::memory::Typed;
 use gfx::traits::FactoryExt;
 use image_utils;
 use assets::{self, read_bytes};
@@ -8,6 +9,7 @@ use rendergraph::pass::Pass;
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
+use common::config;
 
 use std::sync::{Arc, Mutex};
 
@@ -30,8 +32,10 @@ gfx_defines! {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         skybox: gfx::TextureSampler<Vec4> = "t_Skybox",
         locals: gfx::ConstantBuffer<Locals> = "u_Locals",
-        out_color: gfx::RenderTarget<format::Rgba8> = "Target0",
-        out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_TEST,
+        out_color: gfx::RawRenderTarget =
+            ("Target0", types::RGBA8, state::ColorMask::all(), None),
+        // NOTE: This is `LESS_EQUAL_TEST` instead of `LESS_EQUAL_WRITE`
+        depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_TEST,
     }
 }
 
@@ -41,8 +45,25 @@ impl Vertex {
     }
 }
 
+enum SkyboxPso<R: gfx::Resources> {
+    Rgba8(gfx::PipelineState<R, pipe::Meta>),
+    Srgba8(gfx::PipelineState<R, pipe::Meta>),
+}
+
+impl<R: gfx::Resources> SkyboxPso<R> {
+    fn get_pso(&self) -> &gfx::PipelineState<R, pipe::Meta> {
+        match *self {
+            SkyboxPso::Rgba8(ref pso) => pso,
+            SkyboxPso::Srgba8(ref pso) => pso,
+        }
+    }
+}
+
 pub struct SkyboxPass<R: gfx::Resources> {
-    bundle: gfx::Bundle<R, pipe::Data<R>>,
+    pso: SkyboxPso<R>,
+    data: pipe::Data<R>,
+    slice: gfx::Slice<R>,
+    postprocessing: bool,
 }
 
 impl<R: gfx::Resources> SkyboxPass<R> {
@@ -53,7 +74,7 @@ impl<R: gfx::Resources> SkyboxPass<R> {
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = Self::load_pso(factory)?;
+        let pso = Self::load_pso(factory, types::RGBA8)?;
 
         // Create a screen quad to render to
         let vertices = [
@@ -97,16 +118,19 @@ impl<R: gfx::Resources> SkyboxPass<R> {
             vbuf,
             skybox: (cubemap, factory.create_sampler(sampler_info)),
             locals: factory.create_constant_buffer(1),
-            out_color: rtv,
-            out_depth: dsv,
+            out_color: rtv.raw().clone(),
+            depth: dsv,
         };
 
         Ok(SkyboxPass {
-            bundle: gfx::Bundle::new(slice, pso, data),
+            pso: SkyboxPso::Rgba8(pso),
+            data,
+            slice,
+            postprocessing: true,
         })
     }
     
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, color_format: format::Format)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         passes::load_pso(
@@ -115,7 +139,10 @@ impl<R: gfx::Resources> SkyboxPass<R> {
             assets::get_shader_path("skybox_fragment"),
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
-            pipe::new(),
+            pipe::Init {
+                out_color: ("Target0", color_format, state::ColorMask::all(), None),
+                ..pipe::new()
+            },
         )
     }
 }
@@ -163,17 +190,25 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPa
         };
 
         encoder.update_constant_buffer(
-            &self.bundle.data.locals,
+            &self.data.locals,
             &locals,
         );
 
-        self.bundle.encode(encoder);
+        encoder.draw(&self.slice, self.pso.get_pso(), &self.data);
         
         Ok(())
     }
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory)?;
+        match self.pso {
+            SkyboxPso::Rgba8(ref mut pso) => {
+                *pso = Self::load_pso(factory, types::RGBA8)?;
+            }
+            SkyboxPso::Srgba8(ref mut pso) => {
+                *pso = Self::load_pso(factory, types::SRGBA8)?;
+            }
+        }
+
         Ok(())
     }
 
@@ -183,12 +218,50 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPa
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
     ) -> Result<(), BuildError<String>> {
-        let intermediate_target = framebuffers
-            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+        let (rtv, dsv) = if self.postprocessing {
+            let intermediate_target = framebuffers
+                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
 
-        // Update shader outputs to the resized intermediate targets
-        self.bundle.data.out_color = intermediate_target.rtv.clone();
-        self.bundle.data.out_depth = intermediate_target.dsv.clone();
+            (intermediate_target.rtv.raw().clone(), intermediate_target.dsv.clone())
+        } else {
+            (framebuffers.get_main_color().raw().clone(), framebuffers.get_main_depth().clone())
+        };
+
+        // Update shader outputs to the resized targets
+        self.data.out_color = rtv;
+        self.data.depth = dsv;
+
+        Ok(())
+    }
+
+    fn apply_config(
+        &mut self,
+        config: &config::GraphicsConfig,
+        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        factory: &mut F,
+    ) -> Result<(), BuildError<String>> {
+        // If the postprocessing setting was disabled, use the main targets
+        if !config.postprocessing && self.postprocessing {
+            println!("skybox pass: disabling postprocessing");
+            self.data.out_color = framebuffers.get_main_color().raw().clone();
+            self.data.depth = framebuffers.get_main_depth().clone();
+
+            self.pso = SkyboxPso::Srgba8(Self::load_pso(factory, types::SRGBA8)?);
+        }
+
+        // If the postprocessing setting was enabled, use the intermediate targets
+        if config.postprocessing && !self.postprocessing {
+            println!("skybox pass: enabling postprocessing");
+            let intermediate_target = framebuffers
+                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+
+            self.data.out_color = intermediate_target.rtv.raw().clone();
+            self.data.depth = intermediate_target.dsv.clone();
+
+            self.pso = SkyboxPso::Rgba8(Self::load_pso(factory, types::RGBA8)?);
+        }
+
+        self.postprocessing = config.postprocessing;
 
         Ok(())
     }

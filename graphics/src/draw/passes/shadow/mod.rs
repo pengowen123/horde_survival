@@ -2,15 +2,12 @@
 
 pub mod directional;
 
-use gfx::texture;
 use specs::{self, Join};
 use cgmath;
 
 use std::sync::{Arc, Mutex};
 
 use draw::components;
-
-pub const SHADOW_MAP_SIZE: texture::Size = 1024;
 
 /// A matrix that goes from model space to light space (a View * Projection matrix)
 #[derive(Clone, Copy, Debug)]

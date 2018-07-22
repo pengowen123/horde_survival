@@ -13,9 +13,6 @@ use input::Direction;
 pub type EventChannel = shrev::EventChannel<Event>;
 pub type ReaderId = shrev::ReaderId<Event>;
 
-/// Camera sensitivity
-const SENSITIVITY: ::Float = 0.0035;
-
 /// A state flag used for state change events
 pub enum State {
     Enabled,
@@ -92,8 +89,8 @@ pub fn process_window_event(
             
             // TODO: Investigate how sensitivity scales with monitor size, and maybe fix the
             //       handling of it
-            let rot_pitch = diff_pitch as ::Float * SENSITIVITY;
-            let rot_yaw = diff_yaw as ::Float * SENSITIVITY;
+            let rot_pitch = diff_pitch as ::Float * config.camera.sensitivity;
+            let rot_yaw = diff_yaw as ::Float * config.camera.sensitivity;
             let camera_rot = CameraRotation::new(cgmath::Rad(rot_pitch), cgmath::Rad(rot_yaw));
 
             channel.single_write(Event::RotateCamera(camera_rot));
