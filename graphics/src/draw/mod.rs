@@ -26,7 +26,8 @@ pub use self::components::Drawable;
 pub use self::param::ShaderParam;
 
 use gfx::{self, handle};
-use common::{self, shred, specs, conrod, glutin, config};
+use common::{self, shred, specs, conrod, config};
+use common::glutin::{self, GlContext};
 use rendergraph::{RenderGraph, builder, module, pass};
 use rendergraph::error::Error;
 use window::{self, info, window_event};
@@ -216,6 +217,7 @@ pub struct Data<'a, R: gfx::Resources> {
     ui_state: specs::Fetch<'a, common::UiState>,
     ui_draw_list: specs::Fetch<'a, ui::UiDrawList>,
     ui_image_map: specs::Fetch<'a, ui::ImageMap<R>>,
+    window: specs::Fetch<'a, window::Window>,
     window_info: specs::Fetch<'a, info::WindowInfo>,
     log: specs::Fetch<'a, slog::Logger>,
     config: specs::Fetch<'a, config::Config>,
@@ -240,7 +242,12 @@ where
                             error!(data.log, "Error reloading shaders: {}", e;);
                         });
                 }
-                window_event::Event::WindowResized(_) => {
+                window_event::Event::WindowResized(new_size) => {
+                    let new_physical_size = new_size.to_physical(data.window.get_hidpi_factor());
+
+                    // Resize the GL context
+                    data.window.resize(new_physical_size);
+
                     let (resized_main_color, resized_main_depth) =
                         (self.create_new_window_views)(self.graph.window());
 
