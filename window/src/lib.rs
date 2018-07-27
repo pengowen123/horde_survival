@@ -10,6 +10,7 @@ extern crate bitflags;
 extern crate slog;
 
 pub mod info;
+pub mod config;
 pub mod window_event;
 pub mod input;
 
@@ -28,7 +29,13 @@ pub fn initialize<'a, 'b>(
     world.add_resource(info::WindowInfo::default());
     world.add_resource(window_event::EventChannel::new());
 
-    // NOTE: This system will be added to the graphics dispatcher, if other systems are added here
+    let mut event_channel = world.write_resource::<window_event::EventChannel>();
+    let reader_id = event_channel.register_reader();
+
+    let config_system = config::System::new(reader_id);
+    // NOTE: These systems will be added to the graphics dispatcher, if other systems are added here
     //       in the future the main dispatcher must be added as an argument to this function
-    dispatcher.add(info::System, "window-info", &[])
+    dispatcher
+        .add(info::System, "window-info", &[])
+        .add(config_system, "window-config", &[])
 }

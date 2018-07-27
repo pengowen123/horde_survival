@@ -218,6 +218,7 @@ pub struct Data<'a, R: gfx::Resources> {
     ui_image_map: specs::Fetch<'a, ui::ImageMap<R>>,
     window_info: specs::Fetch<'a, info::WindowInfo>,
     log: specs::Fetch<'a, slog::Logger>,
+    config: specs::Fetch<'a, config::Config>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -254,6 +255,13 @@ where
                     
                     // Handle window resize for UI renderer
                     self.ui_renderer.use_render_target(resized_main_color);
+                }
+                window_event::Event::ConfigChanged(window_event::ChangedConfig::Graphics) => {
+                    info!(data.log, "Applying graphics configuration changes";);
+                    self.graph.apply_config(&data.config.graphics, &mut self.factory)
+                        .unwrap_or_else(|e| {
+                            error!(data.log, "Error apply graphics configuration: {}", e;);
+                        });
                 }
                 _ => {},
             }

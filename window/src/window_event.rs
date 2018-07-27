@@ -45,11 +45,26 @@ impl CameraRotation {
     }
 }
 
+/// The part of the configuration that has changed
+pub enum ChangedConfig {
+    /// The graphics configuration has changed
+    Graphics,
+    /// The window configuration has changed
+    ///
+    /// Window size changes here do not actually resize the window. It should be resized as a result
+    /// of this event happening, which will cause a `WindowResized` event to be sent.
+    Window,
+    /// The camera configuration has changed
+    Camera,
+    /// The key binding configuration has changed
+    Bindings,
+}
+
 /// The event type that is sent through the event channel
 pub enum Event {
-    /// A movement key was pressed or released
+    /// A movement key was pressed or released, and the movement key state should be updated
     ChangeMovementKeyState(Direction, State),
-    /// The camera has rotated
+    /// The camera should be rotated
     RotateCamera(CameraRotation),
     /// The shaders should be reloaded
     ReloadShaders,
@@ -57,6 +72,10 @@ pub enum Event {
     Unpaused,
     /// The window was resized
     WindowResized(glutin::dpi::LogicalSize),
+    /// The configuration has changed
+    ///
+    /// Handlers of this event must read the new configuration manually
+    ConfigChanged(ChangedConfig),
 }
 
 /// Processes the provided window event, sending the processed version to the event channel
