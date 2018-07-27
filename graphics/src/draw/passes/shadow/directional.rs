@@ -44,7 +44,15 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
     fn new<F: gfx::Factory<R>>(
         factory: &mut F,
         shadow_map_size: texture::Size,
+        enabled: bool,
     ) -> Result<(Self, Output<R>), BuildError<String>> {
+        // Make a 1x1 shadow map if shadows are disabled
+        let shadow_map_size = if enabled {
+            shadow_map_size
+        } else {
+            1
+        };
+
         let (_, srv, dsv) = factory.create_depth_stencil(
             shadow_map_size,
             shadow_map_size,
@@ -59,10 +67,11 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             out_depth: dsv,
         };
 
-        let pso = Self::load_pso(factory)?;
+        let pso = Self::load_pso(factory, enabled)?;
+
         let pass = Self {
             bundle: gfx::Bundle::new(slice, pso, data),
-            enabled: true,
+            enabled,
         };
 
         let output = Output {
@@ -72,7 +81,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
         Ok((pass, output))
     }
 
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, enabled: bool)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         passes::load_pso(
@@ -92,9 +101,14 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
+    let (enabled, shadow_map_size) = {
+        let config = builder.get_resources().fetch::<config::GraphicsConfig>(0);
+
+        (config.shadows, config.shadow_map_size)
+    };
     // NOTE: Shadow map size is 1 here because it will be rebuilt with the correct size immediately
     //       after the render graph is created
-    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, 1)?;
+    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, shadow_map_size, enabled)?;
 
     builder.add_pass(pass);
     builder.add_pass_output("dir_shadow_map", output);
@@ -115,6 +129,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
         -> Result<(), RunError>
     {
+        println!("shadow map size: {:?}", self.bundle.data.out_depth.get_dimensions());
         if !self.enabled {
             return Ok(());
         }
@@ -150,7 +165,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
     }
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory)?;
+        self.bundle.pso = Self::load_pso(factory, self.enabled)?;
         Ok(())
     }
 
@@ -169,18 +184,20 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
+        let mut reload_shaders = false;
+        
         // If the shadows setting was disabled, set the shadow map to a dummy texture to save memory
         if !config.shadows && self.enabled {
-            println!("dir shadow pass: disabling shadows");
             let (_, dummy_srv, dummy_dsv) = factory.create_depth_stencil(1, 1)?;
             self.bundle.data.out_depth = dummy_dsv.clone();
 
             framebuffers.add_framebuffer("dir_shadow_map", Output { srv: dummy_srv });
+
+            reload_shaders = true;
         }
 
         // If the shadows setting was enabled, make a new shadow map
         if config.shadows && !self.enabled {
-            println!("dir shadow pass: enabling shadows");
             let (_, srv, dsv) = factory.create_depth_stencil(
                 config.shadow_map_size,
                 config.shadow_map_size,
@@ -188,6 +205,14 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
             self.bundle.data.out_depth = dsv.clone();
             
             framebuffers.add_framebuffer("dir_shadow_map", Output { srv });
+
+            reload_shaders = true;
+        }
+        
+        // If the shadows setting was changed, reload the shaders with the new shadows setting
+        // applied
+        if reload_shaders {
+            Pass::<R, C, F, _, _>::reload_shaders(self, factory)?;
         }
 
         self.enabled = config.shadows;

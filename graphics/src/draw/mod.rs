@@ -128,6 +128,7 @@ where
             event_channel.register_reader()
         };
         let log = resources.fetch::<slog::Logger>(0);
+        let config = resources.fetch::<config::Config>(0).graphics.clone();
 
         let dpi = window.get_hidpi_factor();
 
@@ -140,6 +141,7 @@ where
             builder.add_resource(camera);
             builder.add_resource(lighting_data);
             builder.add_resource(dir_shadow_source);
+            builder.add_resource(config);
 
             let resource_module = module::Module::new()
                 .add_pass(resource_pass::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
@@ -161,10 +163,10 @@ where
 
             let modules = vec![
                 (resource_module, "resource"),
-                //(shadow_module, "shadow"),
-                //(main_module, "main"),
+                (shadow_module, "shadow"),
+                (main_module, "main"),
                 (skybox_module, "skybox"),
-                //(postprocessing_module, "postprocessing"),
+                (postprocessing_module, "postprocessing"),
             ];
 
             for (module, name) in modules {
@@ -176,20 +178,6 @@ where
 
             builder.build(device, encoder, window)
         };
-
-        // Apply the configuration to the render graph
-        let graph = {
-            let mut graph = graph;
-            let config = resources.fetch::<config::Config>(0);
-
-            graph.apply_config(&config.graphics, &mut factory)
-                .unwrap_or_else(|e| {
-                    error!(log, "Failed to apply config to render graph: {}", e;);
-                });
-
-            graph
-        };
-
         
         // Build the UI renderer
         let ui_renderer = conrod::backend::gfx::Renderer::new(

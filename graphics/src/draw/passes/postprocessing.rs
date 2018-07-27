@@ -1,6 +1,6 @@
 //! Postprocessing pass
 
-use gfx::{self, texture, state, handle, format};
+use gfx::{self, texture, state, handle};
 use gfx::traits::FactoryExt;
 use rendergraph::pass::Pass;
 use rendergraph::framebuffer::Framebuffers;
@@ -42,10 +42,11 @@ impl<R: gfx::Resources> PostPass<R> {
         factory: &mut F,
         texture: handle::ShaderResourceView<R, [f32; 4]>,
         main_color: handle::RenderTargetView<R, types::ColorFormat>,
+        enabled: bool,
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = Self::load_pso(factory)?;
+        let pso = Self::load_pso(factory, enabled)?;
         // Create a screen quad to render to
         let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
         let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
@@ -62,11 +63,15 @@ impl<R: gfx::Resources> PostPass<R> {
 
         Ok(PostPass {
             bundle: gfx::Bundle::new(slice, pso, data),
-            enabled: true,
+            enabled,
         })
     }
     
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+    /// Loads the postprocessing PSO
+    ///
+    /// The shaders will be the postprocessing shaders if `enabled` is `true`, or a simple
+    /// pass-through otherwise.
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, enabled: bool)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         passes::load_pso(
@@ -96,7 +101,9 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
             .srv
             .clone();
 
-    let pass = PostPass::new(builder.factory(), srv, main_color)?;
+    let enabled = builder.get_resources().fetch::<config::GraphicsConfig>(0).postprocessing;
+
+    let pass = PostPass::new(builder.factory(), srv, main_color, enabled)?;
 
     builder.add_pass(pass);
 
@@ -115,17 +122,13 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
         -> Result<(), RunError>
     {
-        if !self.enabled {
-            return Ok(());
-        }
-
         self.bundle.encode(encoder);
         
         Ok(())
     }
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory)?;
+        self.bundle.pso = Self::load_pso(factory, self.enabled)?;
         Ok(())
     }
 
@@ -135,10 +138,6 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
     ) -> Result<(), BuildError<String>> {
-        if !self.enabled {
-            return Ok(());
-        }
-
         let intermediate_target = framebuffers
             .get_framebuffer::<resource_pass::IntermediateTarget<R>>(
                 "intermediate_target"
@@ -156,36 +155,11 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
     fn apply_config(
         &mut self,
         config: &config::GraphicsConfig,
-        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
-        // If the postprocessing setting was disabled, use a dummy texture as the shader input (the
-        // intermediate targets don't exist if postprocessing is disabled)
-        if !config.postprocessing && self.enabled {
-            println!("postprocessing pass: disabling postprocessing");
-            let texels = [[0x0; 4]];
-            let (_, srv) = factory
-                .create_texture_immutable::<format::Rgba8>(
-                    texture::Kind::D2(1, 1, texture::AaMode::Single),
-                    texture::Mipmap::Provided,
-                    &[&texels],
-                )?;
-
-            self.bundle.data.texture.0 = srv.clone();
-        }
-
-        // If the postprocessing setting was enabled, use the intermediate target as the shader
-        // input
-        if config.postprocessing && !self.enabled {
-            println!("postprocessing pass: disabling postprocessing");
-            let intermediate_target = framebuffers
-                .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
-
-            self.bundle.data.texture.0 = intermediate_target.srv.clone();
-        }
-
+        self.bundle.pso = Self::load_pso(factory, config.postprocessing)?;
         self.enabled = config.postprocessing;
-
         Ok(())
     }
 }

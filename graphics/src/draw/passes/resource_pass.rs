@@ -55,7 +55,6 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 
     let pass = ResourcePass {
         intermediate_target: intermediate_target.clone(),
-        postprocessing: true,
     };
     
     builder.add_pass(pass);
@@ -66,7 +65,6 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 
 pub struct ResourcePass<R: gfx::Resources> {
     intermediate_target: IntermediateTarget<R>,
-    postprocessing: bool,
 }
 
 impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for ResourcePass<R>
@@ -81,11 +79,6 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Resource
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
         -> Result<(), RunError>
     {
-        // The intermediate target is not used when postprocessing is disabled
-        if !self.postprocessing {
-            return Ok(());
-        }
-
         encoder.clear(&self.intermediate_target.rtv, [0.0; 4]);
         encoder.clear_depth(&self.intermediate_target.dsv, 1.0);
         
@@ -102,10 +95,6 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Resource
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
-        if !self.postprocessing {
-            return Ok(());
-        }
-
         // Build new intermediate targets using the new window dimensions
         let dim = (new_dimensions.0 as texture::Size, new_dimensions.1 as texture::Size);
 
@@ -121,35 +110,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Resource
 
     fn apply_config(
         &mut self,
-        config: &config::GraphicsConfig,
-        framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
-        factory: &mut F,
+        _: &config::GraphicsConfig,
+        _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
+        _: &mut F,
     ) -> Result<(), BuildError<String>> {
-        // If the postprocessing setting was disabled, set the intermediate targets to dummy
-        // textures to save memory
-        // NOTE: All references to the old intermediate targets must be dropped, or their memory
-        //       won't be freed, making this optimization useless
-        // TODO: Test that this is the case
-        if !config.postprocessing && self.postprocessing {
-            println!("resource pass: disabling postprocessing");
-            self.intermediate_target = IntermediateTarget::new(factory, (1, 1))?;
-        }
-
-        // If the postprocessing setting was enabled, make new intermediate targets
-        if config.postprocessing && !self.postprocessing {
-            println!("resource pass: enabling postprocessing");
-            // Use the width and height of the main color target (should be the window size)
-            let (w, h, _, _) = framebuffers.get_main_color().get_dimensions();
-            println!("main target width, height: {:?}", (w, h));
-            let intermediate_target = IntermediateTarget::new(factory, (w, h))?;
-
-            self.intermediate_target = intermediate_target.clone();
-
-            framebuffers.add_framebuffer("intermediate_target", intermediate_target);
-        }
-
-        self.postprocessing = config.postprocessing;
-
         Ok(())
     }
 }
