@@ -208,6 +208,8 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
 
             reload_shaders = true;
         }
+
+        // If the shadow map size was changed and shadows are enabled, rebuild the shadow map
         
         // If the shadows setting was changed, reload the shaders with the new shadows setting
         // applied

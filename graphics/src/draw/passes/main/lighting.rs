@@ -177,6 +177,7 @@ impl SpotLight {
 pub struct LightingPass<R: gfx::Resources> {
     bundle: gfx::Bundle<R, pipe::Data<R>>,
     shadows: bool,
+    shadow_map_size: texture::Size,
 }
 
 impl<R: gfx::Resources> LightingPass<R> {
@@ -187,6 +188,7 @@ impl<R: gfx::Resources> LightingPass<R> {
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
         dir_shadow_map: handle::ShaderResourceView<R, [f32; 4]>,
         shadows_enabled: bool,
+        shadow_map_size: texture::Size,
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
@@ -229,6 +231,7 @@ impl<R: gfx::Resources> LightingPass<R> {
         let pass = LightingPass {
             bundle: gfx::Bundle::new(slice, pso, data),
             shadows: shadows_enabled,
+            shadow_map_size,
         };
 
         Ok(pass)
@@ -278,7 +281,10 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         srv
     };
 
-    let shadows_enabled = builder.get_resources().fetch::<config::GraphicsConfig>(0).shadows;
+    let (shadows_enabled, shadow_map_size) = {
+        let config = builder.get_resources().fetch::<config::GraphicsConfig>(0);
+        (config.shadows, config.shadow_map_size)
+    };
 
     let pass = {
         let factory = builder.factory();
@@ -289,6 +295,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
             dsv,
             dir_shadow_map,
             shadows_enabled,
+            shadow_map_size,
         )?
     };
 
@@ -389,17 +396,28 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
+        let mut update_shadow_map = false;
         // If the shadows setting was changed, reload the shadow map (will be a dummy texture now)
         // and reload the shaders with the new shadows setting applied
         if config.shadows != self.shadows {
             self.shadows = config.shadows;
 
+            update_shadow_map = true;
+
+            Pass::<R, C, F, _, _>::reload_shaders(self, factory)?;
+        }
+
+        if config.shadow_map_size != self.shadow_map_size {
+            self.shadow_map_size = config.shadow_map_size;
+
+            update_shadow_map = true;
+        }
+
+        if update_shadow_map {
             self.bundle.data.dir_shadow_map.0 = framebuffers
                 .get_framebuffer::<shadow::directional::Output<R>>("dir_shadow_map")?
                 .srv
                 .clone();
-
-            Pass::<R, C, F, _, _>::reload_shaders(self, factory)?;
         }
 
         Ok(())
