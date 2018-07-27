@@ -72,7 +72,9 @@ pub fn load_shader_file<P: AsRef<Path>>(
 
         // Many characters will be inserted individually, so reserve space to avoid frequent
         // allocations
-        result.reserve(define_statement.len());
+        result.reserve(define_statement.len() + 1);
+
+        result.insert(defines_index, b'\n');
 
         for c in define_statement.into_iter().rev() {
             result.insert(defines_index, c);

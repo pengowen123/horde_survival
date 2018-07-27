@@ -21,8 +21,8 @@ use draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
 use camera::Camera;
 use super::{geometry_pass, gbuffer};
 
-// TODO: Enforce that these values match up with the shaders with the defines feature in the shader
-//       preprocessor
+// These constants are inserted into the shaders at runtime; changes here will affect the shaders as
+// well
 pub const MAX_DIR_LIGHTS: usize = 4;
 pub const MAX_POINT_LIGHTS: usize = 4;
 pub const MAX_SPOT_LIGHTS: usize = 4;
@@ -243,6 +243,10 @@ impl<R: gfx::Resources> LightingPass<R> {
         shadows_enabled: bool,
     ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
         let mut defines = HashMap::new();
+
+        defines.insert("MAX_DIR_LIGHTS".into(), MAX_DIR_LIGHTS.to_string());
+        defines.insert("MAX_POINT_LIGHTS".into(), MAX_POINT_LIGHTS.to_string());
+        defines.insert("MAX_SPOT_LIGHTS".into(), MAX_SPOT_LIGHTS.to_string());
 
         if shadows_enabled {
             defines.insert("SHADOWS_ENABLED".into(), "1".into());
