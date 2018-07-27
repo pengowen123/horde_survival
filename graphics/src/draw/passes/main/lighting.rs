@@ -13,6 +13,7 @@ use common::config;
 use assets;
 
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 
 use draw::{passes, types, components, utils, lighting_data};
 use draw::passes::{shadow, resource_pass};
@@ -20,8 +21,8 @@ use draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
 use camera::Camera;
 use super::{geometry_pass, gbuffer};
 
-// TODO: Enforce that these values match up with the shaders through a new feature in the shader
-// preprocessor
+// TODO: Enforce that these values match up with the shaders with the defines feature in the shader
+//       preprocessor
 pub const MAX_DIR_LIGHTS: usize = 4;
 pub const MAX_POINT_LIGHTS: usize = 4;
 pub const MAX_SPOT_LIGHTS: usize = 4;
@@ -241,6 +242,12 @@ impl<R: gfx::Resources> LightingPass<R> {
         factory: &mut F,
         shadows_enabled: bool,
     ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
+        let mut defines = HashMap::new();
+
+        if shadows_enabled {
+            defines.insert("SHADOWS_ENABLED".into(), "1".into());
+        }
+
         passes::load_pso(
             factory,
             assets::get_shader_path("lighting_vertex"),
@@ -248,6 +255,7 @@ impl<R: gfx::Resources> LightingPass<R> {
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
+            defines,
         )
     }
 }

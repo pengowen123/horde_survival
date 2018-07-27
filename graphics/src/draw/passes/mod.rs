@@ -11,6 +11,7 @@ use gfx::traits::FactoryExt;
 use rendergraph::error::BuildError;
 
 use std::path::Path;
+use std::collections::HashMap;
 
 use assets::shader;
 
@@ -22,6 +23,7 @@ pub fn load_pso<R, F, P, I>(
     primitive: gfx::Primitive,
     rasterizer: gfx::state::Rasterizer,
     init: I,
+    defines: HashMap<String, String>,
 ) -> Result<pso::PipelineState<R, I::Meta>, BuildError<String>>
 where
     R: gfx::Resources,
@@ -29,8 +31,8 @@ where
     P: AsRef<Path>,
     I: pso::PipelineInit,
 {
-    let vs = shader::load_shader_file(vs_path)?;
-    let fs = shader::load_shader_file(fs_path)?;
+    let vs = shader::load_shader_file(vs_path, &defines)?;
+    let fs = shader::load_shader_file(fs_path, &defines)?;
     
     // NOTE: If create_pipeline_from_program is used here, the ProgramInfo can be printed, which may
     //       be useful for debugging

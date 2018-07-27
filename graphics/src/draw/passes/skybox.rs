@@ -11,6 +11,7 @@ use shred::Resources;
 use common::config;
 
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 
 use draw::{types, passes};
 use draw::passes::resource_pass;
@@ -118,6 +119,7 @@ impl<R: gfx::Resources> SkyboxPass<R> {
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
+            HashMap::new(),
         )
     }
 }

@@ -14,6 +14,7 @@ use common::config;
 use specs::Join;
 
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 
 use draw::{DrawableStorageRef, passes, types};
 use draw::passes::resource_pass;
@@ -129,6 +130,7 @@ impl<R: gfx::Resources> GeometryPass<R> {
             gfx::Primitive::TriangleList,
             rasterizer,
             pipe::new(),
+            HashMap::new(),
         )
     }
 }

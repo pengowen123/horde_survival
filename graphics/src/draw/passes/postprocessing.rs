@@ -9,6 +9,8 @@ use shred::Resources;
 use common::config;
 use assets;
 
+use std::collections::HashMap;
+
 use draw::{types, utils, passes};
 use draw::passes::resource_pass;
 use draw::glsl::{Vec2, Vec4};
@@ -74,6 +76,12 @@ impl<R: gfx::Resources> PostPass<R> {
     fn load_pso<F: gfx::Factory<R>>(factory: &mut F, enabled: bool)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
+        let mut defines = HashMap::new();
+
+        if enabled {
+            defines.insert("POSTPROCESSING_ENABLED".into(), "1".into());
+        }
+
         passes::load_pso(
             factory,
             assets::get_shader_path("post_vertex"),
@@ -81,6 +89,7 @@ impl<R: gfx::Resources> PostPass<R> {
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
+            defines,
         )
     }
 }

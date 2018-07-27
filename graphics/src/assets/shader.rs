@@ -6,6 +6,7 @@ use rendergraph::error::BuildError;
 use std::path::{Path, PathBuf};
 use std::io;
 use std::string::FromUtf8Error;
+use std::collections::HashMap;
 
 use super::utils;
 
@@ -52,12 +53,43 @@ impl From<ShaderLoadingError> for BuildError<String> {
 
 /// Loads a shader from the file at the provided path
 ///
-/// Applies special parsing such as processing `#include` directives
-pub fn load_shader_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, ShaderLoadingError> {
-    load_shader_file_impl(&path.as_ref(), 0)
+/// Applies special parsing such as processing `#include` directives and inserting `#define`s
+pub fn load_shader_file<P: AsRef<Path>>(
+    path: P,
+    defines: &HashMap<String, String>,
+) -> Result<Vec<u8>, ShaderLoadingError> {
+    let mut result = load_shader_file_with_includes(&path.as_ref(), 0)?;
+
+    // The index at which to insert the `#define` statements
+    let defines_index = result
+        .iter()
+        .position(|byte| *byte == b'\n')
+        .map(|p| p + 1)
+        .unwrap_or_else(|| result.len());
+
+    for (key, val) in defines {
+        let define_statement = format!("#define {} {}", key, val).into_bytes();
+
+        // Many characters will be inserted individually, so reserve space to avoid frequent
+        // allocations
+        result.reserve(define_statement.len());
+
+        for c in define_statement.into_iter().rev() {
+            result.insert(defines_index, c);
+        }
+    }
+
+    Ok(result)
 }
 
-fn load_shader_file_impl(path: &Path, recurses: usize) -> Result<Vec<u8>, ShaderLoadingError> {
+/// Loads the shader from the file at the provided path, and processes `#include` directives
+///
+/// `#define` processing happens in `load_shader_file` so that the recursive `#include` processing
+/// can avoid applying `#define`s to `#include`ed shaders
+fn load_shader_file_with_includes(
+    path: &Path,
+    recurses: usize
+) -> Result<Vec<u8>, ShaderLoadingError> {
     if recurses > MAX_RECURSION_DEPTH {
         return Err(ShaderLoadingError::MaxIncludeRecursion);
     }
@@ -73,11 +105,11 @@ fn load_shader_file_impl(path: &Path, recurses: usize) -> Result<Vec<u8>, Shader
 
     let mut replacer = IncludeReplacer::new(recurses);
 
-    let result = FIND_INCLUDE.replace_all(&bytes, &mut replacer);
+    let result = FIND_INCLUDE.replace_all(&bytes, &mut replacer).into_owned();
 
     let _ = replacer.error?;
 
-    Ok(result.into_owned())
+    Ok(result)
 }
 
 // NOTE: All these `recurses` variables are for tracking recursion depth so an error can be made if
@@ -127,5 +159,5 @@ fn replace_include(caps: &Captures, recurses: usize) -> Result<Vec<u8>, ShaderLo
     let name = String::from_utf8(name).map_err(|e| ShaderLoadingError::Utf8(e))?;
     let path = super::get_shader_path(&name);
 
-    load_shader_file_impl(&Path::new(&path), recurses + 1)
+    load_shader_file_with_includes(&Path::new(&path), recurses + 1)
 }

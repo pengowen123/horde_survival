@@ -11,6 +11,7 @@ use common::config;
 use shred;
 
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 
 use draw::{DrawableStorageRef, types, passes};
 use draw::passes::main::geometry_pass;
@@ -67,8 +68,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             out_depth: dsv,
         };
 
-        let pso = Self::load_pso(factory, enabled)?;
-
+        let pso = Self::load_pso(factory)?;
         let pass = Self {
             bundle: gfx::Bundle::new(slice, pso, data),
             enabled,
@@ -81,7 +81,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
         Ok((pass, output))
     }
 
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, enabled: bool)
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         passes::load_pso(
@@ -91,6 +91,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
+            HashMap::new(),
         )
     }
 }
@@ -129,7 +130,6 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
         -> Result<(), RunError>
     {
-        println!("shadow map size: {:?}", self.bundle.data.out_depth.get_dimensions());
         if !self.enabled {
             return Ok(());
         }
@@ -165,7 +165,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
     }
 
     fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory, self.enabled)?;
+        self.bundle.pso = Self::load_pso(factory)?;
         Ok(())
     }
 
@@ -184,16 +184,12 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
-        let mut reload_shaders = false;
-        
         // If the shadows setting was disabled, set the shadow map to a dummy texture to save memory
         if !config.shadows && self.enabled {
             let (_, dummy_srv, dummy_dsv) = factory.create_depth_stencil(1, 1)?;
             self.bundle.data.out_depth = dummy_dsv.clone();
 
             framebuffers.add_framebuffer("dir_shadow_map", Output { srv: dummy_srv });
-
-            reload_shaders = true;
         }
 
         // If the shadows setting was enabled, make a new shadow map
@@ -205,16 +201,6 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
             self.bundle.data.out_depth = dsv.clone();
             
             framebuffers.add_framebuffer("dir_shadow_map", Output { srv });
-
-            reload_shaders = true;
-        }
-
-        // If the shadow map size was changed and shadows are enabled, rebuild the shadow map
-        
-        // If the shadows setting was changed, reload the shaders with the new shadows setting
-        // applied
-        if reload_shaders {
-            Pass::<R, C, F, _, _>::reload_shaders(self, factory)?;
         }
 
         self.enabled = config.shadows;
