@@ -6,6 +6,8 @@ use glutin;
 use std::fmt;
 use std::path::PathBuf;
 
+pub const DEFAULT_SENSITIVITY: ::Float = 0.0035;
+
 // A type that holds all command-line configuration options
 /// A first-person, wave based game
 #[derive(StructOpt, Debug)]
@@ -40,13 +42,13 @@ pub struct WindowConfig {
     pub vsync: bool,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct CameraConfig {
     pub sensitivity: ::Float,
     pub fov: f32,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct BindConfig {
     pub move_forward: Bind,
     pub move_backward: Bind,
@@ -105,7 +107,7 @@ impl Default for BindConfig {
 impl Default for CameraConfig {
     fn default() -> Self {
         Self {
-            sensitivity: 0.0035,
+            sensitivity: DEFAULT_SENSITIVITY,
             fov: 45.0,
         }
     }

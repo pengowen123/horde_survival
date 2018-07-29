@@ -10,6 +10,7 @@ extern crate conrod as conrod_macros;
 extern crate window;
 #[macro_use]
 extern crate slog;
+extern crate petgraph;
 use common::{specs, shred};
 
 mod menus;
@@ -17,8 +18,7 @@ mod theme;
 mod consts;
 
 use common::conrod::{self, Ui, UiBuilder, Dimensions, render, gfx};
-use common::glutin;
-use common::UiState;
+use common::{UiState, glutin, config};
 use window::window_event;
 
 use std::sync::{Mutex, MutexGuard, mpsc};
@@ -74,11 +74,12 @@ impl System {
         events: EventReceiver,
         log: &slog::Logger,
         reader_id: window_event::ReaderId,
+        config: &config::Config,
     ) -> Self {
         let mut ui = UiBuilder::new(window_dim)
             .theme(theme::default_theme())
             .build();
-        let menus = menus::Menus::new(ui.widget_id_generator());
+        let menus = menus::Menus::new(config.clone(), ui.widget_id_generator());
 
         let font_path = format!("{}{}",
                                 env!("CARGO_MANIFEST_DIR"),
@@ -119,6 +120,8 @@ pub struct Data<'a> {
     draw_list: specs::FetchMut<'a, UiDrawList>,
     window: specs::Fetch<'a, window::Window>,
     event_channel: specs::FetchMut<'a, window_event::EventChannel>,
+    config: specs::FetchMut<'a, config::Config>,
+    log: specs::Fetch<'a, slog::Logger>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -164,8 +167,9 @@ impl<'a> specs::System<'a> for System {
         let rebuild_widgets =
             // Build widgets if the draw list is empty
             data.draw_list.0.is_none() ||
-            // Rebuild widgets if an window event happened
+            // Rebuild widgets if an window event happened or if the UI state changed
             self.ui.global_input().events().next().is_some() ||
+            self.menus.did_ui_state_change() ||
             // Rebuild widgets regardless of events if the in-game menu is active
             data.ui_state.is_in_game();
 
@@ -186,7 +190,13 @@ impl<'a> specs::System<'a> for System {
                         &mut data.event_channel,
                     ),
                 UiState::OptionsMenu =>
-                    self.menus.set_widgets_options_menu(&mut ui, &mut data.ui_state, &data.window),
+                    self.menus.set_widgets_options_menu(
+                        &mut ui,
+                        &mut data.ui_state,
+                        &mut data.event_channel,
+                        &mut data.config,
+                        &data.log,
+                    ),
                 UiState::Exit => {},
             }
         }
@@ -209,7 +219,8 @@ pub fn initialize<'a, 'b>(
     let log = world.read_resource::<slog::Logger>();
     let window_dim: Dimensions = [window_dim.0.into(), window_dim.1.into()];
     let reader_id = world.write_resource::<window_event::EventChannel>().register_reader();
-    let ui = System::new(window_dim, events, &log, reader_id);
+    let config = world.read_resource::<config::Config>();
+    let ui = System::new(window_dim, events, &log, reader_id, &config);
 
     dispatcher.add(ui, "ui", &[])
 }

@@ -4,7 +4,7 @@ use common::conrod::{self, Colorable, Positionable, color};
 use common::conrod::widget::{self, Widget};
 use common::{UiState, glutin};
 
-use menus::Menus;
+use menus::{Menus, options};
 use consts::{self, UI_BACKGROUND_COLOR, GENERIC_BUTTON_SPACING};
 
 const TITLE_TEXT_FONT_SIZE: u32 = 46;
@@ -38,7 +38,17 @@ impl Menus {
             .was_clicked()
         {
             window.hide_cursor(true);
-            *ui_state = UiState::InGame;
+            self.set_ui_state(ui_state, UiState::InGame);
+        }
+
+        // Options menu button
+        if consts::create_generic_button(widget::Button::new(), "Options")
+            .y_relative(GENERIC_BUTTON_SPACING)
+            .set(ids.main_menu_options_button, ui)
+            .was_clicked()
+        {
+            self.set_ui_state(ui_state, UiState::OptionsMenu);
+            self.options_menu_return_to = Some(options::ReturnTo::MainMenu);
         }
 
         // Exit button
@@ -47,7 +57,7 @@ impl Menus {
             .set(ids.exit_button, ui)
             .was_clicked()
         {
-            *ui_state = UiState::Exit;
+            self.set_ui_state(ui_state, UiState::Exit);
         }
     }
 }

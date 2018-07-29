@@ -5,7 +5,7 @@ use common::conrod::widget::{self, Widget};
 use common::{UiState, glutin};
 use window::window_event;
 
-use menus::Menus;
+use menus::{Menus, options};
 use consts::{self, UI_BACKGROUND_COLOR, GENERIC_BUTTON_SPACING};
 
 impl Menus {
@@ -33,13 +33,23 @@ impl Menus {
             window_event::unpause(ui_state, window, event_channel);
         }
 
+        // Options menu button
+        if consts::create_generic_button(widget::Button::new(), "Options")
+            .y_relative(GENERIC_BUTTON_SPACING)
+            .set(ids.pause_menu_options_button, ui)
+            .was_clicked()
+        {
+            self.set_ui_state(ui_state, UiState::OptionsMenu);
+            self.options_menu_return_to = Some(options::ReturnTo::PauseMenu);
+        }
+
         // Exit to main menu button
         if consts::create_generic_button(widget::Button::new(), "Exit to Main Menu")
             .y_relative(GENERIC_BUTTON_SPACING)
             .set(ids.exit_to_main_menu_button, ui)
             .was_clicked()
         {
-            *ui_state = UiState::MainMenu;
+            self.set_ui_state(ui_state, UiState::MainMenu);
         }
     }
 }
