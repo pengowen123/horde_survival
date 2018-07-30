@@ -261,7 +261,7 @@ where
                     });
                     
                     // Handle window resize for UI renderer
-                    self.ui_renderer.use_render_target(resized_main_color);
+                    self.ui_renderer.on_resize(resized_main_color);
                 }
                 window_event::Event::ConfigChanged(window_event::ChangedConfig::Graphics) => {
                     info!(data.log, "Applying graphics configuration changes";);
