@@ -1,5 +1,8 @@
 //! Implementation of the options menu
 
+// TODO: Add an automatic window settings revert feature to prevent accidentally making the game
+//       unusable
+
 use common::{UiState, gfx, config};
 use common::conrod::{self, Colorable, Positionable, Sizeable, Labelable, color};
 use common::conrod::widget::{self, Widget};
@@ -7,7 +10,7 @@ use window::window_event;
 use slog;
 use petgraph;
 
-use std::cmp;
+use std::{fmt, cmp};
 
 use menus::Menus;
 use consts::{self, UI_BACKGROUND_COLOR};
@@ -62,12 +65,74 @@ impl From<config::Config> for ConfigUiState {
     }
 }
 
+/// A trait for options that have variants that can be selected with left/right buttons, such as
+/// for the window size option
+trait SelectOption {
+    /// Returns the next option after this one
+    ///
+    /// Returns `self` if it is at or after the provided variant
+    fn next(&self, max: Self) -> Self;
+    /// Returns the previous option from this one
+    ///
+    /// Returns `self` if it is already the first variant
+    fn previous(&self) -> Self;
+}
+
 #[derive(Clone, PartialEq)]
 pub enum ShadowMapSize {
     _512,
     _1024,
     _2048,
     Custom(gfx::texture::Size),
+}
+
+impl ShadowMapSize {
+    /// Returns an `i32` representing the index of this shadow map size
+    ///
+    /// Returns `0` for the minimum shadow map size, and `n` for the maximum shadow map size, where
+    /// `n` is the number of shadow map size variants there are excluding `Custom`.
+    ///
+    /// Returns `-1` for `Custom`.
+    fn to_i32(&self) -> i32 {
+        match *self {
+            ShadowMapSize::_512 => 0,
+            ShadowMapSize::_1024 => 1,
+            ShadowMapSize::_2048 => 2,
+            ShadowMapSize::Custom(_) => -1,
+        }
+    }
+}
+impl SelectOption for ShadowMapSize {
+    fn next(&self, max: Self) -> Self {
+        if let ShadowMapSize::Custom(_) = *self {
+            return ShadowMapSize::_512;
+        } else if self.to_i32() >= max.to_i32() {
+            return self.clone();
+        }
+
+        match *self {
+            ShadowMapSize::_512 => ShadowMapSize::_1024,
+            ShadowMapSize::_1024 => ShadowMapSize::_2048,
+            ShadowMapSize::_2048 => ShadowMapSize::_2048,
+            ShadowMapSize::Custom(_) => unreachable!(),
+        }
+    }
+
+    fn previous(&self) -> Self {
+        match *self {
+            ShadowMapSize::_512 => ShadowMapSize::_512,
+            ShadowMapSize::_1024 => ShadowMapSize::_512,
+            ShadowMapSize::_2048 => ShadowMapSize::_1024,
+            ShadowMapSize::Custom(_) => ShadowMapSize::_512,
+        }
+    }
+}
+
+impl fmt::Display for ShadowMapSize {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let size: gfx::texture::Size = self.clone().into();
+        writeln!(fmt, "{}", size)
+    }
 }
 
 impl Into<gfx::texture::Size> for ShadowMapSize {
@@ -122,6 +187,7 @@ impl From<config::GraphicsConfig> for GraphicsConfig {
 #[derive(Clone, PartialEq)]
 pub enum WindowDimensions {
     _800x600,
+    _1024x768,
     _1440x1080,
     _1920x1080,
     Custom(u32, u32),
@@ -137,16 +203,16 @@ impl WindowDimensions {
     fn to_i32(&self) -> i32 {
         match *self {
             WindowDimensions::_800x600 => 0,
-            WindowDimensions::_1440x1080 => 1,
-            WindowDimensions::_1920x1080 => 2,
+            WindowDimensions::_1024x768 => 1,
+            WindowDimensions::_1440x1080 => 2,
+            WindowDimensions::_1920x1080 => 3,
             WindowDimensions::Custom(..) => -1,
         }
     }
+}
 
-    /// Returns the next window size from this one
-    ///
-    /// Returns `self` if it is already the maximum window size
-    fn next_size(&self, max_window_size: WindowDimensions) -> WindowDimensions {
+impl SelectOption for WindowDimensions {
+    fn next(&self, max_window_size: WindowDimensions) -> WindowDimensions {
         if let WindowDimensions::Custom(..) = *self {
             // There isn't anything to do here that makes sense other than return a default value
             WindowDimensions::_800x600
@@ -154,7 +220,8 @@ impl WindowDimensions {
             self.clone()
         } else {
             match *self {
-                WindowDimensions::_800x600 => WindowDimensions::_1440x1080,
+                WindowDimensions::_800x600 => WindowDimensions::_1024x768,
+                WindowDimensions::_1024x768 => WindowDimensions::_1440x1080,
                 WindowDimensions::_1440x1080 => WindowDimensions::_1920x1080,
                 WindowDimensions::_1920x1080 => WindowDimensions::_1920x1080,
                 WindowDimensions::Custom(..) => unreachable!(),
@@ -162,17 +229,22 @@ impl WindowDimensions {
         }
     }
 
-    /// Returns the previous window size from this one
-    ///
-    /// Returns `self` if it is already the minimum window size
-    fn previous_size(&self) -> WindowDimensions {
+    fn previous(&self) -> WindowDimensions {
         match *self {
             WindowDimensions::_800x600 => WindowDimensions::_800x600,
-            WindowDimensions::_1440x1080 => WindowDimensions::_800x600,
+            WindowDimensions::_1024x768 => WindowDimensions::_800x600,
+            WindowDimensions::_1440x1080 => WindowDimensions::_1024x768,
             WindowDimensions::_1920x1080 => WindowDimensions::_1440x1080,
             // There isn't anything to do here that makes sense other than return a default value
             WindowDimensions::Custom(..) => WindowDimensions::_800x600,
         }
+    }
+}
+
+impl fmt::Display for WindowDimensions {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        let (w, h) = self.clone().into();
+        writeln!(fmt, "{}x{}", w, h)
     }
 }
 
@@ -192,6 +264,7 @@ impl Into<(u32, u32)> for WindowDimensions {
     fn into(self) -> (u32, u32) {
         match self {
             WindowDimensions::_800x600 => (800, 600),
+            WindowDimensions::_1024x768 => (1024, 768),
             WindowDimensions::_1440x1080 => (1440, 1080),
             WindowDimensions::_1920x1080 => (1920, 1080),
             WindowDimensions::Custom(w, h) => (w, h),
@@ -203,6 +276,7 @@ impl From<(u32, u32)> for WindowDimensions {
     fn from(dims: (u32, u32)) -> Self {
         match dims {
             (800, 600) => WindowDimensions::_800x600,
+            (1024, 768) => WindowDimensions::_1024x768,
             (1440, 1080) => WindowDimensions::_1440x1080,
             (1920, 1080) => WindowDimensions::_1920x1080,
             (w, h) => WindowDimensions::Custom(w, h),
@@ -292,7 +366,7 @@ impl Menus {
         // Options sub-menu tabs
         widget::Tabs::new(&[
             (ids.options_camera_canvas, "Camera"),
-            (ids.options_window_canvas, "Graphics"),
+            (ids.options_window_canvas, "Window"),
             (ids.options_graphics_canvas, "Graphics"),
             (ids.options_bindings_canvas, "Key Bindings"),
             ])
@@ -343,11 +417,12 @@ impl Menus {
             ui,
         );
 
-        widget::Text::new("Field of view")
-            .mid_left_with_margin_on(ids.fov_canvas, OPTION_MARGIN)
-            .font_size(OPTION_NAME_FONT_SIZE)
-            .color(OPTION_NAME_COLOR)
-            .set(ids.fov_label, ui);
+        option_label(
+            "Field of view",
+            ids.fov_label,
+            ids.fov_canvas,
+            ui,
+        );
 
         if let Some(new_fov) = widget::Slider::new(self.new_config.camera.fov.round(), 30.0, 120.0)
             .mid_right_with_margin_on(ids.fov_canvas, OPTION_MARGIN)
@@ -367,11 +442,12 @@ impl Menus {
             ui,
         );
 
-        widget::Text::new("Sensitivity")
-            .mid_left_with_margin_on(ids.sensitivity_canvas, OPTION_MARGIN)
-            .font_size(OPTION_NAME_FONT_SIZE)
-            .color(OPTION_NAME_COLOR)
-            .set(ids.sensitivity_label, ui);
+        option_label(
+            "Sensitivity",
+            ids.sensitivity_label,
+            ids.sensitivity_canvas,
+            ui,
+        );
 
         if let Some(new_sensitivity) =
             widget::Slider::new(self.new_config.camera.sensitivity, 0.1, 4.0)
@@ -382,6 +458,98 @@ impl Menus {
                 .set(ids.sensitivity_slider, ui)
         {
             self.new_config.camera.sensitivity = new_sensitivity;
+        }
+
+        let mut window_option_index = 0;
+        // Window size option
+        option_canvas(
+            &mut window_option_index,
+            ids.window_size_canvas,
+            ids.options_window_canvas,
+            ui,
+        );
+
+        option_label(
+            "Window Size",
+            ids.window_size_label,
+            ids.window_size_canvas,
+            ui,
+        );
+
+        if option_selector(
+            &mut self.new_config.window.dimensions,
+            // TODO: Don't let the window dimensions be set greater than the monitor size by
+            // calculating a `WindowDimensions` from the monitor size
+            WindowDimensions::_1920x1080,
+            ids.window_size_button_left,
+            ids.window_size_button_right,
+            ids.window_size_text_canvas,
+            ids.window_size_text,
+            ids.window_size_canvas,
+            ui,
+        ) {
+            self.set_force_redraw(true);
+        };
+
+        // Fullscreen option
+        option_canvas(
+            &mut window_option_index,
+            ids.fullscreen_canvas,
+            ids.options_window_canvas,
+            ui,
+        );
+
+        option_label(
+            "Fullscreen",
+            ids.fullscreen_label,
+            ids.fullscreen_canvas,
+            ui,
+        );
+
+        if toggle_button(
+            &mut self.new_config.window.fullscreen,
+            ids.fullscreen_button,
+            ids.fullscreen_canvas,
+            // Extra margin to line up with the window size selector
+            100.0,
+            ui,
+        ) {
+            self.set_force_redraw(true);
+        }
+
+        // V-sync option
+        option_canvas(
+            &mut window_option_index,
+            ids.vsync_canvas,
+            ids.options_window_canvas,
+            ui,
+        );
+
+        option_label(
+            "V-sync",
+            ids.vsync_label,
+            ids.vsync_canvas,
+            ui,
+        );
+
+        if toggle_button(
+            &mut self.new_config.window.vsync,
+            ids.vsync_button,
+            ids.vsync_canvas,
+            // Extra margin to line up with the window size selector
+            100.0,
+            ui,
+        ) {
+            self.set_force_redraw(true);
+        }
+
+        // Warn about v-sync changes requiring restart
+        if self.new_config.window.vsync != self.current_config.window.vsync {
+            changes_require_restart_warning(
+                ids.changes_require_restart_text,
+                ids.options_window_canvas,
+                ui,
+            );
         }
 
         if update_config {
@@ -397,6 +565,9 @@ impl Menus {
 
             // Update `current_config` field
             self.current_config = self.new_config.clone();
+
+            // Force redraw to make "changes require restart" warning go away
+            self.set_force_redraw(true);
         }
 
         if exit_options_menu {
@@ -443,6 +614,126 @@ fn option_canvas(
         .set(id, ui);
 
     *option_index += 1;
+}
+
+/// Creates an option name text widget at the left of the parent widget
+fn option_label(
+    text: &str,
+    id: petgraph::graph::NodeIndex,
+    parent: petgraph::graph::NodeIndex,
+    ui: &mut conrod::UiCell,
+) {
+    widget::Text::new(text)
+        .mid_left_with_margin_on(parent, OPTION_MARGIN)
+        .font_size(OPTION_NAME_FONT_SIZE)
+        .color(OPTION_NAME_COLOR)
+        .set(id, ui);
+}
+
+/// Creates and handles widgets for a `SelectOption` object
+///
+/// Returns `true` if the selection has changed and the UI should be redrawn
+#[must_use]
+fn option_selector<O: SelectOption + fmt::Display>(
+    option: &mut O,
+    max_option: O,
+    id_button_left: petgraph::graph::NodeIndex,
+    id_button_right: petgraph::graph::NodeIndex,
+    id_text_canvas: petgraph::graph::NodeIndex,
+    id_text: petgraph::graph::NodeIndex,
+    parent: petgraph::graph::NodeIndex,
+    ui: &mut conrod::UiCell,
+) -> bool {
+    let mut redraw = false;
+
+    if widget::Button::new()
+        .color(color::RED)
+        .mid_right_with_margin_on(parent, OPTION_MARGIN)
+        .w_h(50.0, OPTION_HEIGHT * 0.75)
+        .label(">")
+        .label_color(color::LIGHT_GRAY)
+        .label_font_size(28)
+        .set(id_button_right, ui)
+        .was_clicked()
+    {
+        *option = option.next(max_option);
+        redraw = true;
+    }
+
+    widget::Canvas::new()
+        .color(color::RED)
+        .align_middle_y_of(parent)
+        .w(150.0)
+        .x_relative(-150.0)
+        .set(id_text_canvas, ui);
+
+    widget::Text::new(&format!("{}", option))
+        .align_middle_y_of(id_text_canvas)
+        .align_middle_x_of(id_text_canvas)
+        .font_size(OPTION_LABEL_FONT_SIZE)
+        .set(id_text, ui);
+
+    if widget::Button::new()
+        .color(color::RED)
+        .align_middle_y_of(parent)
+        .x_relative(-150.0)
+        .wh_of(id_button_right)
+        .label("<")
+        .label_color(color::LIGHT_GRAY)
+        .label_font_size(28)
+        .set(id_button_left, ui)
+        .was_clicked()
+    {
+        *option = option.previous();
+        redraw = true;
+    }
+
+    redraw
+}
+
+/// Creates and handles a toggle button widget
+///
+/// Returns `true` if the selection has changed and the UI should be redrawn
+// FIXME: Buttons created by this function don't change color when hovered over
+fn toggle_button(
+    state: &mut bool,
+    id: petgraph::graph::NodeIndex,
+    parent: petgraph::graph::NodeIndex,
+    extra_margin: conrod::Scalar,
+    ui: &mut conrod::UiCell,
+) -> bool {
+    let text = if *state {
+        "On"
+    } else {
+        "Off"
+    };
+
+    if widget::Button::new()
+        .w_h(150.0, OPTION_HEIGHT * 0.8)
+        .label(text)
+        .label_font_size(OPTION_LABEL_FONT_SIZE)
+        .mid_right_with_margin_on(parent, OPTION_MARGIN + extra_margin)
+        .set(id, ui)
+        .was_clicked()
+    {
+        *state = !*state;
+        true
+    } else {
+        false
+    }
+}
+
+/// Creates a text widget at the bottom of the parent widget to notify the user that changes made to
+/// the configuration requires a restart
+fn changes_require_restart_warning(
+    id: petgraph::graph::NodeIndex,
+    parent: petgraph::graph::NodeIndex,
+    ui: &mut conrod::UiCell,
+) {
+    widget::Text::new("Changes require restart")
+        .font_size(24)
+        .mid_bottom_with_margin_on(parent, OPTION_MARGIN)
+        .set(id, ui);
 }
 
 /// Returns a list of `ConfigChanged` events to send based on the differences between the two

@@ -44,6 +44,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
         let window_builder = glutin::WindowBuilder::new()
             .with_title("Horde Survival")
             .with_min_dimensions(size)
+            .with_dimensions(size)
             .with_fullscreen(fullscreen)
             .with_resizable(false);
 

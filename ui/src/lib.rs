@@ -165,13 +165,17 @@ impl<'a> specs::System<'a> for System {
 
         // Whether to rebuild the UI widgets
         let rebuild_widgets =
+            // Rebuild widgets if a menu has requested that the UI be redrawn
+            self.menus.should_force_redraw() ||
             // Build widgets if the draw list is empty
             data.draw_list.0.is_none() ||
-            // Rebuild widgets if an window event happened or if the UI state changed
+            // Rebuild widgets if a window event happened
             self.ui.global_input().events().next().is_some() ||
-            self.menus.did_ui_state_change() ||
             // Rebuild widgets regardless of events if the in-game menu is active
             data.ui_state.is_in_game();
+ 
+        // Reset the `force_redraw` flag
+        self.menus.set_force_redraw(false);
 
         // Rebuild the UI widgets based on the UI state
         if rebuild_widgets {

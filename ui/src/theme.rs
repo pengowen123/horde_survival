@@ -14,7 +14,7 @@ pub fn default_theme() -> Theme {
         background_color: color::LIGHT_CHARCOAL,
         shape_color: color::LIGHT_RED,
         border_color: color::BLACK,
-        border_width: 2.0,
+        border_width: 1.0,
         label_color: color::LIGHT_GRAY,
         font_id: None,
         font_size_large: 26,

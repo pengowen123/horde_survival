@@ -25,6 +25,7 @@ widget_ids! {
         exit_to_main_menu_button,
         pause_menu_options_button,
         // Options menu
+        changes_require_restart_text,
         options_root_canvas,
         options_top_canvas,
         options_bottom_canvas,
@@ -46,13 +47,25 @@ widget_ids! {
         sensitivity_canvas,
         sensitivity_label,
         sensitivity_slider,
+        window_size_canvas,
+        window_size_label,
+        window_size_button_left,
+        window_size_button_right,
+        window_size_text_canvas,
+        window_size_text,
+        fullscreen_canvas,
+        fullscreen_label,
+        fullscreen_button,
+        vsync_canvas,
+        vsync_label,
+        vsync_button,
     }
 }
 
 /// Stores the state required to run each menu
 pub struct Menus {
     ids: Ids,
-    ui_state_changed: AtomicBool,
+    force_redraw: AtomicBool,
     options_menu_return_to: Option<options::ReturnTo>,
     /// The current config (the current value of the `Config` resource, converted to
     /// `ConfigUiState`)
@@ -67,28 +80,30 @@ impl Menus {
         let config: options::ConfigUiState = config.into();
         Menus {
             ids: Ids::new(ui),
-            ui_state_changed: false.into(),
+            force_redraw: false.into(),
             options_menu_return_to: None,
             current_config: config.clone(),
             new_config: config,
         }
     }
 
-    /// Returns whether the UI state was updated by a menu
-    ///
-    /// Also resets the flag that tracks this information.
-    pub fn did_ui_state_change(&mut self) -> bool {
-        let result = self.ui_state_changed.load(Ordering::SeqCst);
-        self.ui_state_changed.store(false, Ordering::SeqCst);
+    /// Returns whether the UI should be forced to be redrawn
+    pub fn should_force_redraw(&self) -> bool {
+        let result = self.force_redraw.load(Ordering::SeqCst);
         result
     }
 
-    /// Sets `ui_state` to `new_state`, and sets the `ui_state_changed` flag to `true`
+    /// Sets the `force_redraw` flag to the provided value
+    pub fn set_force_redraw(&self, value: bool) {
+        self.force_redraw.store(value, Ordering::SeqCst);
+    }
+
+    /// Sets `ui_state` to `new_state`, and sets the `force_redraw` flag to `true`
     ///
-    /// This method is used to prevent accidentally forgetting to set `ui_state_changed` when
+    /// This method is used to prevent accidentally forgetting to set `force_redraw` when
     /// changing UI state.
     fn set_ui_state(&self, ui_state: &mut UiState, new_state: UiState) {
-        self.ui_state_changed.store(true, Ordering::SeqCst);
+        self.set_force_redraw(true);
         *ui_state = new_state;
     }
 }
