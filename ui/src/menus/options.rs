@@ -1,8 +1,5 @@
 //! Implementation of the options menu
 
-// TODO: Add an automatic window settings revert feature to prevent accidentally making the game
-//       unusable
-
 use common::{UiState, gfx, config};
 use common::conrod::{self, Colorable, Positionable, Sizeable, Labelable, color};
 use common::conrod::widget::{self, Widget};
@@ -12,9 +9,10 @@ use petgraph;
 
 use std::{fmt, cmp};
 
-use menus::Menus;
+use menus::{Menus, Ids, AutoRevertState};
 use consts::{self, UI_BACKGROUND_COLOR};
 
+const AUTO_REVERT_TIME: u64 = 15;
 const OPTIONS_TRANSITION_BUTTON_WIDTH: conrod::Scalar = 200.0;
 const OPTIONS_TRANSITION_SPACING: conrod::Scalar = OPTIONS_TRANSITION_BUTTON_WIDTH * 1.25;
 const OPTION_NAME_FONT_SIZE: u32 = 26;
@@ -346,7 +344,6 @@ impl Menus {
 
         // Root canvas
         widget::Canvas::new()
-            .color(color::PURPLE)
             .set(ids.options_root_canvas, ui);
 
         // Top canvas
@@ -552,19 +549,51 @@ impl Menus {
             );
         }
 
-        if update_config {
-            // Send `ConfigChanged` events
-            let events = get_config_changed_events(&self.current_config, &self.new_config);
+        // Auto-revert window settings pop-up
+        let redraw = if self.showing_auto_revert() {
+            auto_revert_popup(
+                &mut self.auto_revert_state,
+                &mut self.current_config,
+                &mut self.new_config,
+                config,
+                ids,
+                ids.options_root_canvas,
+                ui,
+                event_channel,
+            )
+        } else {
+            false
+        };
 
-            for e in events {
-                event_channel.single_write(e);
+        if redraw {
+            self.set_force_redraw(true);
+        }
+
+        if update_config {
+            // If the window dimensions or fullscreen options were changed, show the auto-revert
+            // window settings pop-up
+            if self.new_config.window.fullscreen != self.current_config.window.fullscreen ||
+                self.new_config.window.dimensions != self.current_config.window.dimensions
+            {
+                self.auto_revert_state =
+                    Some(AutoRevertState::new(
+                            self.current_config.window.dimensions.clone(),
+                            self.current_config.window.fullscreen,
+                    ));
             }
+
+            send_config_changed_events(&self.current_config, &self.new_config, event_channel);
 
             // Write the new config to the `Config` resource
             *config = self.new_config.clone().into();
 
             // Update `current_config` field
-            self.current_config = self.new_config.clone();
+            let new_config = self.new_config.clone();
+
+            self.current_config.camera = new_config.camera;
+            self.current_config.graphics = new_config.graphics;
+            self.current_config.bindings = new_config.bindings;
+            self.current_config.window = new_config.window;
 
             // Force redraw to make "changes require restart" warning go away
             self.set_force_redraw(true);
@@ -709,10 +738,10 @@ fn toggle_button(
     };
 
     if widget::Button::new()
+        .mid_right_with_margin_on(parent, OPTION_MARGIN + extra_margin)
         .w_h(150.0, OPTION_HEIGHT * 0.8)
         .label(text)
         .label_font_size(OPTION_LABEL_FONT_SIZE)
-        .mid_right_with_margin_on(parent, OPTION_MARGIN + extra_margin)
         .set(id, ui)
         .was_clicked()
     {
@@ -758,4 +787,131 @@ fn get_config_changed_events(a: &ConfigUiState, b: &ConfigUiState) -> Vec<window
     }
 
     events
+}
+
+/// Sends `ConfigChanged` events based on the differences between the two `ConfigUiState`s
+pub fn send_config_changed_events(
+    a: &ConfigUiState,
+    b: &ConfigUiState,
+    event_channel: &mut window_event::EventChannel,
+) {
+    for e in get_config_changed_events(a, b) {
+        event_channel.single_write(e);
+    }
+}
+
+/// Creates and handles the "auto revert window settings" pop-up
+///
+/// Returns `true` if the UI should be redrawn
+#[must_use]
+pub fn auto_revert_popup(
+    auto_revert_state: &mut Option<AutoRevertState>,
+    current_config: &mut ConfigUiState,
+    new_config: &mut ConfigUiState,
+    config_resource: &mut config::Config,
+    ids: &Ids,
+    parent: petgraph::graph::NodeIndex,
+    ui: &mut conrod::UiCell,
+    event_channel: &mut window_event::EventChannel,
+) -> bool {
+    let mut end_popup = false;
+
+    if let Some(state) = auto_revert_state {
+        let elapsed = state.popup_start_time.elapsed().as_secs();
+        let mut revert = false;
+
+        if elapsed >= AUTO_REVERT_TIME {
+            revert = true;
+            end_popup = true;
+        }
+
+        // A large, semi-transparent canvas to prevent interaction with other parts of the UI
+        widget::Canvas::new()
+            .color(color::Color::Rgba(0.0, 0.0, 0.0, 0.5))
+            .wh_of(parent)
+            .middle_of(parent)
+            .set(ids.auto_revert_big_canvas, ui);
+
+        // The canvas for the popup
+        let (popup_width, popup_height) = (400.0, 300.0);
+
+        widget::Canvas::new()
+            .w_h(popup_width, popup_height)
+            .middle_of(ids.auto_revert_big_canvas)
+            .set(ids.auto_revert_canvas, ui);
+
+        // A canvas to hold the title of the popup, to have a nice border
+        widget::Canvas::new()
+            .w_of(ids.auto_revert_canvas)
+            .h(60.0)
+            .mid_top_of(ids.auto_revert_canvas)
+            .set(ids.keep_changes_canvas, ui);
+
+        let auto_revert_text = &format!(
+            "Auto-reverting changes in {} seconds",
+            AUTO_REVERT_TIME - elapsed
+        );
+
+        widget::Text::new(auto_revert_text)
+            .y_relative(-50.0)
+            .w(popup_width * 0.9)
+            .wrap_by_word()
+            .center_justify()
+            .set(ids.auto_revert_text, ui);
+
+        let keep_changes_text = "Keep window size changes?";
+
+        widget::Text::new(keep_changes_text)
+            .middle_of(ids.keep_changes_canvas)
+            .set(ids.keep_changes_text, ui);
+
+        if widget::Button::new()
+            .color(consts::GENERIC_BUTTON_COLOR)
+            .w_h(popup_width * 0.4, popup_height * 0.25)
+            .mid_left_with_margin_on(ids.auto_revert_canvas, 25.0)
+            .down(100.0)
+            .label("Keep changes")
+            .label_font_size(22)
+            .set(ids.keep_changes_button, ui)
+            .was_clicked()
+        {
+            end_popup = true;
+        }
+
+        if widget::Button::new()
+            .color(consts::GENERIC_BUTTON_COLOR)
+            .wh_of(ids.keep_changes_button)
+            .mid_right_with_margin_on(ids.auto_revert_canvas, 25.0)
+            .y_relative(0.0)
+            .label("Revert changes")
+            .label_font_size(22)
+            .set(ids.revert_changes_button, ui)
+            .was_clicked()
+        {
+            revert = true;
+            end_popup = true;
+        }
+
+        if revert {
+            // Edit the new config values
+            new_config.window.dimensions = state.old_dimensions.clone();
+            new_config.window.fullscreen = state.old_fullscreen;
+
+            // Write to the `Config` resource
+            config_resource.window = new_config.window.clone().into();
+
+            // Send `ConfigChanged` events
+            send_config_changed_events(current_config, new_config, event_channel);
+
+            // Update the current config values as well
+            current_config.window.dimensions = state.old_dimensions.clone();
+            current_config.window.fullscreen = state.old_fullscreen;
+        }
+    }
+
+    if end_popup {
+        *auto_revert_state = None;
+    }
+
+    end_popup
 }

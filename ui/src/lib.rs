@@ -167,7 +167,10 @@ impl<'a> specs::System<'a> for System {
         let rebuild_widgets =
             // Rebuild widgets if a menu has requested that the UI be redrawn
             self.menus.should_force_redraw() ||
-            // Build widgets if the draw list is empty
+            // Rebuild widgets if the auto-revert window settings pop-up is showing, to allow for
+            // its state to be updated
+            self.menus.showing_auto_revert() ||
+            // Rebuild widgets if the draw list is empty
             data.draw_list.0.is_none() ||
             // Rebuild widgets if a window event happened
             self.ui.global_input().events().next().is_some() ||
@@ -183,7 +186,13 @@ impl<'a> specs::System<'a> for System {
             
             match *data.ui_state {
                 UiState::MainMenu =>
-                    self.menus.set_widgets_main_menu(&mut ui, &mut data.ui_state, &data.window),
+                    self.menus.set_widgets_main_menu(
+                        &mut ui,
+                        &mut data.ui_state,
+                        &data.window,
+                        &mut data.event_channel,
+                        &mut data.config
+                    ),
                 UiState::InGame =>
                     self.menus.set_widgets_in_game(&mut ui, &mut data.ui_state, &data.window),
                 UiState::PauseMenu =>

@@ -14,6 +14,7 @@ pub type EventChannel = shrev::EventChannel<Event>;
 pub type ReaderId = shrev::ReaderId<Event>;
 
 /// A state flag used for state change events
+#[derive(Debug)]
 pub enum State {
     Enabled,
     Disabled,
@@ -46,6 +47,7 @@ impl CameraRotation {
 }
 
 /// The part of the configuration that has changed
+#[derive(Debug)]
 pub enum ChangedConfig {
     /// The graphics configuration has changed
     Graphics,
@@ -61,6 +63,7 @@ pub enum ChangedConfig {
 }
 
 /// The event type that is sent through the event channel
+#[derive(Debug)]
 pub enum Event {
     /// A movement key was pressed or released, and the movement key state should be updated
     ChangeMovementKeyState(Direction, State),
