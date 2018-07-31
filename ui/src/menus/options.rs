@@ -723,7 +723,6 @@ fn option_selector<O: SelectOption + fmt::Display>(
 /// Creates and handles a toggle button widget
 ///
 /// Returns `true` if the selection has changed and the UI should be redrawn
-// FIXME: Buttons created by this function don't change color when hovered over
 fn toggle_button(
     state: &mut bool,
     id: petgraph::graph::NodeIndex,
@@ -738,6 +737,7 @@ fn toggle_button(
     };
 
     if widget::Button::new()
+        .color(color::RED)
         .mid_right_with_margin_on(parent, OPTION_MARGIN + extra_margin)
         .w_h(150.0, OPTION_HEIGHT * 0.8)
         .label(text)
