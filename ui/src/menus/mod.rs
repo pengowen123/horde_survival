@@ -68,6 +68,18 @@ widget_ids! {
         vsync_canvas,
         vsync_label,
         vsync_button,
+        postprocessing_canvas,
+        postprocessing_label,
+        postprocessing_button,
+        shadows_canvas,
+        shadows_label,
+        shadows_button,
+        shadow_map_size_canvas,
+        shadow_map_size_label,
+        shadow_map_size_button_left,
+        shadow_map_size_button_right,
+        shadow_map_size_text_canvas,
+        shadow_map_size_text,
     }
 }
 

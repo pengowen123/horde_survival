@@ -549,6 +549,87 @@ impl Menus {
             );
         }
 
+        let mut graphics_option_index = 0;
+        // Postprocessing option
+        option_canvas(
+            &mut graphics_option_index,
+            ids.postprocessing_canvas,
+            ids.options_graphics_canvas,
+            ui,
+        );
+
+        option_label(
+            "Postprocessing",
+            ids.postprocessing_label,
+            ids.postprocessing_canvas,
+            ui,
+        );
+
+        if toggle_button(
+            &mut self.new_config.graphics.postprocessing,
+            ids.postprocessing_button,
+            ids.postprocessing_canvas,
+            // Extra margin to line up with the shadow map size selector
+            100.0,
+            ui,
+        ) {
+            self.set_force_redraw(true);
+        }
+
+        // Shadows option
+        option_canvas(
+            &mut graphics_option_index,
+            ids.shadows_canvas,
+            ids.options_graphics_canvas,
+            ui,
+        );
+
+        option_label(
+            "Shadows",
+            ids.shadows_label,
+            ids.shadows_canvas,
+            ui,
+        );
+
+        if toggle_button(
+            &mut self.new_config.graphics.shadows,
+            ids.shadows_button,
+            ids.shadows_canvas,
+            // Extra margin to line up with the shadow map size selector
+            100.0,
+            ui,
+        ) {
+            self.set_force_redraw(true);
+        }
+
+        // Shadow map size option
+        option_canvas(
+            &mut graphics_option_index,
+            ids.shadow_map_size_canvas,
+            ids.options_graphics_canvas,
+            ui,
+        );
+
+        option_label(
+            "Shadow Map Size",
+            ids.shadow_map_size_label,
+            ids.shadow_map_size_canvas,
+            ui,
+        );
+
+        if option_selector(
+            &mut self.new_config.graphics.shadow_map_size,
+            ShadowMapSize::_2048,
+            ids.shadow_map_size_button_left,
+            ids.shadow_map_size_button_right,
+            ids.shadow_map_size_text_canvas,
+            ids.shadow_map_size_text,
+            ids.shadow_map_size_canvas,
+            ui,
+        ) {
+            self.set_force_redraw(true);
+        };
+
         // Auto-revert window settings pop-up
         let redraw = if self.showing_auto_revert() {
             auto_revert_popup(

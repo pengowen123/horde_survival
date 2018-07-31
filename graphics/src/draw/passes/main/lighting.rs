@@ -409,8 +409,8 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
         let mut update_shadow_map = false;
-        // If the shadows setting was changed, reload the shadow map (will be a dummy texture now)
-        // and reload the shaders with the new shadows setting applied
+        // If the shadows setting was changed, reload the shadow map (will be a dummy texture if
+        // shadows were disabled) and reload the shaders with the new shadows setting applied
         if config.shadows != self.shadows {
             self.shadows = config.shadows;
 
@@ -419,7 +419,9 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
             Pass::<R, C, F, _, _>::reload_shaders(self, factory)?;
         }
 
-        if config.shadow_map_size != self.shadow_map_size {
+        // If the shadow map size setting was changed and shadows are enabled, reload the resized
+        // shadow map
+        if (config.shadow_map_size != self.shadow_map_size) && config.shadows {
             self.shadow_map_size = config.shadow_map_size;
 
             update_shadow_map = true;

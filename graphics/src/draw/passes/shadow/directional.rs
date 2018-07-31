@@ -192,8 +192,20 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
             framebuffers.add_framebuffer("dir_shadow_map", Output { srv: dummy_srv });
         }
 
+        let (w, h, _, _) = self.bundle.data.out_depth.get_dimensions();
+        assert_eq!(w, h);
+        // The height is always the same as the width, so just the width is used
+        let current_shadow_map_size = w;
+
         // If the shadows setting was enabled, make a new shadow map
-        if config.shadows && !self.enabled {
+        let mut make_shadow_map = config.shadows && !self.enabled;
+
+        // If the shadow size setting was changed and shadows are enabled, make a new shadow map
+        if (config.shadow_map_size != current_shadow_map_size) && config.shadows {
+            make_shadow_map = true;
+        }
+
+        if make_shadow_map {
             let (_, srv, dsv) = factory.create_depth_stencil(
                 config.shadow_map_size,
                 config.shadow_map_size,

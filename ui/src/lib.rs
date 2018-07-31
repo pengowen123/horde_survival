@@ -2,6 +2,8 @@
 //!
 //! The UI is only calculated here; a draw list is sent to the graphics system to be rendered
 
+#![recursion_limit="128"]
+
 #[macro_use]
 extern crate shred_derive;
 extern crate common;
