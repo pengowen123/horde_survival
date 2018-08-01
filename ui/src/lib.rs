@@ -155,7 +155,19 @@ impl<'a> specs::System<'a> for System {
         }
 
         // Update the UI
+        let mut keypress = None;
+
         while let Ok(event) = self.events.try_recv() {
+            // Send keypresses to the UI if it is waiting for one
+            if self.menus.waiting_for_keypress() {
+                if let glutin::Event::WindowEvent { ref event, .. } = event {
+                    if let glutin::WindowEvent::KeyboardInput { input, .. } = event {
+                        if let glutin::ElementState::Pressed = input.state {
+                            keypress = Some(input.clone());
+                        }
+                    }
+                }
+            }
             if let Some(event) = conrod::backend::winit::convert_event(event, data.window.window())
             {
                 self.ui.handle_event(event);
@@ -208,6 +220,7 @@ impl<'a> specs::System<'a> for System {
                     self.menus.set_widgets_options_menu(
                         &mut ui,
                         &mut data.ui_state,
+                        keypress,
                         &mut data.event_channel,
                         &mut data.config,
                         &data.log,

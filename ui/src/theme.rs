@@ -4,6 +4,8 @@ use common::conrod::{Theme, color};
 
 use std::time::Duration;
 
+pub const FONT_COLOR: color::Color = color::LIGHT_GRAY;
+
 pub fn default_theme() -> Theme {
     use conrod::position::{Align, Padding, Position, Relative};
     Theme {
@@ -15,7 +17,7 @@ pub fn default_theme() -> Theme {
         shape_color: color::LIGHT_RED,
         border_color: color::BLACK,
         border_width: 1.0,
-        label_color: color::LIGHT_GRAY,
+        label_color: FONT_COLOR,
         font_id: None,
         font_size_large: 26,
         font_size_medium: 20,

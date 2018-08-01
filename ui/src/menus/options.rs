@@ -1,6 +1,6 @@
 //! Implementation of the options menu
 
-use common::{UiState, gfx, config};
+use common::{UiState, gfx, config, glutin};
 use common::conrod::{self, Colorable, Positionable, Sizeable, Labelable, color};
 use common::conrod::widget::{self, Widget};
 use window::window_event;
@@ -9,8 +9,9 @@ use petgraph;
 
 use std::{fmt, cmp};
 
-use menus::{Menus, Ids, AutoRevertState};
+use menus::{Menus, Ids, AutoRevertState, WaitForKeypressState};
 use consts::{self, UI_BACKGROUND_COLOR};
+use theme;
 
 const AUTO_REVERT_TIME: u64 = 15;
 const OPTIONS_TRANSITION_BUTTON_WIDTH: conrod::Scalar = 200.0;
@@ -331,6 +332,7 @@ impl Menus {
         &mut self,
         ui: &mut conrod::UiCell,
         ui_state: &mut UiState,
+        keypress: Option<glutin::KeyboardInput>,
         event_channel: &mut window_event::EventChannel,
         config: &mut config::Config,
         log: &slog::Logger,
@@ -542,7 +544,9 @@ impl Menus {
 
         // Warn about v-sync changes requiring restart
         if self.new_config.window.vsync != self.current_config.window.vsync {
-            changes_require_restart_warning(
+            warning_text(
+                "Changes require restart",
+                theme::FONT_COLOR,
                 ids.changes_require_restart_text,
                 ids.options_window_canvas,
                 ui,
@@ -630,6 +634,172 @@ impl Menus {
             self.set_force_redraw(true);
         };
 
+        let mut bindings_option_index = 0;
+        let any_waiting_for_keypress = self.wait_for_keypress_state.is_waiting();
+        let mut redraw = false;
+        let mut show_warning = false;
+        let mut hide_warning = false;
+
+        // Move forward binding option
+        option_canvas(
+            &mut bindings_option_index,
+            ids.move_forward_canvas,
+            ids.options_bindings_canvas,
+            ui,
+        );
+
+        option_label(
+            "Move forward",
+            ids.move_forward_label,
+            ids.move_forward_canvas,
+            ui,
+        );
+
+        let bind_result = binding_option(
+            &mut self.wait_for_keypress_state.move_forward,
+            any_waiting_for_keypress,
+            keypress,
+            config::BindName::MoveForward,
+            &mut self.new_config.bindings,
+            ids.move_forward_canvas_2,
+            ids.move_forward_button,
+            ids.move_forward_rect,
+            ids.move_forward_text,
+            ids.move_forward_text_2,
+            ids.move_forward_canvas,
+            ui,
+        );
+
+        redraw = redraw || bind_result.redraw;
+        show_warning = show_warning || bind_result.show_warning;
+        hide_warning = hide_warning || bind_result.hide_warning;
+
+        // Move left binding option
+        option_canvas(
+            &mut bindings_option_index,
+            ids.move_left_canvas,
+            ids.options_bindings_canvas,
+            ui,
+        );
+
+        option_label(
+            "Move left",
+            ids.move_left_label,
+            ids.move_left_canvas,
+            ui,
+        );
+
+        let bind_result = binding_option(
+            &mut self.wait_for_keypress_state.move_left,
+            any_waiting_for_keypress,
+            keypress,
+            config::BindName::MoveLeft,
+            &mut self.new_config.bindings,
+            ids.move_left_canvas_2,
+            ids.move_left_button,
+            ids.move_left_rect,
+            ids.move_left_text,
+            ids.move_left_text_2,
+            ids.move_left_canvas,
+            ui,
+        );
+
+        redraw = redraw || bind_result.redraw;
+        show_warning = show_warning || bind_result.show_warning;
+        hide_warning = hide_warning || bind_result.hide_warning;
+
+        // Move right binding option
+        option_canvas(
+            &mut bindings_option_index,
+            ids.move_right_canvas,
+            ids.options_bindings_canvas,
+            ui,
+        );
+
+        option_label(
+            "Move right",
+            ids.move_right_label,
+            ids.move_right_canvas,
+            ui,
+        );
+
+        let bind_result = binding_option(
+            &mut self.wait_for_keypress_state.move_right,
+            any_waiting_for_keypress,
+            keypress,
+            config::BindName::MoveRight,
+            &mut self.new_config.bindings,
+            ids.move_right_canvas_2,
+            ids.move_right_button,
+            ids.move_right_rect,
+            ids.move_right_text,
+            ids.move_right_text_2,
+            ids.move_right_canvas,
+            ui,
+        );
+
+        redraw = redraw || bind_result.redraw;
+        show_warning = show_warning || bind_result.show_warning;
+        hide_warning = hide_warning || bind_result.hide_warning;
+
+        // Move backward binding option
+        option_canvas(
+            &mut bindings_option_index,
+            ids.move_backward_canvas,
+            ids.options_bindings_canvas,
+            ui,
+        );
+
+        option_label(
+            "Move backward",
+            ids.move_backward_label,
+            ids.move_backward_canvas,
+            ui,
+        );
+
+        let bind_result = binding_option(
+            &mut self.wait_for_keypress_state.move_backward,
+            any_waiting_for_keypress,
+            keypress,
+            config::BindName::MoveBackward,
+            &mut self.new_config.bindings,
+            ids.move_backward_canvas_2,
+            ids.move_backward_button,
+            ids.move_backward_rect,
+            ids.move_backward_text,
+            ids.move_backward_text_2,
+            ids.move_backward_canvas,
+            ui,
+        );
+
+        redraw = redraw || bind_result.redraw;
+        show_warning = show_warning || bind_result.show_warning;
+        hide_warning = hide_warning || bind_result.hide_warning;
+
+        // This makes the warning persistent
+        if show_warning {
+            self.show_key_warning = true;
+        }
+
+        // Only disable the warning when a keybinding is successfully set
+        if hide_warning {
+            self.show_key_warning = false;
+        }
+
+        if redraw {
+            self.set_force_redraw(true);
+        }
+
+        if self.show_key_warning {
+            warning_text(
+                "Key already in use",
+                color::RED,
+                ids.bind_in_use_warning_text,
+                ids.options_bindings_canvas,
+                ui,
+            );
+        }
+
         // Auto-revert window settings pop-up
         let redraw = if self.showing_auto_revert() {
             auto_revert_popup(
@@ -683,6 +853,7 @@ impl Menus {
         if exit_options_menu {
             match self.options_menu_return_to.take() {
                 Some(menu) => {
+                    self.wait_for_keypress_state = WaitForKeypressState::new();
                     self.set_ui_state(ui_state, menu.into());
                 }
                 None => {
@@ -835,12 +1006,15 @@ fn toggle_button(
 
 /// Creates a text widget at the bottom of the parent widget to notify the user that changes made to
 /// the configuration requires a restart
-fn changes_require_restart_warning(
+fn warning_text(
+    text: &str,
+    color: color::Color,
     id: petgraph::graph::NodeIndex,
     parent: petgraph::graph::NodeIndex,
     ui: &mut conrod::UiCell,
 ) {
-    widget::Text::new("Changes require restart")
+    widget::Text::new(text)
+        .color(color)
         .font_size(24)
         .mid_bottom_with_margin_on(parent, OPTION_MARGIN)
         .set(id, ui);
@@ -995,4 +1169,128 @@ pub fn auto_revert_popup(
     }
 
     end_popup
+}
+
+/// Represents what should happen as a result of handling a keybinding editor widget
+struct BindResult {
+    redraw: bool,
+    show_warning: bool,
+    hide_warning: bool,
+}
+
+impl BindResult {
+    fn new() -> Self {
+        Self {
+            redraw: false,
+            show_warning: false,
+            hide_warning: false,
+        }
+    }
+}
+
+/// Creates and handles a keybinding editor widget
+#[must_use]
+fn binding_option(
+    // Whether this keybinding widget is waiting for a keypress
+    waiting_for_keypress: &mut bool,
+    // Whether any keybinding widget is waiting for a keypress
+    any_waiting_for_keypress: bool,
+    keypress: Option<glutin::KeyboardInput>,
+    binding: config::BindName,
+    bindings: &mut config::BindConfig,
+    canvas_id: petgraph::graph::NodeIndex,
+    button_id: petgraph::graph::NodeIndex,
+    rect_id: petgraph::graph::NodeIndex,
+    text_id: petgraph::graph::NodeIndex,
+    text_id_2: petgraph::graph::NodeIndex,
+    parent: petgraph::graph::NodeIndex,
+    ui: &mut conrod::UiCell,
+) -> BindResult {
+    let mut result = BindResult::new();
+    let (w, h) = (200.0, OPTION_HEIGHT * 0.8);
+
+    if *waiting_for_keypress  {
+        widget::Canvas::new()
+            .w_h(w, h)
+            .color(color::RED.clicked())
+            .mid_right_with_margin_on(parent, OPTION_MARGIN)
+            .set(rect_id, ui);
+
+        widget::Canvas::new()
+            .w_h(w, h)
+            .y_relative(0.0)
+            .x_relative(-w)
+            .set(canvas_id, ui);
+
+        widget::Text::new("Press any key...")
+            .middle_of(rect_id)
+            .set(text_id, ui);
+
+        if let Some(input) = keypress {
+            if let Some(keycode) = input.virtual_keycode {
+                match keycode {
+                    glutin::VirtualKeyCode::Escape => {
+                        // If `Escape` was pressed, stop editing this keybinding and hide the "key
+                        // in use" warning if it is showing
+                        result.hide_warning = true;
+                        result.redraw = true;
+                        *waiting_for_keypress = false;
+                    }
+                    glutin::VirtualKeyCode::LAlt |
+                    glutin::VirtualKeyCode::RAlt |
+                    glutin::VirtualKeyCode::LControl |
+                    glutin::VirtualKeyCode::RControl |
+                    glutin::VirtualKeyCode::LShift |
+                    glutin::VirtualKeyCode::RShift |
+                    glutin::VirtualKeyCode::LWin |
+                    glutin::VirtualKeyCode::RWin
+                    => {
+                        // The above keys cannot be bound
+                    }
+                    _ => {
+                        let new_bind = config::Bind::new(keycode.into(), input.modifiers.into());
+
+                        // If the keybinding is in use, show a warning and continue waiting for a
+                        // keypress
+                        if bindings.is_in_use(&new_bind) {
+                            result.show_warning = true;
+                        } else {
+                            // Otherwise, hide the warning if it is showing and set the keybinding
+                            result.hide_warning = true;
+                            bindings.set(binding.clone(), new_bind);
+                            *waiting_for_keypress = false;
+                        };
+
+                        result.redraw = true;
+                    }
+                }
+            }
+        }
+    } else {
+        if widget::Button::new()
+            .color(color::RED)
+            .mid_right_with_margin_on(parent, OPTION_MARGIN)
+            .w_h(w, h)
+            .label("Change")
+            .set(button_id, ui)
+            .was_clicked()
+        {
+            if !any_waiting_for_keypress {
+                *waiting_for_keypress = true;
+                result.redraw = true;
+            }
+        }
+
+        widget::Canvas::new()
+            .w_h(w, h)
+            .y_relative(0.0)
+            .x_relative(-w)
+            .set(canvas_id, ui);
+    }
+
+    widget::Text::new(&format!("{}", bindings.get_mut(binding)))
+        .middle_of(canvas_id)
+        .set(text_id_2, ui);
+
+    result
 }

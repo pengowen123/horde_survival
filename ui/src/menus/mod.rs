@@ -80,6 +80,35 @@ widget_ids! {
         shadow_map_size_button_right,
         shadow_map_size_text_canvas,
         shadow_map_size_text,
+        bind_in_use_warning_text,
+        move_forward_canvas,
+        move_forward_canvas_2,
+        move_forward_label,
+        move_forward_button,
+        move_forward_rect,
+        move_forward_text,
+        move_forward_text_2,
+        move_left_canvas,
+        move_left_canvas_2,
+        move_left_label,
+        move_left_button,
+        move_left_rect,
+        move_left_text,
+        move_left_text_2,
+        move_right_canvas,
+        move_right_canvas_2,
+        move_right_label,
+        move_right_button,
+        move_right_rect,
+        move_right_text,
+        move_right_text_2,
+        move_backward_canvas,
+        move_backward_canvas_2,
+        move_backward_label,
+        move_backward_button,
+        move_backward_rect,
+        move_backward_text,
+        move_backward_text_2,
     }
 }
 
@@ -101,6 +130,32 @@ impl AutoRevertState {
     }
 }
 
+struct WaitForKeypressState {
+    move_forward: bool,
+    move_left: bool,
+    move_right: bool,
+    move_backward: bool,
+}
+
+impl WaitForKeypressState {
+    fn new() -> Self {
+        Self {
+            move_forward: false,
+            move_left: false,
+            move_right: false,
+            move_backward: false,
+        }
+    }
+
+    /// Returns whether a UI element is waiting for a keypress
+    fn is_waiting(&self) -> bool {
+        self.move_forward ||
+            self.move_left ||
+            self.move_right ||
+            self.move_backward
+    }
+}
+
 /// Stores the state required to run each menu
 pub struct Menus {
     ids: Ids,
@@ -110,6 +165,10 @@ pub struct Menus {
     ///
     /// This field is `Some(..)` when the pop-up is currently being shown
     auto_revert_state: Option<AutoRevertState>,
+    /// State for UI elements that wait for keypresses
+    wait_for_keypress_state: WaitForKeypressState,
+    /// Whether to show the "key in use" warning
+    show_key_warning: bool,
     /// The current config (the current value of the `Config` resource, converted to
     /// `ConfigUiState`)
     current_config: options::ConfigUiState,
@@ -126,6 +185,8 @@ impl Menus {
             force_redraw: false.into(),
             options_menu_return_to: None,
             auto_revert_state: None,
+            wait_for_keypress_state: WaitForKeypressState::new(),
+            show_key_warning: false,
             current_config: config.clone(),
             new_config: config,
         }
@@ -134,6 +195,11 @@ impl Menus {
     /// Returns whether the auto-revert windows settings pop-up is currently showing
     pub fn showing_auto_revert(&self) -> bool {
         self.auto_revert_state.is_some()
+    }
+
+    /// Returns whether a UI element is waiting for a keypress
+    pub fn waiting_for_keypress(&self) -> bool {
+        self.wait_for_keypress_state.is_waiting()
     }
 
     /// Returns whether the UI should be forced to be redrawn
@@ -147,10 +213,10 @@ impl Menus {
         self.force_redraw.store(value, Ordering::SeqCst);
     }
 
-    /// Sets `ui_state` to `new_state`, and sets the `force_redraw` flag to `true`
+    /// Sets `ui_state` to `new_state`, and handles state changes for the UI state change
     ///
-    /// This method is used to prevent accidentally forgetting to set `force_redraw` when
-    /// changing UI state.
+    /// This method is used to prevent accidentally forgetting to set state such as `force_redraw`
+    /// when changing UI state.
     fn set_ui_state(&self, ui_state: &mut UiState, new_state: UiState) {
         self.set_force_redraw(true);
         *ui_state = new_state;

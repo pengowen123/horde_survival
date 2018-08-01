@@ -57,6 +57,38 @@ pub struct BindConfig {
     pub reload_shaders: Bind,
 }
 
+#[derive(Clone)]
+pub enum BindName {
+    MoveForward,
+    MoveBackward,
+    MoveLeft,
+    MoveRight,
+}
+
+impl BindConfig {
+    pub fn set(&mut self, name: BindName, value: Bind) {
+        *self.get_mut(name) = value;
+    }
+
+    pub fn get_mut(&mut self, name: BindName) -> &mut Bind {
+        match name {
+            BindName::MoveForward => &mut self.move_forward,
+            BindName::MoveLeft => &mut self.move_left,
+            BindName::MoveRight => &mut self.move_right,
+            BindName::MoveBackward => &mut self.move_backward,
+        }
+    }
+
+    /// Returns whether the provided `Bind` is already assigned to an action
+    pub fn is_in_use(&self, bind: &Bind) -> bool {
+        // NOTE: If new binds are added, add them here as well
+        self.move_forward == *bind ||
+            self.move_left == *bind ||
+            self.move_right == *bind ||
+            self.move_backward == *bind
+    }
+}
+
 impl Default for GraphicsConfig {
     fn default() -> Self {
         Self {
