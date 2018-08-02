@@ -3,12 +3,12 @@
 use gfx::{self, state, handle, format};
 use gfx::traits::FactoryExt;
 use image_utils;
-use assets::{self, read_bytes};
 use rendergraph::pass::Pass;
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use shred::Resources;
 use common::config;
+use assets::{self, read_bytes};
 
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
@@ -51,12 +51,13 @@ pub struct SkyboxPass<R: gfx::Resources> {
 impl<R: gfx::Resources> SkyboxPass<R> {
     fn new<F>(
         factory: &mut F,
+        assets: &assets::Assets,
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = Self::load_pso(factory)?;
+        let pso = Self::load_pso(factory, assets)?;
 
         // Create a screen quad to render to
         let vertices = [
@@ -109,13 +110,14 @@ impl<R: gfx::Resources> SkyboxPass<R> {
         })
     }
     
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         passes::load_pso(
+            assets,
             factory,
-            assets::get_shader_path("skybox_vertex"),
-            assets::get_shader_path("skybox_fragment"),
+            "skybox_vertex.glsl",
+            "skybox_fragment.glsl",
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
@@ -137,7 +139,8 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     };
 
     let pass = SkyboxPass::new(
-        builder.factory(),
+        builder.factory,
+        builder.assets,
         rtv,
         dsv,
     )?;
@@ -176,8 +179,12 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPa
         Ok(())
     }
 
-    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory)?;
+    fn reload_shaders(
+        &mut self,
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory, assets)?;
 
         Ok(())
     }
@@ -207,6 +214,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPa
         _: &config::GraphicsConfig,
         _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
+        _: &assets::Assets,
     ) -> Result<(), BuildError<String>> {
         Ok(())
     }

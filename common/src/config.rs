@@ -2,20 +2,40 @@
 
 use gfx::texture;
 use glutin;
+use structopt::StructOpt;
 
 use std::fmt;
 use std::path::PathBuf;
 
 pub const DEFAULT_SENSITIVITY: ::Float = 0.0035;
 
-// A type that holds all command-line configuration options
+/// A type that holds all command-line configuration options
+pub struct CommandLineConfig {
+    config: RawCommandLineConfig,
+    default_assets_path: PathBuf,
+}
+
+// This is separate to allow additional fields that aren't CLI options
 /// A first-person, wave based game
 #[derive(StructOpt, Debug)]
 #[structopt(name = "horde_survival")]
-pub struct CommandLineConfig {
+struct RawCommandLineConfig {
     /// The path to the folder containing game assets
     #[structopt(long = "assets_path", parse(from_os_str))]
     assets_path: Option<PathBuf>,
+}
+
+impl CommandLineConfig {
+    pub fn new(default_assets_path: PathBuf) -> Self {
+        Self {
+            config: RawCommandLineConfig::from_args(),
+            default_assets_path,
+        }
+    }
+    /// Returns the value of the `assets_path` option, or the default if it was not specified
+    pub fn assets_path(&self) -> PathBuf {
+        self.config.assets_path.clone().unwrap_or_else(|| self.default_assets_path.clone())
+    }
 }
 
 /// A type that holds all configuration options that can be customized in the configuration file

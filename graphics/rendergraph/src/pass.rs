@@ -3,6 +3,7 @@
 use gfx;
 use shred::Resources;
 use common::config;
+use assets;
 
 use builder::GraphBuilder;
 use error::{RunError, BuildError};
@@ -63,7 +64,7 @@ pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>, 
         resources: &mut Resources,
     ) -> Result<(), RunError>;
     /// Reloads the shaders for the pass
-    fn reload_shaders(&mut self, factory: &mut F)
+    fn reload_shaders(&mut self, factory: &mut F, assets: &assets::Assets)
         -> Result<(), BuildError<String>>;
     /// Handles the window being resized
     fn handle_window_resize(
@@ -78,5 +79,6 @@ pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>, 
         config: &config::GraphicsConfig,
         framebuffers: &mut Framebuffers<R, CF, DF>,
         factory: &mut F,
+        assets: &assets::Assets,
     ) -> Result<(), BuildError<String>>;
 }

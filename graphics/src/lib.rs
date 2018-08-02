@@ -13,15 +13,13 @@ extern crate window;
 extern crate math;
 extern crate ui;
 extern crate genmesh;
-extern crate regex;
 extern crate obj;
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate slog;
+extern crate assets;
 
 pub mod draw;
-pub mod assets;
+pub mod obj_loading;
 mod camera;
 
 use common::{Float, cgmath, shred, glutin, gfx_window_glutin, gfx_device_gl, config};

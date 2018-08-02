@@ -1,14 +1,14 @@
 //! Shader loading and preprocessing
 
 use regex::bytes::{Regex, Replacer, Captures};
-use rendergraph::error::BuildError;
 
 use std::path::{Path, PathBuf};
-use std::io;
+use std::{io, fmt};
 use std::string::FromUtf8Error;
 use std::collections::HashMap;
 
-use super::utils;
+use Assets;
+use read_bytes;
 
 const MAX_RECURSION_DEPTH: usize = 32;
 
@@ -26,13 +26,21 @@ impl IoError {
     }
 }
 
+impl fmt::Display for IoError {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(fmt,
+                 "Io error while reading `{}`: {}",
+                 self.path().to_str().expect("Path contained invalid unicode"),
+                 self.err())
+    }
+}
+
 quick_error! {
     /// An error while loading a shader from a file
     #[derive(Debug)]
     pub enum ShaderLoadingError {
         Io(err: IoError) {
-            display("Io error while reading `{}`: {}",
-                    err.path().to_str().expect("Path contained invalid UTF-8"), err.err())
+            display("{}", err)
             from()
         }
         MaxIncludeRecursion {
@@ -45,20 +53,23 @@ quick_error! {
     }
 }
 
-impl From<ShaderLoadingError> for BuildError<String> {
-    fn from(e: ShaderLoadingError) -> BuildError<String> {
-        BuildError::Custom(e.into())
-    }
-}
-
 /// Loads a shader from the file at the provided path
 ///
 /// Applies special parsing such as processing `#include` directives and inserting `#define`s
 pub fn load_shader_file<P: AsRef<Path>>(
+    assets: &Assets,
     path: P,
     defines: &HashMap<String, String>,
 ) -> Result<Vec<u8>, ShaderLoadingError> {
-    let mut result = load_shader_file_with_includes(&path.as_ref(), 0)?;
+    load_shader_file_impl(assets, path.as_ref(), defines)
+}
+
+pub fn load_shader_file_impl(
+    assets: &Assets,
+    path: &Path,
+    defines: &HashMap<String, String>,
+) -> Result<Vec<u8>, ShaderLoadingError> {
+    let mut result = load_shader_file_with_includes(assets, path, 0)?;
 
     // The index at which to insert the `#define` statements
     let defines_index = result
@@ -89,6 +100,7 @@ pub fn load_shader_file<P: AsRef<Path>>(
 /// `#define` processing happens in `load_shader_file` so that the recursive `#include` processing
 /// can avoid applying `#define`s to `#include`ed shaders
 fn load_shader_file_with_includes(
+    assets: &Assets,
     path: &Path,
     recurses: usize
 ) -> Result<Vec<u8>, ShaderLoadingError> {
@@ -96,7 +108,8 @@ fn load_shader_file_with_includes(
         return Err(ShaderLoadingError::MaxIncludeRecursion);
     }
 
-    let bytes = utils::read_bytes(path)
+    let path = assets.get_shader_path(path);
+    let bytes = read_bytes(&path)
         .map_err(|err| {
             ShaderLoadingError::Io(IoError(path.to_owned(), err))
         })?;
@@ -105,7 +118,7 @@ fn load_shader_file_with_includes(
         static ref FIND_INCLUDE: Regex = Regex::new(r#"#include "(.*)""#).unwrap();
     }
 
-    let mut replacer = IncludeReplacer::new(recurses);
+    let mut replacer = IncludeReplacer::new(assets, recurses);
 
     let result = FIND_INCLUDE.replace_all(&bytes, &mut replacer).into_owned();
 
@@ -119,23 +132,25 @@ fn load_shader_file_with_includes(
 
 /// A type for replacing `#include` directives with the file contents at the path specified by the
 /// directive
-struct IncludeReplacer {
+struct IncludeReplacer<'a> {
+    assets: &'a Assets,
     error: Result<(), ShaderLoadingError>,
     recurses: usize,
 }
 
-impl IncludeReplacer {
-    fn new(recurses: usize) -> Self {
+impl<'a> IncludeReplacer<'a> {
+    fn new(assets: &'a Assets, recurses: usize) -> Self {
         IncludeReplacer {
+            assets,
             error: Ok(()),
             recurses,
         }
     }
 }
 
-impl Replacer for IncludeReplacer {
+impl<'a> Replacer for IncludeReplacer<'a> {
     fn replace_append(&mut self, caps: &Captures, dst: &mut Vec<u8>) {
-        let file_contents = match replace_include(caps, self.recurses) {
+        let file_contents = match replace_include(self.assets, caps, self.recurses) {
             Ok(bytes) => bytes,
             Err(e) => {
                 self.error = Err(e);
@@ -148,7 +163,7 @@ impl Replacer for IncludeReplacer {
     }
 }
 
-impl<'a> Replacer for &'a mut IncludeReplacer {
+impl<'a: 'b, 'b> Replacer for &'b mut IncludeReplacer<'a> {
     fn replace_append(&mut self, caps: &Captures, dst: &mut Vec<u8>) {
         (**self).replace_append(caps, dst)
     }
@@ -156,10 +171,13 @@ impl<'a> Replacer for &'a mut IncludeReplacer {
 
 /// The actual implementation of `replace_append` for `IncludeReplacer`, made separate for nicer
 /// error handling
-fn replace_include(caps: &Captures, recurses: usize) -> Result<Vec<u8>, ShaderLoadingError> {
+fn replace_include(
+    assets: &Assets,
+    caps: &Captures,
+    recurses: usize,
+) -> Result<Vec<u8>, ShaderLoadingError> {
     let name = caps[1].to_vec();
     let name = String::from_utf8(name).map_err(|e| ShaderLoadingError::Utf8(e))?;
-    let path = super::get_shader_path(&name);
 
-    load_shader_file_with_includes(&Path::new(&path), recurses + 1)
+    load_shader_file_with_includes(assets, &Path::new(&name), recurses + 1)
 }

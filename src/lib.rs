@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate shred_derive;
+#[macro_use]
 extern crate slog;
 extern crate slog_term;
 extern crate slog_async;
@@ -12,6 +13,7 @@ extern crate window;
 extern crate control;
 extern crate graphics;
 extern crate ui;
+extern crate assets;
 
 // TODO: Remove when no longer needed
 mod dev;
@@ -22,14 +24,14 @@ use common::{Float, specs, glutin, config};
 use common::shred::{self, RunNow};
 use window::window_event;
 
-use std::sync::mpsc;
+use std::sync::{Arc, mpsc};
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
 pub fn run(
     config: config::Config,
     cli_config: config::CommandLineConfig,
-    logger: slog::Logger
+    logger: slog::Logger,
 ) -> config::Config {
     // Create world
     let mut world = specs::World::new();
@@ -40,6 +42,13 @@ pub fn run(
     // in a menu)
     let dispatcher_graphics = specs::DispatcherBuilder::new();
 
+    // Add assets manager resource
+    let assets = assets::Assets::new(&logger, cli_config.assets_path())
+        .unwrap_or_else(|e| {
+            error!(logger, "Error building asset manager: {}", e;);
+            panic!(common::CRASH_MSG);
+        });
+    world.add_resource(Arc::new(assets));
     // Add logger resource
     world.add_resource(logger);
     // Add config resource

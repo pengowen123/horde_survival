@@ -14,9 +14,12 @@ use common::physics::*;
 use math::functions::dir_vec_to_quaternion;
 use math::convert;
 use control::Control;
-use graphics::assets::obj;
+use graphics::obj_loading;
 use graphics::draw::{self, Material, LightSpaceMatrix};
 use graphics::draw::components::*;
+use assets::Assets;
+
+use std::sync::Arc;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
 where
@@ -184,8 +187,13 @@ fn create_test_entity<'a, R, F, P>(
     let pos = pos.into();
     let space = pos.map(|p| Position(Point3::new(p[0], p[1], p[2])));
     let scale = Scale::new(scale);
-    let objects = obj::load_obj(factory, name, material, &world.read_resource::<slog::Logger>())
-        .unwrap();
+    let objects = obj_loading::load_obj(
+        &world.read_resource::<Arc<Assets>>(),
+        factory,
+        name,
+        material,
+        &world.read_resource::<slog::Logger>(),
+    ).unwrap();
     let shader_param = draw::ShaderParam::default();
 
     for (drawable, mesh) in objects {

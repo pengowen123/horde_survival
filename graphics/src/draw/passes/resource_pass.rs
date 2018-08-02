@@ -7,6 +7,7 @@ use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use common::config;
 use shred::Resources;
+use assets;
 
 use draw::types;
 
@@ -48,9 +49,8 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
             .fetch::<WindowInfo>(0)
             .physical_dimensions()
             .into();
-        let factory = builder.factory();
         let dim = (dim.0 as texture::Size, dim.1 as texture::Size);
-        IntermediateTarget::new(factory, dim)?
+        IntermediateTarget::new(builder.factory, dim)?
     };
 
     let pass = ResourcePass {
@@ -85,7 +85,11 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Resource
         Ok(())
     }
 
-    fn reload_shaders(&mut self, _: &mut F) -> Result<(), BuildError<String>> {
+    fn reload_shaders(
+        &mut self,
+        _: &mut F,
+        _: &assets::Assets,
+    ) -> Result<(), BuildError<String>> {
         Ok(())
     }
 
@@ -113,6 +117,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Resource
         _: &config::GraphicsConfig,
         _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
+        _: &assets::Assets,
     ) -> Result<(), BuildError<String>> {
         Ok(())
     }

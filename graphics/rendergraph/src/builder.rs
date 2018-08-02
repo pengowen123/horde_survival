@@ -3,6 +3,7 @@
 use gfx::{self, handle};
 use shred::{self, Resources, ResourceId};
 use glutin;
+use assets;
 
 use std::collections::HashMap;
 use std::any::Any;
@@ -66,10 +67,13 @@ where R: gfx::Resources,
       C: gfx::CommandBuffer<R> + 'a,
       F: gfx::Factory<R> + 'a,
 {
+    /// A mutable reference to the `Factory` for asset creation
+    pub factory: &'a mut F,
+    /// A reference to the `Assets` for asset path calculation
+    pub assets: &'a assets::Assets,
     passes: Vec<Box<Pass<R, C, F, CF, DF>>>,
     pass_outputs: HashMap<String, Box<Any>>,
     resources: Resources,
-    factory: &'a mut F,
     main_color: handle::RenderTargetView<R, CF>,
     main_depth: handle::DepthStencilView<R, DF>,
 }
@@ -79,11 +83,12 @@ where R: gfx::Resources,
       C: gfx::CommandBuffer<R>,
       F: gfx::Factory<R>,
 {
-    /// Returns a new `GraphBuilder`, using `factory` to create resources, and `main_color` and
-    /// `main_depth` as the main targets (these should be acquired from a backend crate such as
-    /// `gfx_window_glutin`).
+    /// Returns a new `GraphBuilder`, using `factory` to create resources, `assets` to calculate
+    /// asset paths, and `main_color` and `main_depth` as the main targets (these should be acquired
+    /// from a backend crate such as `gfx_window_glutin`).
     pub fn new(
         factory: &'a mut F,
+        assets: &'a assets::Assets,
         main_color: handle::RenderTargetView<R, CF>,
         main_depth: handle::DepthStencilView<R, DF>,
     ) -> Self {
@@ -94,6 +99,7 @@ where R: gfx::Resources,
             resources: Resources::new(),
             main_color,
             main_depth,
+            assets,
         }
     }
 
@@ -158,11 +164,6 @@ where R: gfx::Resources,
     /// Returns a reference to the window's depth output
     pub fn main_depth(&self) -> &handle::DepthStencilView<R, DF> {
         &self.main_depth
-    }
-
-    /// Returns a mutable reference to the factory for resource creation
-    pub fn factory(&mut self) -> &mut F {
-        &mut self.factory
     }
 
     /// Builds the `RenderGraph`, using the `GraphBuilder` and some additional types needed for

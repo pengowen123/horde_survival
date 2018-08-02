@@ -4,6 +4,7 @@
 
 extern crate common;
 extern crate image_utils;
+extern crate assets;
 
 use common::{glutin, shred, gfx, gfx_core, config};
 
@@ -95,9 +96,11 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
     }
 
     /// Reloads the shaders for all passes in the `RenderGraph`
-    pub fn reload_shaders(&mut self, factory: &mut F) -> Result<(), error::Error<String>> {
+    pub fn reload_shaders(&mut self, factory: &mut F, assets: &assets::Assets)
+        -> Result<(), error::Error<String>>
+    {
         for pass in &mut self.passes {
-            pass.reload_shaders(factory)
+            pass.reload_shaders(factory, assets)
                 .map_err(|e|  {
                     error::Error::new(
                         pass.name().to_string(),
@@ -142,7 +145,8 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
     pub fn apply_config(
         &mut self,
         config: &config::GraphicsConfig,
-        factory: &mut F
+        factory: &mut F,
+        assets: &assets::Assets,
     ) -> Result<(), error::Error<String>> {
         let mut framebuffers = framebuffer::Framebuffers::new(
             self.main_color.clone(),
@@ -150,7 +154,7 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
         );
 
         for pass in &mut self.passes {
-            pass.apply_config(config, &mut framebuffers, factory)
+            pass.apply_config(config, &mut framebuffers, factory, assets)
                 .map_err(|e| {
                     error::Error::new(
                         pass.name().to_string(),

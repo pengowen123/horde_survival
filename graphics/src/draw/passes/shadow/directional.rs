@@ -9,6 +9,7 @@ use rendergraph::framebuffer::Framebuffers;
 use rendergraph::error::{RunError, BuildError};
 use common::config;
 use shred;
+use assets;
 
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
@@ -17,7 +18,6 @@ use draw::{DrawableStorageRef, types, passes};
 use draw::passes::main::geometry_pass;
 use draw::passes::shadow;
 use draw::glsl::Mat4;
-use assets;
 
 pub struct Output<R: gfx::Resources> {
     pub srv: handle::ShaderResourceView<R, [f32; 4]>,
@@ -44,6 +44,7 @@ pub struct DirectionalShadowPass<R: gfx::Resources> {
 impl<R: gfx::Resources> DirectionalShadowPass<R> {
     fn new<F: gfx::Factory<R>>(
         factory: &mut F,
+        assets: &assets::Assets,
         shadow_map_size: texture::Size,
         enabled: bool,
     ) -> Result<(Self, Output<R>), BuildError<String>> {
@@ -68,7 +69,7 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             out_depth: dsv,
         };
 
-        let pso = Self::load_pso(factory)?;
+        let pso = Self::load_pso(factory, assets)?;
         let pass = Self {
             bundle: gfx::Bundle::new(slice, pso, data),
             enabled,
@@ -81,13 +82,14 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
         Ok((pass, output))
     }
 
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         passes::load_pso(
+            assets,
             factory,
-            assets::get_shader_path("dir_shadow_vertex"),
-            assets::get_shader_path("dir_shadow_fragment"),
+            "dir_shadow_vertex.glsl",
+            "dir_shadow_fragment.glsl",
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
@@ -107,9 +109,13 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 
         (config.shadows, config.shadow_map_size)
     };
-    // NOTE: Shadow map size is 1 here because it will be rebuilt with the correct size immediately
-    //       after the render graph is created
-    let (pass, output) = DirectionalShadowPass::new({builder.factory()}, shadow_map_size, enabled)?;
+
+    let (pass, output) = DirectionalShadowPass::new(
+        builder.factory,
+        builder.assets,
+        shadow_map_size,
+        enabled,
+    )?;
 
     builder.add_pass(pass);
     builder.add_pass_output("dir_shadow_map", output);
@@ -164,8 +170,12 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
         Ok(())
     }
 
-    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory)?;
+    fn reload_shaders(
+        &mut self,
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory, assets)?;
         Ok(())
     }
 
@@ -183,6 +193,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
         config: &config::GraphicsConfig,
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
+        _: &assets::Assets,
     ) -> Result<(), BuildError<String>> {
         // If the shadows setting was disabled, set the shadow map to a dummy texture to save memory
         if !config.shadows && self.enabled {

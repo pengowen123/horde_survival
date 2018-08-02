@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 quick-error = "1.2.2"
+assets = { path = "../../assets" }
 
 [dependencies.common]
 path = "../../common"

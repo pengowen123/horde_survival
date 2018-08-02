@@ -12,6 +12,7 @@ use window::info::WindowInfo;
 use cgmath::{Matrix4, SquareMatrix};
 use common::config;
 use specs::Join;
+use assets;
 
 use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
@@ -21,7 +22,6 @@ use draw::passes::resource_pass;
 use draw::glsl::{Vec2, Vec3, Vec4, Mat4};
 use super::gbuffer;
 use camera::Camera;
-use assets;
 
 pub struct Output<R: gfx::Resources> {
     pub gbuffer: gbuffer::GeometryBuffer<R>,
@@ -65,13 +65,14 @@ pub struct GeometryPass<R: gfx::Resources> {
 impl<R: gfx::Resources> GeometryPass<R> {
     pub fn new<F>(
         factory: &mut F,
+        assets: &assets::Assets,
         (window_width, window_height): (u16, u16),
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
     ) -> Result<(Self, Output<R>), BuildError<String>>
     where
         F: gfx::Factory<R>,
     {
-        let pso = Self::load_pso(factory)?;
+        let pso = Self::load_pso(factory, assets)?;
 
         // Create dummy data
         let vbuf = factory.create_vertex_buffer(&[]);
@@ -115,7 +116,7 @@ impl<R: gfx::Resources> GeometryPass<R> {
         Ok((pass, output))
     }
     
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F)
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         let rasterizer = state::Rasterizer {
@@ -124,9 +125,10 @@ impl<R: gfx::Resources> GeometryPass<R> {
         };
 
         passes::load_pso(
+            assets,
             factory,
-            assets::get_shader_path("geometry_pass_vertex"),
-            assets::get_shader_path("geometry_pass_fragment"),
+            "geometry_pass_vertex.glsl",
+            "geometry_pass_fragment.glsl",
             gfx::Primitive::TriangleList,
             rasterizer,
             pipe::new(),
@@ -149,9 +151,12 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         .dsv
         .clone();
 
-    let (pass, output) = {
-        GeometryPass::new(builder.factory(), (window_dim.0 as u16, window_dim.1 as u16), dsv)?
-    };
+    let (pass, output) = GeometryPass::new(
+        builder.factory,
+        builder.assets,
+        (window_dim.0 as u16, window_dim.1 as u16),
+        dsv,
+    )?;
 
     builder.add_pass(pass);
     builder.add_pass_output("gbuffer", output);
@@ -222,8 +227,12 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
         Ok(())
     }
 
-    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory)?;
+    fn reload_shaders(
+        &mut self,
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory, assets)?;
         Ok(())
     }
 
@@ -256,6 +265,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
         _: &config::GraphicsConfig,
         _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         _: &mut F,
+        _: &assets::Assets,
     ) -> Result<(), BuildError<String>> {
         Ok(())
     }

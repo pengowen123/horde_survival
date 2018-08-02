@@ -42,13 +42,14 @@ pub struct PostPass<R: gfx::Resources> {
 impl<R: gfx::Resources> PostPass<R> {
     fn new<F>(
         factory: &mut F,
+        assets: &assets::Assets,
         texture: handle::ShaderResourceView<R, [f32; 4]>,
         main_color: handle::RenderTargetView<R, types::ColorFormat>,
         enabled: bool,
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = Self::load_pso(factory, enabled)?;
+        let pso = Self::load_pso(factory, assets, enabled)?;
         // Create a screen quad to render to
         let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
         let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
@@ -73,7 +74,7 @@ impl<R: gfx::Resources> PostPass<R> {
     ///
     /// The shaders will be the postprocessing shaders if `enabled` is `true`, or a simple
     /// pass-through otherwise.
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, enabled: bool)
+    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets, enabled: bool)
         -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
     {
         let mut defines = HashMap::new();
@@ -83,9 +84,10 @@ impl<R: gfx::Resources> PostPass<R> {
         }
 
         passes::load_pso(
+            assets,
             factory,
-            assets::get_shader_path("post_vertex"),
-            assets::get_shader_path("post_fragment"),
+            "post_vertex.glsl",
+            "post_fragment.glsl",
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
@@ -112,7 +114,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 
     let enabled = builder.get_resources().fetch::<config::GraphicsConfig>(0).postprocessing;
 
-    let pass = PostPass::new(builder.factory(), srv, main_color, enabled)?;
+    let pass = PostPass::new(builder.factory, builder.assets, srv, main_color, enabled)?;
 
     builder.add_pass(pass);
 
@@ -136,8 +138,12 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
         Ok(())
     }
 
-    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory, self.enabled)?;
+    fn reload_shaders(
+        &mut self,
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory, assets, self.enabled)?;
         Ok(())
     }
 
@@ -166,8 +172,9 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
         config: &config::GraphicsConfig,
         _: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
+        assets: &assets::Assets,
     ) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory, config.postprocessing)?;
+        self.bundle.pso = Self::load_pso(factory, assets, config.postprocessing)?;
         self.enabled = config.postprocessing;
         Ok(())
     }

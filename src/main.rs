@@ -11,7 +11,6 @@ extern crate common;
 
 use slog::Drain;
 use directories::ProjectDirs;
-use common::structopt::StructOpt;
 
 use std::fs;
 use std::path::PathBuf;
@@ -22,9 +21,9 @@ use common::config;
 const CONFIG_FILE_NAME: &str = "settings.ron";
 
 quick_error! {
-    /// An error while loading or saving a `Config`
+    /// The error type for the `horde_survival` crate
     #[derive(Debug)]
-    enum ConfigError {
+    enum Error {
         Deserialize(e: ron::ser::Error) {
             display("Error deserializing `Config`: {}", e)
             from()
@@ -34,7 +33,7 @@ quick_error! {
             from()
         }
         Io(e: (io::Error, String)) {
-            display("Error loading configuration file from path `{}`: {}", e.1, e.0)
+            display("Error loading file from path `{}`: {}", e.1, e.0)
             from()
         }
         ProjectDir {
@@ -59,43 +58,54 @@ fn get_default_config(log: &slog::Logger) -> config::Config {
     Default::default()
 }
 
-/// Returns the path of the configuration directory, creating it if does not exist
-fn get_config_dir_path() -> Result<PathBuf, ConfigError> {
+/// Returns the path of the project directory selected by `f`, creating it if does not exist
+fn get_project_dir_path<F>(f: F) -> Result<PathBuf, Error>
+    where F: FnOnce(&ProjectDirs) -> PathBuf
+{
     let project_dirs = match ProjectDirs::from("", "horde_survival", "horde_survival") {
         Some(d) => d,
         None => {
-            return Err(ConfigError::ProjectDir)
+            return Err(Error::ProjectDir)
         }
     };
-    let config_dir = project_dirs.config_dir().to_owned();
+    let path = f(&project_dirs);
 
-    if let Err(e) = fs::DirBuilder::new().create(&config_dir) {
+    if let Err(e) = fs::DirBuilder::new().recursive(true).create(&path) {
         if let io::ErrorKind::AlreadyExists = e.kind() {
         } else {
-            let config_dir = config_dir
+            let path = path
                 .to_str()
-                .expect("Config dir path contained invalid unicode")
+                .expect("Project directory path contained invalid unicode")
                 .to_string();
 
-            return Err(ConfigError::Io((e, config_dir.clone())))
+            return Err(Error::Io((e, path)))
          }
     }
     
-    Ok(config_dir)
+    Ok(path)
+}
+
+/// Returns the path of the config directory, creating it if does not exist
+fn get_config_dir_path() -> Result<PathBuf, Error> {
+    get_project_dir_path(|dirs| dirs.config_dir().to_owned())
+}
+
+fn get_default_assets_path() -> Result<PathBuf, Error> {
+    get_project_dir_path(|dirs| dirs.data_dir().join("assets"))
 }
 
 /// Loads a `Config` from the configuration file
-fn load_config() -> Result<config::Config, ConfigError> {
+fn load_config() -> Result<config::Config, Error> {
     let config_file_path = get_config_dir_path()?.join(CONFIG_FILE_NAME);
     let config_file_path_str = config_file_path.to_str()
         .expect("Config file path contained invalid unicode");
 
     let mut file = fs::File::open(&config_file_path)
-        .map_err(|e| ConfigError::Io((e, config_file_path_str.to_string())))?;
+        .map_err(|e| Error::Io((e, config_file_path_str.to_string())))?;
 
     let mut data = String::new();
     file.read_to_string(&mut data)
-        .map_err(|e| ConfigError::Io((e, config_file_path_str.to_string())))?;
+        .map_err(|e| Error::Io((e, config_file_path_str.to_string())))?;
 
     let config = ron::de::from_str(&data)?;
 
@@ -103,7 +113,7 @@ fn load_config() -> Result<config::Config, ConfigError> {
 }
 
 /// Writes the provided `Config` to the configuration file
-fn save_config(config: config::Config) -> Result<(), ConfigError> {
+fn save_config(config: config::Config) -> Result<(), Error> {
     let serialized = ron::ser::to_string_pretty(&config, ron::ser::PrettyConfig::default())?;
 
     let config_file_path = get_config_dir_path()?.join(CONFIG_FILE_NAME);
@@ -111,10 +121,10 @@ fn save_config(config: config::Config) -> Result<(), ConfigError> {
         .expect("Config file path contained invalid unicode");
 
     let mut file = fs::File::create(&config_file_path)
-        .map_err(|e| ConfigError::Io((e, config_file_path_str.to_string())))?;
+        .map_err(|e| Error::Io((e, config_file_path_str.to_string())))?;
 
     file.write_all(serialized.as_bytes())
-        .map_err(|e| ConfigError::Io((e, config_file_path_str.to_string())))
+        .map_err(|e| Error::Io((e, config_file_path_str.to_string())))
 }
 
 /// Attempts to load a `Config` from the configuration file, returning `Default::default()` if an
@@ -132,12 +142,18 @@ fn load_config_or_default(log: &slog::Logger) -> config::Config {
 fn main() {
     let logger = init_logger();
     let config = load_config_or_default(&logger);
-    let cli_config = config::CommandLineConfig::from_args();
+    let cli_config = config::CommandLineConfig::new(
+        get_default_assets_path()
+        .unwrap_or_else(|e| {
+            error!(logger, "Error loading default assets path: {}", e;);
+            panic!(common::CRASH_MSG);
+        })
+    );
 
     let new_config = horde_survival::run(config, cli_config, logger.clone());
 
     save_config(new_config)
         .unwrap_or_else(|e| {
             error!(logger, "Error writing to configuration file: {}", e;);
-        })
+        });
 }

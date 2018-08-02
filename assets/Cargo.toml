@@ -1,0 +1,11 @@
+[package]
+name = "assets"
+version = "0.1.0"
+authors = ["Owen Sanchez <pengowen816@gmail.com>"]
+
+[dependencies]
+common = { path = "../common" }
+quick-error = "1.2.2"
+regex = "1.0.2"
+lazy_static = "1.0.2"
+slog = "2.3.2"

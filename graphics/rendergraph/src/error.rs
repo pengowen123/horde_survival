@@ -127,7 +127,7 @@ impl<S: fmt::Debug + fmt::Display> fmt::Display for BuildError<S> {
             Program(e) => writeln!(fmt, "Program linking error: {}", e),
             Io(e, path) => writeln!(fmt, "Io error (at path `{}`): {}", path, e),
             String(e) => writeln!(fmt, "Error: {}", e),
-            Custom(e) => writeln!(fmt, "Custom error: {}", e),
+            Custom(e) => writeln!(fmt, "Custom `BuildError`: {}", e),
         }
     }
 }
@@ -233,7 +233,7 @@ impl fmt::Display for RunError {
             BufferUpdate(e) => writeln!(fmt, "Error updating buffer: {}", e),
             ContextError(e) => writeln!(fmt, "Error manipulating GL context: {}", e),
             String(e) => writeln!(fmt, "Error: {}", e),
-            Custom(e) => writeln!(fmt, "Custom error: {}", e)
+            Custom(e) => writeln!(fmt, "Custom `RunError`: {}", e)
         }
     }
 }

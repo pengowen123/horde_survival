@@ -184,6 +184,7 @@ pub struct LightingPass<R: gfx::Resources> {
 impl<R: gfx::Resources> LightingPass<R> {
     fn new<F: gfx::Factory<R>>(
         factory: &mut F,
+        assets: &assets::Assets,
         gbuffer: &gbuffer::GeometryBuffer<R>,
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
@@ -193,7 +194,7 @@ impl<R: gfx::Resources> LightingPass<R> {
     ) -> Result<Self, BuildError<String>>
         where F: gfx::Factory<R>,
     {
-        let pso = Self::load_pso(factory, shadows_enabled)?;
+        let pso = Self::load_pso(factory, assets, shadows_enabled)?;
 
         // Create a screen quad
         let vertices = utils::create_screen_quad(|pos, uv| Vertex::new(pos, uv));
@@ -240,6 +241,7 @@ impl<R: gfx::Resources> LightingPass<R> {
     
     fn load_pso<F: gfx::Factory<R>>(
         factory: &mut F,
+        assets: &assets::Assets,
         shadows_enabled: bool,
     ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
         let mut defines = HashMap::new();
@@ -253,9 +255,10 @@ impl<R: gfx::Resources> LightingPass<R> {
         }
 
         passes::load_pso(
+            assets,
             factory,
-            assets::get_shader_path("lighting_vertex"),
-            assets::get_shader_path("lighting_fragment"),
+            "lighting_vertex.glsl",
+            "lighting_fragment.glsl",
             gfx::Primitive::TriangleList,
             state::Rasterizer::new_fill(),
             pipe::new(),
@@ -297,19 +300,17 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         let config = builder.get_resources().fetch::<config::GraphicsConfig>(0);
         (config.shadows, config.shadow_map_size)
     };
-
-    let pass = {
-        let factory = builder.factory();
-        LightingPass::new(
-            factory,
-            &gbuffer,
-            rtv,
-            dsv,
-            dir_shadow_map,
-            shadows_enabled,
-            shadow_map_size,
-        )?
-    };
+    
+    let pass = LightingPass::new(
+        builder.factory,
+        builder.assets,
+        &gbuffer,
+        rtv,
+        dsv,
+        dir_shadow_map,
+        shadows_enabled,
+        shadow_map_size,
+    )?;
 
     builder.add_pass(pass);
 
@@ -369,8 +370,12 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
         Ok(())
     }
 
-    fn reload_shaders(&mut self, factory: &mut F) -> Result<(), BuildError<String>> {
-        self.bundle.pso = Self::load_pso(factory, self.shadows)?;
+    fn reload_shaders(
+        &mut self,
+        factory: &mut F,
+        assets: &assets::Assets
+    ) -> Result<(), BuildError<String>> {
+        self.bundle.pso = Self::load_pso(factory, assets, self.shadows)?;
 
         Ok(())
     }
@@ -407,6 +412,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
         config: &config::GraphicsConfig,
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
+        assets: &assets::Assets,
     ) -> Result<(), BuildError<String>> {
         let mut update_shadow_map = false;
         // If the shadows setting was changed, reload the shadow map (will be a dummy texture if
@@ -416,7 +422,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
 
             update_shadow_map = true;
 
-            Pass::<R, C, F, _, _>::reload_shaders(self, factory)?;
+            Pass::<R, C, F, _, _>::reload_shaders(self, factory, assets)?;
         }
 
         // If the shadow map size setting was changed and shadows are enabled, reload the resized

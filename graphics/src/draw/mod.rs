@@ -33,6 +33,7 @@ use rendergraph::error::Error;
 use window::{self, info, window_event};
 use slog;
 use ui;
+use assets;
 
 use std::sync::{Arc, Mutex};
 
@@ -130,19 +131,21 @@ where
         };
         let log = resources.fetch::<slog::Logger>(0);
         let config = resources.fetch::<config::Config>(0).graphics.clone();
+        let assets = resources.fetch::<Arc<assets::Assets>>(0);
 
         let dpi = window.get_hidpi_factor();
 
         // Build the rendergraph
         let graph = {
             let mut builder =
-                builder::GraphBuilder::new(&mut factory, out_color.clone(), out_depth);
+                builder::GraphBuilder::new(&mut factory, &assets, out_color.clone(), out_depth);
 
             builder.add_resource(window::info::WindowInfo::new(window.window()));
             builder.add_resource(camera);
             builder.add_resource(lighting_data);
             builder.add_resource(dir_shadow_source);
             builder.add_resource(config);
+            builder.add_resource(assets.clone());
 
             let resource_module = module::Module::new()
                 .add_pass(resource_pass::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
@@ -204,9 +207,13 @@ where
     }
 
     /// Reloads the shaders
-    fn reload_shaders(&mut self, log: &slog::Logger) -> Result<(), Error<String>> {
+    fn reload_shaders(
+        &mut self,
+        assets: &assets::Assets,
+        log: &slog::Logger,
+    ) -> Result<(), Error<String>> {
         info!(log, "Reloading shaders";);
-        self.graph.reload_shaders(&mut self.factory)
+        self.graph.reload_shaders(&mut self.factory, assets)
     }
 }
 
@@ -221,6 +228,7 @@ pub struct Data<'a, R: gfx::Resources> {
     window_info: specs::Fetch<'a, info::WindowInfo>,
     log: specs::Fetch<'a, slog::Logger>,
     config: specs::Fetch<'a, config::Config>,
+    assets: specs::Fetch<'a, Arc<assets::Assets>>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>
@@ -237,7 +245,7 @@ where
         for e in data.event_channel.read(&mut self.reader_id) {
             match *e {
                 window_event::Event::ReloadShaders => {
-                    self.reload_shaders(&data.log)
+                    self.reload_shaders(&data.assets, &data.log)
                         .unwrap_or_else(|e| {
                             error!(data.log, "Error reloading shaders: {}", e;);
                         });
@@ -265,7 +273,7 @@ where
                 }
                 window_event::Event::ConfigChanged(window_event::ChangedConfig::Graphics) => {
                     info!(data.log, "Applying graphics configuration changes";);
-                    self.graph.apply_config(&data.config.graphics, &mut self.factory)
+                    self.graph.apply_config(&data.config.graphics, &mut self.factory, &data.assets)
                         .unwrap_or_else(|e| {
                             error!(data.log, "Error apply graphics configuration: {}", e;);
                         });

@@ -8,19 +8,20 @@ use image_utils;
 use obj;
 use genmesh::{self, Triangulate};
 use slog;
+use assets;
 
 use std::io::{self, BufReader};
 use std::path::{PathBuf, Path};
 use std::sync::Arc;
 
 use draw::{Vertex, Drawable, Material};
-use assets::{self, shader, utils};
 
 type Polygon = genmesh::Polygon<obj::IndexTuple>;
 
 /// Loads an OBJ file from the provided path, and creates a `Drawable` and `TriMesh` for each object
 /// from it
 pub fn load_obj<R, F>(
+    assets: &assets::Assets,
     factory: &mut F,
     name: &str,
     material: Material,
@@ -31,18 +32,18 @@ where
     F: gfx::Factory<R>,
 {
     // Read data from the file
-    let path: PathBuf = Path::new(&assets::get_model_file_path(name, ".obj")).to_owned();
-    let data = utils::read_bytes(&path).map_err(|e| {
-        ObjError::Io(shader::IoError(path.clone(), e))
+    let path = assets.get_model_path(name.to_owned() + ".obj");
+    let data = assets::read_bytes(&path).map_err(|e| {
+        ObjError::Io(IoError(path.clone(), e))
     })?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
     let mut obj = obj::Obj::load_buf(&mut buf_reader).map_err(|e| {
-        ObjError::Io(shader::IoError(path, e))
+        ObjError::Io(IoError(path, e))
     })?;
 
     for path in &mut obj.material_libs {
-        *path = super::get_model_file_path(path, "");
+        *path = assets.get_model_path(&path).to_str().unwrap().to_string();
     }
 
     obj.load_mtls().map_err(|e| {
@@ -59,18 +60,18 @@ where
             load_object(&obj, o, log)
                 .into_iter()
                 .map(|(vertices, diffuse_tex_path)| {
-                    let tex_path = diffuse_tex_path.replace("_diffuse.png", "");
+                    let tex_path = diffuse_tex_path.replace("_diffuse.png", "").to_owned();
 
                     let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, ());
 
                     let diffuse = load_texture::<_, image_utils::Srgba8, _, _>(
                         factory,
-                        &super::get_model_file_path(&tex_path, "_diffuse.png"),
+                        &assets.get_model_path(tex_path.clone() + "_diffuse.png"),
                     )?;
 
                     let specular = load_texture::<_, image_utils::Srgba8, _, _>(
                         factory,
-                        &super::get_model_file_path(&tex_path, "_specular.png"),
+                        &assets.get_model_path(tex_path + "_specular.png"),
                     )?;
 
                     let drawable = Drawable::new(vbuf, slice, diffuse, specular, material);
@@ -171,6 +172,20 @@ fn transform_coords(arr: [f32; 3]) -> [f32; 3] {
     [arr[0] * -1.0, arr[2], arr[1]]
 }
 
+/// A wrapper for `std::io::Error` that includes the file path
+#[derive(Debug)]
+pub struct IoError(pub PathBuf, pub io::Error);
+
+impl IoError {
+    pub fn path(&self) -> &Path {
+        self.0.as_path()
+    }
+
+    pub fn err(&self) -> &io::Error {
+        &self.1
+    }
+}
+
 #[derive(Debug)]
 pub struct MtlError {
     path: String,
@@ -181,7 +196,7 @@ quick_error! {
     /// An error while loading an OBJ file
     #[derive(Debug)]
     pub enum ObjError {
-        Io(err: shader::IoError) {
+        Io(err: IoError) {
             display("IO error while reading `{}``: {}",
                     err.path().to_str().expect("Path contained invalid UTF-8"), err.err())
             from()
@@ -214,8 +229,8 @@ where
     CF::Channel: format::TextureChannel,
     CF::Surface: format::TextureSurface,
 {
-    let data = utils::read_bytes(&path).map_err(|e| {
-        ObjError::Io(shader::IoError(path.as_ref().to_owned(), e))
+    let data = assets::read_bytes(&path).map_err(|e| {
+        ObjError::Io(IoError(path.as_ref().to_owned(), e))
     })?;
 
     image_utils::load_texture::<_, _, CF>(factory, &data, image_utils::PNG).map_err(|e| e.into())

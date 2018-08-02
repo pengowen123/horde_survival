@@ -9,6 +9,7 @@ pub mod resource_pass;
 use gfx::{self, pso};
 use gfx::traits::FactoryExt;
 use rendergraph::error::BuildError;
+use assets;
 
 use std::path::Path;
 use std::collections::HashMap;
@@ -17,6 +18,7 @@ use assets::shader;
 
 /// Loads shaders from the provided paths, and returns a PSO built from the shaders and pipeline
 pub fn load_pso<R, F, P, I>(
+    assets: &assets::Assets,
     factory: &mut F,
     vs_path: P,
     fs_path: P,
@@ -31,8 +33,10 @@ where
     P: AsRef<Path>,
     I: pso::PipelineInit,
 {
-    let vs = shader::load_shader_file(vs_path, &defines)?;
-    let fs = shader::load_shader_file(fs_path, &defines)?;
+    let vs = shader::load_shader_file(assets, vs_path, &defines)
+        .map_err(|e| BuildError::Custom(e.into()))?;
+    let fs = shader::load_shader_file(assets, fs_path, &defines)
+        .map_err(|e| BuildError::Custom(e.into()))?;
     
     // NOTE: If create_pipeline_from_program is used here, the ProgramInfo can be printed, which may
     //       be useful for debugging
