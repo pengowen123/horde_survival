@@ -13,6 +13,7 @@ extern crate window;
 #[macro_use]
 extern crate slog;
 extern crate petgraph;
+extern crate assets;
 use common::{specs, shred};
 
 mod menus;
@@ -23,7 +24,7 @@ use common::conrod::{self, Ui, UiBuilder, Dimensions, render, gfx};
 use common::{UiState, glutin, config};
 use window::window_event;
 
-use std::sync::{Mutex, MutexGuard, mpsc};
+use std::sync::{Arc, Mutex, MutexGuard, mpsc};
 use std::time::{Instant, Duration};
 
 pub const UPS: u64 = 60;
@@ -77,18 +78,17 @@ impl System {
         log: &slog::Logger,
         reader_id: window_event::ReaderId,
         config: &config::Config,
+        assets: &assets::Assets,
     ) -> Self {
         let mut ui = UiBuilder::new(window_dim)
             .theme(theme::default_theme())
             .build();
         let menus = menus::Menus::new(config.clone(), ui.widget_id_generator());
 
-        let font_path = format!("{}{}",
-                                env!("CARGO_MANIFEST_DIR"),
-                                "/../test_assets/fonts/NotoSans-Regular.ttf");
+        let font_path = assets.get_font_path("NotoSans-Regular.ttf");
 
         ui.fonts.insert_from_file(&font_path).unwrap_or_else(|e| {
-            error!(log, "Error loading font (at path `{}`): {}", font_path, e);
+            error!(log, "Error loading font (at path `{:?}`): {}", font_path, e);
             panic!(common::CRASH_MSG);
         });
 
@@ -248,7 +248,8 @@ pub fn initialize<'a, 'b>(
     let window_dim: Dimensions = [window_dim.0.into(), window_dim.1.into()];
     let reader_id = world.write_resource::<window_event::EventChannel>().register_reader();
     let config = world.read_resource::<config::Config>();
-    let ui = System::new(window_dim, events, &log, reader_id, &config);
+    let assets = world.read_resource::<Arc<assets::Assets>>();
+    let ui = System::new(window_dim, events, &log, reader_id, &config, &assets);
 
     dispatcher.add(ui, "ui", &[])
 }

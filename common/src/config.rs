@@ -40,6 +40,7 @@ impl CommandLineConfig {
 
 /// A type that holds all configuration options that can be customized in the configuration file
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Config {
     pub graphics: GraphicsConfig,
     pub window: WindowConfig,
@@ -48,6 +49,7 @@ pub struct Config {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct GraphicsConfig {
     pub postprocessing: bool,
     pub shadows: bool,
@@ -55,6 +57,7 @@ pub struct GraphicsConfig {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct WindowConfig {
     pub width: u32,
     pub height: u32,
@@ -63,12 +66,14 @@ pub struct WindowConfig {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct CameraConfig {
     pub sensitivity: ::Float,
     pub fov: f32,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct BindConfig {
     pub move_forward: Bind,
     pub move_backward: Bind,
@@ -166,6 +171,7 @@ impl Default for CameraConfig {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ModifiersState {
     pub ctrl: bool,
     pub shift: bool,
@@ -203,7 +209,8 @@ impl Into<glutin::ModifiersState> for ModifiersState {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Bind {
     pub key: Key,
     pub modifiers: ModifiersState,
@@ -252,7 +259,7 @@ impl fmt::Display for Bind {
 }
 
 macro_rules! make_key_struct {
-    ($($key:ident),*,) => {
+    (default = $default:ident, $($key:ident),*,) => {
         #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
         pub enum Key {
             $(
@@ -279,10 +286,17 @@ macro_rules! make_key_struct {
                 }
             }
         }
+
+        impl Default for Key {
+            fn default() -> Self {
+                Key::$default
+            }
+        }
     }
 }
 
 make_key_struct! {
+    default = Key1,
     Key1,
     Key2,
     Key3,

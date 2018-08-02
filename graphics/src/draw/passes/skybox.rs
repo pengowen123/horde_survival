@@ -73,21 +73,28 @@ impl<R: gfx::Resources> SkyboxPass<R> {
 
         // Create the skybox
         // TODO: load this from individual map files
-        let path = |p| format!("{}{}{}", env!("CARGO_MANIFEST_DIR").to_string(), "/../", p);
+        let skybox_dir = assets.get_assets_dir().join("skybox");
+        let path = |p| skybox_dir.join(p);
 
         let read_image = |s| {
             let p = path(s);
-            read_bytes(&p).map_err(|e| BuildError::Io(e, p))
+            read_bytes(&p).map_err(|e| {
+                let p = p
+                    .to_str()
+                    .expect("Skybox image path contained invalid unicode")
+                    .to_string();
+                BuildError::Io(e, p)
+            })
         };
         let cubemap = image_utils::load_cubemap::<_, _, image_utils::Srgba8>(
             factory,
             image_utils::CubemapData {
-                up: &read_image("test_assets/skybox/top.jpg")?,
-                down: &read_image("test_assets/skybox/bottom.jpg")?,
-                front: &read_image("test_assets/skybox/front.jpg")?,
-                back: &read_image("test_assets/skybox/back.jpg")?,
-                left: &read_image("test_assets/skybox/left.jpg")?,
-                right: &read_image("test_assets/skybox/right.jpg")?,
+                up: &read_image("top.jpg")?,
+                down: &read_image("bottom.jpg")?,
+                front: &read_image("front.jpg")?,
+                back: &read_image("back.jpg")?,
+                left: &read_image("left.jpg")?,
+                right: &read_image("right.jpg")?,
             },
             image_utils::JPEG,
         )?;
