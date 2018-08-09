@@ -4,12 +4,15 @@ use na;
 use cgmath;
 use alga::general::Real;
 
-/// Returns a `cgmath::Point3` from the provided `nalgebra::Point3`
-pub fn to_cgmath_point<T>(point: na::Point3<T>) -> cgmath::Point3<T>
+use std::ops::Index;
+
+/// Returns a `cgmath::Point3` from a value that can be indexed
+pub fn to_cgmath_point<P, N>(val: P) -> cgmath::Point3<N>
 where
-    T: cgmath::BaseNum + Real,
+    N: cgmath::BaseNum,
+    P: Index<usize, Output = N>,
 {
-    cgmath::Point3::new(point[0], point[1], point[2])
+    cgmath::Point3::new(val[0], val[1], val[2])
 }
 
 /// Returns a `cgmath::Matrix4` rotation matrix from the provided
@@ -37,6 +40,14 @@ where
     T: Real,
 {
     na::Vector3::new(vector[0], vector[1], vector[2])
+}
+
+/// Returns a `nalgebra::Point3` from the provided `cgmath::Point3`
+pub fn to_na_point<T>(point: cgmath::Point3<T>) -> na::Point3<T>
+where
+    T: Real,
+{
+    na::Point3::new(point[0], point[1], point[2])
 }
 
 // TODO: Write tests

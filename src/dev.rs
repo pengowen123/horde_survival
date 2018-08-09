@@ -6,10 +6,11 @@ use common::gfx;
 use common::specs::{self, Builder};
 use common::cgmath::*;
 use common::na::{self, Translation3};
-use common::na::geometry::TranslationBase;
-use common::nphysics3d::object::RigidBody;
-use common::nphysics3d::math::Isometry;
-use common::ncollide::shape::Cuboid;
+use common::nphysics3d::math::{Inertia, Isometry};
+use common::ncollide3d::shape::{self, ShapeHandle};
+use common::nphysics3d::volumetric::Volumetric;
+use common::nphysics3d::world::World;
+use common::nphysics3d::object::{self, BodyMut, BodyStatus};
 use common::*;
 use common::physics::*;
 use math::functions::dir_vec_to_quaternion;
@@ -22,19 +23,39 @@ use assets::Assets;
 
 use std::sync::Arc;
 
+const COLLIDER_MARGIN: ::Float = 0.01;
+
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    let body_init = || {
-        let geom = Cuboid::new(na::Vector3::new(1.0, 1.0, 2.0));
-        let mut body = RigidBody::new_dynamic(geom, 100.0, 0.0, 100.0);
-        body.append_translation(&Translation3::new(0.0, 0.0, 100.0));
-        body
+    let physics = {
+        let mut phys_world = world.write_resource::<World<::Float>>();
+
+        let geom = ShapeHandle::new(shape::Ball::new(1.0));
+
+        let center_of_mass = geom.center_of_mass();
+        let density = 100.0;
+        let inertia = geom.inertia(density);
+
+        let handle = phys_world.add_rigid_body(
+            Isometry::new(na::Vector3::new(0.0, 0.0, 100.0), na::zero()),
+            inertia,
+            center_of_mass,
+        );
+
+        let collider = phys_world.add_collider(
+            COLLIDER_MARGIN,
+            geom,
+            handle,
+            Isometry::identity(),
+            object::Material::new(0.0, 100.0),
+        );
+
+        Physics::new(handle, vec![], Some(collider), vec![])
     };
 
-    let physics = Physics::new(Box::new(body_init), true);
     let space = Position(Point3::new(0.0, 0.0, 0.0));
     let direction = Direction::default();
     let control = Control::default();
@@ -58,7 +79,7 @@ where
         Direction::default(),
         1.0,
         Material::new(32.0),
-        Some(GenericProperties(0.0, 100.0)),
+        Some(object::Material::new(0.0, 100.0)),
         Box::new(|e| e),
     );
 
@@ -73,7 +94,7 @@ where
         //dir,
         //size,
         //Material::new(32.0),
-        //Some(GenericProperties(0.0, 100.0)),
+        //Some(object::Material::new(0.0, 100.0)),
         //);
         //};
 
@@ -166,9 +187,6 @@ where
     }
 }
 
-#[derive(Clone, Copy)]
-struct GenericProperties(::Float, ::Float);
-
 type MapEntity = Box<Fn(specs::EntityBuilder) -> specs::EntityBuilder>;
 
 fn create_test_entity<'a, R, F, P>(
@@ -179,7 +197,7 @@ fn create_test_entity<'a, R, F, P>(
     dir: Direction,
     scale: f32,
     material: Material,
-    properties: Option<GenericProperties>,
+    properties: Option<object::Material<::Float>>,
     map: MapEntity,
 ) where
     R: gfx::Resources,
@@ -199,6 +217,43 @@ fn create_test_entity<'a, R, F, P>(
     let shader_param = draw::ShaderParam::default();
 
     for (drawable, mesh) in objects {
+        let physics = properties.clone().map(|props| {
+            let mut phys_world = world.write_resource::<World<::Float>>();
+            let pos = if let Some(s) = space {
+                convert::to_na_point(s.0)
+            } else {
+                na::Point3::origin()
+            };
+            let pos_vec = if let Some(s) = space {
+                convert::to_na_vector(s.0.to_vec())
+            } else {
+                na::zero()
+            };
+
+            let dir = convert::to_na_quaternion(dir.0);
+
+            let isometry = Isometry::from_parts(Translation3::from_vector(pos_vec), dir);
+            let handle = phys_world.add_rigid_body(
+                isometry,
+                Inertia::zero(),
+                pos,
+            );
+
+            let collider = phys_world.add_collider(
+                COLLIDER_MARGIN,
+                ShapeHandle::new(mesh),
+                handle,
+                Isometry::identity(),
+                props,
+            );
+
+            if let BodyMut::RigidBody(rb) = phys_world.body_mut(handle) {
+                rb.set_status(BodyStatus::Static);
+            }
+
+            Physics::new(handle, Vec::new(), Some(collider), Vec::new())
+        });
+
         let mut entity = world
             .create_entity()
             .with(scale)
@@ -210,32 +265,11 @@ fn create_test_entity<'a, R, F, P>(
             entity = entity.with(s);
         }
 
-        let mut mesh_opt = Some(mesh);
-        if let Some(p) = properties {
-            let body_init = move || {
-                let m = mesh_opt.take().unwrap();
-
-                let pos = if let Some(s) = space {
-                    convert::to_na_vector(s.0.to_vec())
-                } else {
-                    na::Vector3::zero()
-                };
-
-                let dir = convert::to_na_quaternion(dir.0);
-
-                let mut rb = RigidBody::new_static(m, p.0, p.1);
-
-                let transform = Isometry::from_parts(TranslationBase::from_vector(pos), dir);
-
-                rb.set_transformation(transform);
-
-                rb
-            };
-
-            let physics = Physics::new(Box::new(body_init), false);
-            entity = entity.with(physics).with(PhysicsTiedPosition).with(
-                PhysicsTiedDirection,
-            );
+        if let Some(physics) = physics {
+            entity = entity
+                .with(physics)
+                .with(PhysicsTiedPosition)
+                .with(PhysicsTiedDirection);
         }
 
         map(entity).build();

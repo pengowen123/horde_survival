@@ -2,8 +2,11 @@
 
 use specs::{self, Join};
 use common::{self, physics};
+use nphysics3d::world::World;
 
 use math::convert;
+
+use output::get_isometry;
 
 pub struct System;
 
@@ -12,6 +15,7 @@ pub struct Data<'a> {
     tie: specs::ReadStorage<'a, physics::PhysicsTiedPosition>,
     physics: specs::ReadStorage<'a, physics::Physics>,
     space: specs::WriteStorage<'a, common::Position>,
+    world: specs::WriteExpect<'a, World<::Float>>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -19,11 +23,8 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         for (p, s, _) in (&data.physics, &mut data.space, &data.tie).join() {
-            p.handle().map(|h| {
-                // TODO: Maybe use try_borrow to avoid panics (but maybe it isn't necessary here)
-                let pos = h.borrow().position_center();
-                s.0 = convert::to_cgmath_point(pos);
-            });
+            let pos = get_isometry(&data.world, p.get_root_handle()).translation.vector;
+            s.0 = convert::to_cgmath_point(pos);
         }
     }
 }

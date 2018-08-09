@@ -7,8 +7,6 @@ version = "0.1.0"
 cgmath = "0.15.0"
 glutin = "0.17"
 log = "0.3.8"
-nalgebra = "0.11"
-ncollide = "0.11"
 shred = "0.7"
 specs = "0.12"
 time = "0.1.37"
@@ -21,13 +19,11 @@ gfx_core = "0.8.2"
 structopt = "0.2.10"
 serde_derive = "1.0.70"
 serde = "1.0.70"
+nphysics3d = "0.9.1"
+nalgebra = "0.16.0"
+ncollide3d = "0.17.1"
 
 [dependencies.conrod]
 branch = "horde"
 features = ["winit", "gfx_rs"]
 git = "https://github.com/pengowen123/conrod"
-
-[dependencies.nphysics3d]
-branch = "horde"
-features = ["threadsafe"]
-git = "https://github.com/pengowen123/nphysics"

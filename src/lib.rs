@@ -21,7 +21,7 @@ mod dev;
 mod player_control;
 
 use common::{Float, specs, glutin, config};
-use common::shred::{self, RunNow};
+use common::shred;
 use window::window_event;
 
 use std::sync::{Arc, mpsc};
@@ -61,7 +61,7 @@ pub fn run(
     let dispatcher = player_control::initialize(&mut world, dispatcher);
     
     let dispatcher = control::initialize(&mut world, dispatcher);
-    let (dispatcher, mut physics) = physics::initialize(&mut world, dispatcher);
+    let dispatcher = physics::initialize(&mut world, dispatcher);
     ui::add_resources(&mut world);
     let (dispatcher, dispatcher_graphics, window, mut events) = graphics::initialize(
         &mut world,
@@ -144,9 +144,6 @@ pub fn run(
         // If the game is running (not in a menu), run main systems
         if ui_state.is_in_game() {
             dispatcher.dispatch(&mut world.res);
-
-            // nphysics world is not threadsafe so the system is run manually
-            physics.run_now(&mut world.res);
         }
 
         // Run graphics systems regardless of the UI state

@@ -11,6 +11,8 @@ extern crate math;
 use common::specs::{self, DispatcherBuilder, Join};
 use common::cgmath::{self, Quaternion};
 use common::{Float, shred, na, physics};
+use common::nphysics3d::world::World;
+use common::nphysics3d::object::BodyMut;
 use math::convert;
 
 /// Controlled properties of an entity
@@ -72,45 +74,71 @@ pub struct System;
 pub struct Data<'a> {
     control: specs::WriteStorage<'a, Control>,
     physics: specs::WriteStorage<'a, physics::Physics>,
+    world: specs::WriteExpect<'a, World<::Float>>,
 }
 
 impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
-    // TODO: Finish a basic implementation of this system, then move on to better graphics
-    //       See player/control.rs for how to get the forward vector (for other vectors, look it
-    //       up)
     fn run(&mut self, mut data: Self::SystemData) {
         for (c, p) in (&mut data.control, &mut data.physics).join() {
+            // FIXME: Implement this
             if let Some(direction) = c.direction {
-                let na_quat = convert::to_na_quaternion(direction);
-                p.handle().map(|h| h.borrow_mut().set_rotation(na_quat));
-
                 c.direction = None;
             }
 
-            // Reset the entity's velocity every frame
-            p.handle().map(|h| {
-                let vel = h.borrow().lin_vel();
-                h.borrow_mut().set_lin_vel([0.0, 0.0, vel[2]].into());
-            });
-
-            if let Some(modifier) = c.velocity {
-                p.handle().map(|h| match modifier {
+            let new_velocity = c.velocity.map(|modifier| {
+                match modifier {
                     VelocityModifier::SetTo(velocity) => {
-                        let velocity = convert::to_na_vector(velocity);
-                        h.borrow_mut().set_lin_vel(velocity);
+                        convert::to_na_vector(velocity)
                     }
                     VelocityModifier::MoveForward(direction, speed) => {
                         let direction = convert::to_na_quaternion(direction);
-                        let mut body = h.borrow_mut();
-
-                        let velocity = (direction * -na::Vector3::z()).normalize() * speed;
-                        body.set_lin_vel(velocity);
+                        (direction * -na::Vector3::z()).normalize() * speed
                     }
-                });
-                c.velocity = None;
-            }
+                }
+            });
+
+            c.velocity = None;
+
+            match data.world.body_mut(p.get_root_handle()) {
+                // The `control` system only works for rigid bodies
+                BodyMut::RigidBody(body) => {
+                    if let Some(vel) = new_velocity {
+                        body.set_linear_velocity(vel);
+
+                        // The body must be activated because if it is sleeping then setting the velocity
+                        // won't do anything
+                        body.activate();
+                    } else {
+                        let vel_z = body.velocity().linear.z;
+
+                        body.set_linear_velocity(na::Vector3::new(0.0, 0.0, vel_z));
+                    }
+                },
+                // TODO: Maybe use a multibody for controlled entities to allow for joints
+                //       This is blocked on nphysics#127
+                BodyMut::Multibody(multibody) => {
+                    if new_velocity.is_some() {
+                        // The body must be activated because if it is sleeping then setting the velocity
+                        // won't do anything
+                        multibody.activate();
+                    }
+
+                    let velocity = &mut multibody.generalized_velocity_slice_mut()[..3];
+
+                    // Reset horizontal velocity
+                    velocity[0] = 0.0;
+                    velocity[1] = 0.0;
+
+                    if let Some(vel) = new_velocity {
+                        velocity[0] = vel[0];
+                        velocity[1] = vel[1];
+                        velocity[2] = vel[2];
+                    }
+                },
+                _ => continue,
+            };
         }
     }
 }
