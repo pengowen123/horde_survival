@@ -107,7 +107,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
 
     // Add systems
     let dispatcher = dispatcher
-        .add(
+        .with(
             param::System::new(draw.factory()),
             "shader-param",
             &[
@@ -116,13 +116,13 @@ pub fn initialize<'a, 'b, 'c, 'd>(
                 "shader-param-scale",
             ],
         )
-        .add(
+        .with(
             passes::shadow::ShadowSourceSystem,
             "shadow-source",
             &[],
             );
 
-    let dispatcher_graphics = dispatcher_graphics.add_thread_local(draw);
+    let dispatcher_graphics = dispatcher_graphics.with_thread_local(draw);
 
     (dispatcher, dispatcher_graphics, window, events)
 }

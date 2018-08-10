@@ -31,10 +31,10 @@ pub struct System {
 #[derive(SystemData)]
 pub struct Data<'a> {
     physics: specs::WriteStorage<'a, physics::Physics>,
-    delta: specs::Fetch<'a, Delta>,
+    delta: specs::ReadExpect<'a, Delta>,
     entities: specs::Entities<'a>,
     scale: specs::WriteStorage<'a, Scale>,
-    log: specs::Fetch<'a, slog::Logger>,
+    log: specs::ReadExpect<'a, slog::Logger>,
 }
 
 impl<'a> specs::System<'a> for System {

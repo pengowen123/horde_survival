@@ -2,7 +2,8 @@
 //! Will be removed when no longer needed
 
 use slog;
-use common::{specs, gfx};
+use common::gfx;
+use common::specs::{self, Builder};
 use common::cgmath::*;
 use common::na::{self, Translation3};
 use common::na::geometry::TranslationBase;
@@ -46,7 +47,8 @@ where
         .with(direction)
         .with(control)
         .with(PhysicsTiedPosition)
-        .with(Player);
+        .with(Player)
+        .build();
 
     create_test_entity(
         world,
@@ -57,7 +59,7 @@ where
         1.0,
         Material::new(32.0),
         Some(GenericProperties(0.0, 100.0)),
-        Box::new(|_| {}),
+        Box::new(|e| e),
     );
 
     // Create test entities
@@ -97,12 +99,12 @@ where
         {
             #[allow(unused)]
             let mut dir_light = |x, y, z, shadows| {
-                let _ = create_dir_light(
+                create_dir_light(
                     world,
                     [x, y, z],
                     light_color,
                     shadows,
-                );
+                ).build();
             };
 
             let ortho_size = 60.0;
@@ -124,13 +126,13 @@ where
         {
             #[allow(unused)]
             let mut point_light = |x, y, z| {
-                let _ = create_point_light(
+                create_point_light(
                     world,
                     factory,
                     [x, y, z],
                     light_color,
                     LightAttenuation::new(1.0, 0.14, 0.07),
-                    Box::new(|_| {}),
+                    Box::new(|e| e),
                 );
             };
 
@@ -144,7 +146,7 @@ where
         {
             #[allow(unused)]
             let mut spot_light = |pos, dir| {
-                let _ = create_spot_light(
+                create_spot_light(
                     world,
                     factory,
                     pos,
@@ -153,7 +155,7 @@ where
                     LightAttenuation::new(1.0, 0.14, 0.07),
                     Deg(30.0),
                     Deg(45.0),
-                    Box::new(|_| {}),
+                    Box::new(|e| e),
                 );
             };
 
@@ -167,7 +169,7 @@ where
 #[derive(Clone, Copy)]
 struct GenericProperties(::Float, ::Float);
 
-type MapEntity = Box<Fn(specs::EntityBuilder)>;
+type MapEntity = Box<Fn(specs::EntityBuilder) -> specs::EntityBuilder>;
 
 fn create_test_entity<'a, R, F, P>(
     world: &'a mut specs::World,
@@ -236,7 +238,7 @@ fn create_test_entity<'a, R, F, P>(
             );
         }
 
-        map(entity);
+        map(entity).build();
     }
 }
 
@@ -282,7 +284,7 @@ fn create_point_light<'a, R, F>(
                 color,
                 attenuation,
             ));
-            map(e);
+            map(e)
         }),
     )
 }
@@ -322,7 +324,7 @@ fn create_spot_light<'a, R, F>(
                 ).unwrap(),
             );
 
-            map(e);
+            map(e)
         }),
     );
 }

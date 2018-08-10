@@ -61,7 +61,7 @@ pub struct ShadowSourceSystem;
 #[derive(SystemData)]
 pub struct Data<'a> {
     dir_light: specs::ReadStorage<'a, components::DirectionalLight>,
-    dir_shadow_source: specs::FetchMut<'a, Arc<Mutex<DirShadowSource>>>,
+    dir_shadow_source: specs::WriteExpect<'a, Arc<Mutex<DirShadowSource>>>,
 }
 impl<'a> specs::System<'a> for ShadowSourceSystem {
     type SystemData = Data<'a>;

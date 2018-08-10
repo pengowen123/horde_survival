@@ -125,5 +125,5 @@ pub fn initialize<'a, 'b>(
     world.register::<Control>();
 
     // Add systems
-    dispatcher.add(System, "control", &[])
+    dispatcher.with(System, "control", &[])
 }

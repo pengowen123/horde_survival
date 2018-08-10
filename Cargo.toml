@@ -6,7 +6,7 @@ version = "0.1.0"
 [dependencies]
 lazy_static = "0.2.8"
 regex = "0.2.2"
-shred-derive = "0.3.0"
+shred-derive = "0.5.0"
 slog-term = "2.4.0"
 slog-async = "2.3.0"
 slog = "2.2.3"

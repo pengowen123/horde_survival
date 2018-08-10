@@ -14,7 +14,7 @@ pub mod builder;
 pub mod error;
 pub mod framebuffer;
 
-use shred::{Resources, ResourceId};
+use shred::Resources;
 use glutin::GlContext;
 use gfx::{handle, format};
 
@@ -67,11 +67,7 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
 
     /// Adds a resource of any type to the `RenderGraph`, making it available to passes
     pub fn add_resource<Res: shred::Resource>(&mut self, resource: Res) {
-        if self.resources.has_value(ResourceId::new::<Res>()) {
-            *self.resources.fetch_mut::<Res>(0) = resource;
-        } else {
-            self.resources.add(resource);
-        }
+        self.resources.insert(resource);
     }
 
     /// Executes all passes in the `RenderGraph`

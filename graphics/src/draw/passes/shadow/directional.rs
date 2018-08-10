@@ -105,7 +105,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
           F: gfx::Factory<R>,
 {
     let (enabled, shadow_map_size) = {
-        let config = builder.get_resources().fetch::<config::GraphicsConfig>(0);
+        let config = builder.get_resources().fetch::<config::GraphicsConfig>();
 
         (config.shadows, config.shadow_map_size)
     };
@@ -142,10 +142,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
 
         encoder.clear_depth(&self.bundle.data.out_depth, 1.0);
 
-        let drawable = resources.fetch::<DrawableStorageRef<R>>(0);
+        let drawable = resources.fetch::<DrawableStorageRef<R>>();
         let drawable = unsafe { &*drawable.get() };
         
-        let shadow_source = resources.fetch::<Arc<Mutex<shadow::DirShadowSource>>>(0).clone();
+        let shadow_source = resources.fetch::<Arc<Mutex<shadow::DirShadowSource>>>().clone();
         let light_space_matrix = match shadow_source.lock().unwrap().light_space_matrix() {
             Some(m) => m,
             // If there is no shadow source, just return (depth buffer was already cleared)

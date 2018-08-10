@@ -49,12 +49,7 @@ pub type CreateNewWindowViews<R> =
          handle::DepthStencilView<R, types::DepthFormat>)>;
 
 /// A `specs::Storage` for the `Drawable` component
-pub type DrawableStorage<'a, R> =
-    specs::Storage<
-        'a,
-        components::Drawable<R>,
-        specs::Fetch<'a, specs::MaskedStorage<components::Drawable<R>>>,
-    >;
+pub type DrawableStorage<'a, R> = specs::ReadStorage<'a, components::Drawable<R>>;
 
 // NOTE: This should only be passed from draw::System to rendergraph passes, which will always have
 //       a smaller lifetime and run on the same thread, and the contained raw pointer will never be
@@ -122,16 +117,16 @@ where
         create_new_window_views: CreateNewWindowViews<R>,
     ) -> Self {
         // Read resources from the specs World
-        let camera = resources.fetch::<Arc<Mutex<Camera>>>(0).clone();
-        let lighting_data = resources.fetch::<Arc<Mutex<LightingData>>>(0).clone();
-        let dir_shadow_source = resources.fetch::<Arc<Mutex<DirShadowSource>>>(0).clone();
+        let camera = resources.fetch::<Arc<Mutex<Camera>>>().clone();
+        let lighting_data = resources.fetch::<Arc<Mutex<LightingData>>>().clone();
+        let dir_shadow_source = resources.fetch::<Arc<Mutex<DirShadowSource>>>().clone();
         let reader_id = {
-            let mut event_channel = resources.fetch_mut::<window_event::EventChannel>(0);
+            let mut event_channel = resources.fetch_mut::<window_event::EventChannel>();
             event_channel.register_reader()
         };
-        let log = resources.fetch::<slog::Logger>(0);
-        let config = resources.fetch::<config::Config>(0).graphics.clone();
-        let assets = resources.fetch::<Arc<assets::Assets>>(0);
+        let log = resources.fetch::<slog::Logger>();
+        let config = resources.fetch::<config::Config>().graphics.clone();
+        let assets = resources.fetch::<Arc<assets::Assets>>();
 
         let dpi = window.get_hidpi_factor();
 
@@ -220,15 +215,15 @@ where
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, components::Drawable<R>>,
-    event_channel: specs::Fetch<'a, window_event::EventChannel>,
-    ui_state: specs::Fetch<'a, common::UiState>,
-    ui_draw_list: specs::Fetch<'a, ui::UiDrawList>,
-    ui_image_map: specs::Fetch<'a, ui::ImageMap<R>>,
-    window: specs::Fetch<'a, window::Window>,
-    window_info: specs::Fetch<'a, info::WindowInfo>,
-    log: specs::Fetch<'a, slog::Logger>,
-    config: specs::Fetch<'a, config::Config>,
-    assets: specs::Fetch<'a, Arc<assets::Assets>>,
+    event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
+    ui_state: specs::ReadExpect<'a, common::UiState>,
+    ui_draw_list: specs::ReadExpect<'a, ui::UiDrawList>,
+    ui_image_map: specs::ReadExpect<'a, ui::ImageMap<R>>,
+    window: specs::ReadExpect<'a, window::Window>,
+    window_info: specs::ReadExpect<'a, info::WindowInfo>,
+    log: specs::ReadExpect<'a, slog::Logger>,
+    config: specs::ReadExpect<'a, config::Config>,
+    assets: specs::ReadExpect<'a, Arc<assets::Assets>>,
 }
 
 impl<'a, F, C, R, D> specs::System<'a> for System<F, C, R, D>

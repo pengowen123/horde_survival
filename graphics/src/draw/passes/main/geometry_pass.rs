@@ -143,7 +143,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
           C: gfx::CommandBuffer<R>,
           F: gfx::Factory<R>,
 {
-    let window_dim = builder.get_resources().fetch::<WindowInfo>(0).physical_dimensions();
+    let window_dim = builder.get_resources().fetch::<WindowInfo>().physical_dimensions();
     let window_dim: (u32, u32) = window_dim.into();
     
     let dsv = builder
@@ -180,11 +180,11 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
         encoder.clear(&self.bundle.data.out_normal, [0.0; 4]);
         encoder.clear(&self.bundle.data.out_color, [0.0; 4]);
 
-        let camera = resources.fetch::<Arc<Mutex<Camera>>>(0);
+        let camera = resources.fetch::<Arc<Mutex<Camera>>>();
         let camera = camera.lock().unwrap();
         let view_proj = camera.projection() * camera.view();
 
-        let drawable = resources.fetch::<DrawableStorageRef<R>>(0);
+        let drawable = resources.fetch::<DrawableStorageRef<R>>();
         let drawable = unsafe { &*drawable.get() };
 
         let mut locals = Locals {

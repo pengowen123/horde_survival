@@ -18,9 +18,9 @@ impl System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    window: specs::Fetch<'a, ::Window>,
-    config: specs::Fetch<'a, config::Config>,
-    event_channel: specs::Fetch<'a, window_event::EventChannel>,
+    window: specs::ReadExpect<'a, ::Window>,
+    config: specs::ReadExpect<'a, config::Config>,
+    event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
 }
 
 impl<'a> specs::System<'a> for System {

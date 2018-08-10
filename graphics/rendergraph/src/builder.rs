@@ -1,7 +1,7 @@
 //! A `GraphBuilder` type that is used to build a `RenderGraph`
 
 use gfx::{self, handle};
-use shred::{self, Resources, ResourceId};
+use shred::{self, Resources};
 use glutin;
 use assets;
 
@@ -124,11 +124,7 @@ where R: gfx::Resources,
 
     /// Adds the resource to the `GraphBuilder`
     pub fn add_resource<Res: shred::Resource>(&mut self, resource: Res) {
-        if self.resources.has_value(ResourceId::new::<Res>()) {
-            *self.resources.fetch_mut::<Res>(0) = resource;
-        } else {
-            self.resources.add(resource);
-        }
+        self.resources.insert(resource);
     }
 
     /// Returns a reference to the `GraphBuilder`'s resources

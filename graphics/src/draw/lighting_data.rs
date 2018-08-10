@@ -131,7 +131,7 @@ impl<'a> specs::System<'a> for System {
 
 #[derive(SystemData)]
 pub struct SystemData<'a> {
-    light_info: specs::FetchMut<'a, Arc<Mutex<LightingData>>>,
+    light_info: specs::WriteExpect<'a, Arc<Mutex<LightingData>>>,
     dir_light: specs::ReadStorage<'a, components::DirectionalLight>,
     point_light: specs::ReadStorage<'a, components::PointLight>,
     spot_light: specs::ReadStorage<'a, components::SpotLight>,
@@ -153,7 +153,5 @@ pub fn init<'a, 'b>(
     let system = System;
 
     // Add systems
-    let dispatcher = dispatcher.add(system, "light-info", &[]);
-
-    dispatcher
+    dispatcher.with(system, "light-info", &[])
 }

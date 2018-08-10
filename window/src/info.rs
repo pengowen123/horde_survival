@@ -60,10 +60,10 @@ pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    window_info: specs::FetchMut<'a, WindowInfo>,
-    window: specs::Fetch<'a, ::Window>,
+    window_info: specs::WriteExpect<'a, WindowInfo>,
+    window: specs::ReadExpect<'a, ::Window>,
     // TODO: remove when a better way of displaying this info is implemented
-    delta: specs::Fetch<'a, common::Delta>,
+    delta: specs::ReadExpect<'a, common::Delta>,
 }
 
 impl<'a> specs::System<'a> for System {

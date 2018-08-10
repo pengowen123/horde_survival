@@ -46,7 +46,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     let intermediate_target = {
         let dim: (u32, u32) = builder
             .get_resources()
-            .fetch::<WindowInfo>(0)
+            .fetch::<WindowInfo>()
             .physical_dimensions()
             .into();
         let dim = (dim.0 as texture::Size, dim.1 as texture::Size);

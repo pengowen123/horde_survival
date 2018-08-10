@@ -65,7 +65,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     let dispatcher = dispatcher
         // NOTE: The camera system can't depend on the window info system, so it will always be a
         //       frame behind. This should be fine because the window shouldn't be resized often.
-        .add(camera::System, "camera", &[]);
+        .with(camera::System, "camera", &[]);
 
     (dispatcher, dispatcher_graphics, window, events)
 }

@@ -36,6 +36,6 @@ pub fn initialize<'a, 'b>(
     // NOTE: These systems will be added to the graphics dispatcher, if other systems are added here
     //       in the future the main dispatcher must be added as an argument to this function
     dispatcher
-        .add(info::System, "window-info", &[])
-        .add(config_system, "window-config", &[])
+        .with(info::System, "window-info", &[])
+        .with(config_system, "window-config", &[])
 }

@@ -112,7 +112,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
             .srv
             .clone();
 
-    let enabled = builder.get_resources().fetch::<config::GraphicsConfig>(0).postprocessing;
+    let enabled = builder.get_resources().fetch::<config::GraphicsConfig>().postprocessing;
 
     let pass = PostPass::new(builder.factory, builder.assets, srv, main_color, enabled)?;
 

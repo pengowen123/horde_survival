@@ -118,12 +118,12 @@ impl System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    ui_state: specs::FetchMut<'a, UiState>,
-    draw_list: specs::FetchMut<'a, UiDrawList>,
-    window: specs::Fetch<'a, window::Window>,
-    event_channel: specs::FetchMut<'a, window_event::EventChannel>,
-    config: specs::FetchMut<'a, config::Config>,
-    log: specs::Fetch<'a, slog::Logger>,
+    ui_state: specs::WriteExpect<'a, UiState>,
+    draw_list: specs::WriteExpect<'a, UiDrawList>,
+    window: specs::ReadExpect<'a, window::Window>,
+    event_channel: specs::WriteExpect<'a, window_event::EventChannel>,
+    config: specs::WriteExpect<'a, config::Config>,
+    log: specs::ReadExpect<'a, slog::Logger>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -251,5 +251,5 @@ pub fn initialize<'a, 'b>(
     let assets = world.read_resource::<Arc<assets::Assets>>();
     let ui = System::new(window_dim, events, &log, reader_id, &config, &assets);
 
-    dispatcher.add(ui, "ui", &[])
+    dispatcher.with(ui, "ui", &[])
 }

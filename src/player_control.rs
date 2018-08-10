@@ -77,7 +77,7 @@ impl System {
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    event_channel: specs::Fetch<'a, window_event::EventChannel>,
+    event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
     player: specs::ReadStorage<'a, common::Player>,
     control: specs::WriteStorage<'a, control::Control>,
     // Direction is directly accessed because it is special for the player (it is not tied to
@@ -123,5 +123,5 @@ pub fn initialize<'a, 'b>(
     let control = System::new(reader_id);
 
     // Add systems
-    dispatcher.add(control, "player-control", &[])
+    dispatcher.with(control, "player-control", &[])
 }

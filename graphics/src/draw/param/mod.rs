@@ -83,7 +83,7 @@ pub fn init<'a, 'b>(
 
     // Add systems
     dispatcher
-        .add(translation::System, "shader-param-translation", &[])
-        .add(rotation::System, "shader-param-rotation", &[])
-        .add(scale::System, "shader-param-scale", &[])
+        .with(translation::System, "shader-param-translation", &[])
+        .with(rotation::System, "shader-param-rotation", &[])
+        .with(scale::System, "shader-param-scale", &[])
 }

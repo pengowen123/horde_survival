@@ -297,7 +297,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     };
 
     let (shadows_enabled, shadow_map_size) = {
-        let config = builder.get_resources().fetch::<config::GraphicsConfig>(0);
+        let config = builder.get_resources().fetch::<config::GraphicsConfig>();
         (config.shadows, config.shadow_map_size)
     };
     
@@ -329,11 +329,11 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
         -> Result<(), RunError>
     {
-        let camera = resources.fetch::<Arc<Mutex<Camera>>>(0);
-        let lighting_data = resources.fetch::<Arc<Mutex<lighting_data::LightingData>>>(0);
+        let camera = resources.fetch::<Arc<Mutex<Camera>>>();
+        let lighting_data = resources.fetch::<Arc<Mutex<lighting_data::LightingData>>>();
         let mut lighting_data = lighting_data.lock().unwrap();
         let dir_light_space_matrix = resources
-            .fetch::<Arc<Mutex<shadow::DirShadowSource>>>(0);
+            .fetch::<Arc<Mutex<shadow::DirShadowSource>>>();
         
         let dir_light_space_matrix = dir_light_space_matrix
             .lock()

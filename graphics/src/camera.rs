@@ -90,9 +90,9 @@ pub struct Data<'a> {
     player: ReadStorage<'a, common::Player>,
     space: ReadStorage<'a, common::Position>,
     direction: ReadStorage<'a, common::Direction>,
-    camera: specs::FetchMut<'a, Arc<Mutex<Camera>>>,
-    window_info: specs::Fetch<'a, info::WindowInfo>,
-    config: specs::Fetch<'a, config::Config>,
+    camera: specs::WriteExpect<'a, Arc<Mutex<Camera>>>,
+    window_info: specs::ReadExpect<'a, info::WindowInfo>,
+    config: specs::ReadExpect<'a, config::Config>,
 }
 
 impl<'a> specs::System<'a> for System {

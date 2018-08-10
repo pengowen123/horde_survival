@@ -12,6 +12,6 @@ pub fn initialize<'a, 'b>(
     // NOTE: Until the physics system is not thread-local, these will be reading slightly outdated
     //       values (shouldn't be a big deal though)
     dispatcher
-        .add(position::System, "physics-tied-position", &[])
-        .add(direction::System, "physics-tied-direction", &[])
+        .with(position::System, "physics-tied-position", &[])
+        .with(direction::System, "physics-tied-direction", &[])
 }

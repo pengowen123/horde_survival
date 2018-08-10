@@ -169,7 +169,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPa
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
         -> Result<(), RunError>
     {
-        let camera = resources.fetch::<Arc<Mutex<Camera>>>(0);
+        let camera = resources.fetch::<Arc<Mutex<Camera>>>();
         let camera = camera.lock().unwrap();
         let locals = Locals {
             proj: camera.projection().into(),
