@@ -19,6 +19,7 @@ extern crate assets;
 mod dev;
 
 mod player_control;
+mod player;
 
 use common::{Float, specs, glutin, config};
 use common::shred;

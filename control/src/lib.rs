@@ -119,23 +119,6 @@ impl<'a> specs::System<'a> for System {
                 // TODO: Maybe use a multibody for controlled entities to allow for joints
                 //       This is blocked on nphysics#127
                 BodyMut::Multibody(multibody) => {
-                    if new_velocity.is_some() {
-                        // The body must be activated because if it is sleeping then setting the velocity
-                        // won't do anything
-                        multibody.activate();
-                    }
-
-                    let velocity = &mut multibody.generalized_velocity_slice_mut()[..3];
-
-                    // Reset horizontal velocity
-                    velocity[0] = 0.0;
-                    velocity[1] = 0.0;
-
-                    if let Some(vel) = new_velocity {
-                        velocity[0] = vel[0];
-                        velocity[1] = vel[1];
-                        velocity[2] = vel[2];
-                    }
                 },
                 _ => continue,
             };

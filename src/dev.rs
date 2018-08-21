@@ -8,7 +8,6 @@ use common::cgmath::*;
 use common::na::{self, Translation3};
 use common::nphysics3d::math::{Inertia, Isometry};
 use common::ncollide3d::shape::{self, ShapeHandle};
-use common::nphysics3d::volumetric::Volumetric;
 use common::nphysics3d::world::World;
 use common::nphysics3d::object::{self, BodyMut, BodyStatus};
 use common::*;
@@ -20,56 +19,16 @@ use graphics::obj_loading;
 use graphics::draw::{self, Material, LightSpaceMatrix};
 use graphics::draw::components::*;
 use assets::Assets;
+use player::{self, COLLIDER_MARGIN};
 
 use std::sync::Arc;
-
-const COLLIDER_MARGIN: ::Float = 0.01;
 
 pub fn add_test_entities<R, F>(world: &mut specs::World, factory: &mut F)
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    let physics = {
-        let mut phys_world = world.write_resource::<World<::Float>>();
-
-        let geom = ShapeHandle::new(shape::Ball::new(1.0));
-
-        let center_of_mass = geom.center_of_mass();
-        let density = 100.0;
-        let inertia = geom.inertia(density);
-
-        let handle = phys_world.add_rigid_body(
-            Isometry::new(na::Vector3::new(0.0, 0.0, 100.0), na::zero()),
-            inertia,
-            center_of_mass,
-        );
-
-        let collider = phys_world.add_collider(
-            COLLIDER_MARGIN,
-            geom,
-            handle,
-            Isometry::identity(),
-            object::Material::new(0.0, 100.0),
-        );
-
-        Physics::new(handle, vec![], Some(collider), vec![])
-    };
-
-    let space = Position(Point3::new(0.0, 0.0, 0.0));
-    let direction = Direction::default();
-    let control = Control::default();
-
-    // Add player entity
-    world
-        .create_entity()
-        .with(physics)
-        .with(space)
-        .with(direction)
-        .with(control)
-        .with(PhysicsTiedPosition)
-        .with(Player)
-        .build();
+    player::add_player_entity(world);
 
     create_test_entity(
         world,
