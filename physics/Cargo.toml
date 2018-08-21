@@ -5,7 +5,6 @@ version = "0.1.0"
 
 [dependencies]
 shred-derive = "0.5.0"
-slog = "2.2.3"
 
 [dependencies.common]
 path = "../common"

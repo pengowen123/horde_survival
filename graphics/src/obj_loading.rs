@@ -2,7 +2,7 @@
 
 use gfx::traits::FactoryExt;
 use gfx::{self, handle, format};
-use common::ncollide::shape;
+use common::ncollide3d::shape;
 use common::{self, na};
 use image_utils;
 use obj;
@@ -12,7 +12,6 @@ use assets;
 
 use std::io::{self, BufReader};
 use std::path::{PathBuf, Path};
-use std::sync::Arc;
 
 use draw::{Vertex, Drawable, Material};
 
@@ -26,7 +25,7 @@ pub fn load_obj<R, F>(
     name: &str,
     material: Material,
     log: &slog::Logger,
-) -> Result<Vec<(Drawable<R>, shape::TriMesh3<::Float>)>, ObjError>
+) -> Result<Vec<(Drawable<R>, shape::TriMesh<::Float>)>, ObjError>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
@@ -103,9 +102,8 @@ where
                         }
 
                         shape::TriMesh::new(
-                            Arc::new(mesh_vertices),
-                            Arc::new(mesh_indices),
-                            None,
+                            mesh_vertices,
+                            mesh_indices,
                             None,
                         )
                     };

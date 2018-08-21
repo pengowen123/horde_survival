@@ -10,7 +10,7 @@ pub extern crate cgmath;
 pub extern crate nalgebra as na;
 
 // Physics
-pub extern crate ncollide;
+pub extern crate ncollide3d;
 pub extern crate nphysics3d;
 
 // Graphics

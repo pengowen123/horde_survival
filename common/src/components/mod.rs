@@ -9,7 +9,7 @@ use cgmath::{self, Rotation3, InnerSpace};
 ///
 /// Entities with this component will be controlled by the player.
 ///
-/// These components must only exist on one entity (failure to uphold this may cause unexpected
+/// This component must only exist on one entity (failure to uphold this may cause unexpected
 /// behavior)
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Player;

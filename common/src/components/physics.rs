@@ -1,43 +1,53 @@
 /// Physics components
 
 use specs;
-use nphysics3d::object::{RigidBody, RigidBodyHandle};
+use nphysics3d::object::{ColliderHandle, BodyHandle};
 
 /// A component for any entity that should be simulated by the physics engine
 pub struct Physics {
-    handle: Handle,
-    /// If true, lock the entity's orientation
-    lock_rotation: bool,
+    /// The handle of the root body of this entity
+    root_handle: BodyHandle,
+    /// A list of handles to the child bodies of the root body of this entity
+    child_handles: Vec<BodyHandle>,
+    /// The handle of the root collider of this entity
+    root_collider: Option<ColliderHandle>,
+    /// A list of handles to the child colliders of the root collider of this entity
+    collider_handles: Vec<ColliderHandle>,
 }
 
 impl Physics {
-    /// Returns a new `Physics`, using `body_init` to create the physics body.
-    /// If `lock_orientation` is true, the body will have its orientation locked
-    pub fn new(body_init: BodyInit, lock_rotation: bool) -> Self {
+    pub fn new(
+        root_handle: BodyHandle,
+        child_handles: Vec<BodyHandle>,
+        root_collider: Option<ColliderHandle>,
+        collider_handles: Vec<ColliderHandle>,
+    ) -> Self {
         Physics {
-            handle: Handle::Init(Some(body_init)),
-            lock_rotation,
+            root_handle,
+            child_handles,
+            root_collider,
+            collider_handles,
         }
     }
 
-    /// Returns a reference to the handle to this entity's physics body
-    pub fn handle(&self) -> &Handle {
-        &self.handle
+    /// Returns the handle to this entity's root physics body
+    pub fn get_root_handle(&self) -> BodyHandle {
+        self.root_handle
     }
 
-    /// Returns a mutable reference to the handle to this entity's physics body
-    pub fn handle_mut(&mut self) -> &mut Handle {
-        &mut self.handle
+    /// Returns a reference to the handles to this entity's child physics bodies
+    pub fn get_child_handles(&self) -> &[BodyHandle] {
+        &self.child_handles
     }
 
-    /// Sets the physics body handle of this entity to the provided value
-    pub fn set_handle(&mut self, handle: RigidBodyHandle<::Float>) {
-        self.handle = Handle::Body(handle);
+    /// Returns the handle to this entity's root collider
+    pub fn get_root_collider(&self) -> Option<ColliderHandle> {
+        self.root_collider
     }
 
-    /// Returns whether to lock the orientation of this entity's physics body
-    pub fn lock_rotation(&self) -> bool {
-        self.lock_rotation
+    /// Returns a reference to the handles to this entity's child colliders
+    pub fn get_child_colliders(&self) -> &[ColliderHandle] {
+        &self.collider_handles
     }
 }
 
@@ -50,38 +60,6 @@ pub struct PhysicsTiedDirection;
 /// position of its physics body
 #[derive(Default)]
 pub struct PhysicsTiedPosition;
-
-/// A function that creates and returns physics body
-pub type BodyInit = Box<FnMut() -> RigidBody<::Float> + Send + Sync + 'static>;
-
-/// Either a handle to a physics body, or a function to initialize one
-pub enum Handle {
-    Body(RigidBodyHandle<::Float>),
-    Init(Option<BodyInit>),
-}
-
-impl Handle {
-    /// Returns the a mutable reference to the physics body if `self` is `Handle::Body`, otherwise
-    /// returns `None`
-    pub fn get_body_mut(&mut self) -> Option<&mut RigidBodyHandle<::Float>> {
-        if let Handle::Body(ref mut rb) = *self {
-            Some(rb)
-        } else {
-            None
-        }
-    }
-
-    /// Calls the provided function on the handle if it exists
-    pub fn map<F>(&self, f: F)
-    where
-        F: FnOnce(&RigidBodyHandle<::Float>),
-    {
-        match *self {
-            Handle::Body(ref h) => f(h),
-            Handle::Init(_) => {}
-        }
-    }
-}
 
 impl specs::Component for Physics {
     type Storage = specs::VecStorage<Self>;
