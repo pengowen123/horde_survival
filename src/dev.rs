@@ -7,19 +7,20 @@ use common::specs::{self, Builder};
 use common::cgmath::*;
 use common::na::{self, Translation3};
 use common::nphysics3d::math::{Inertia, Isometry};
-use common::ncollide3d::shape::{self, ShapeHandle};
+use common::ncollide3d::shape::ShapeHandle;
 use common::nphysics3d::world::World;
-use common::nphysics3d::object::{self, BodyMut, BodyStatus};
+use common::nphysics3d::object::{self, BodyHandle, BodyMut, BodyStatus, ColliderHandle};
 use common::*;
 use common::physics::*;
 use math::functions::dir_vec_to_quaternion;
 use math::convert;
-use control::Control;
+use control::FloorColliderHandle;
 use graphics::obj_loading;
 use graphics::draw::{self, Material, LightSpaceMatrix};
 use graphics::draw::components::*;
 use assets::Assets;
 use player::{self, COLLIDER_MARGIN};
+use physics::scale::Scale as ScaleTrait;
 
 use std::sync::Arc;
 
@@ -28,19 +29,22 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    player::add_player_entity(world);
-
-    create_test_entity(
+    let (_, floor_collider) = create_test_entity(
         world,
         factory,
-        "test_map",
+        "player_controller_playground",
         [0.0; 3],
         Direction::default(),
-        1.0,
+        5.0,
         Material::new(32.0),
         Some(object::Material::new(0.0, 100.0)),
         Box::new(|e| e),
-    );
+    )[0];
+
+    // Set the floor collider handle to the test map's first collision object
+    world.write_resource::<FloorColliderHandle>().set_handle(floor_collider);
+
+    player::add_player_entity(world);
 
     // Create test entities
     {
@@ -158,7 +162,8 @@ fn create_test_entity<'a, R, F, P>(
     material: Material,
     properties: Option<object::Material<::Float>>,
     map: MapEntity,
-) where
+) -> Vec<(BodyHandle, ColliderHandle)>
+where
     R: gfx::Resources,
     F: gfx::Factory<R>,
     P: Into<Option<[::Float; 3]>>,
@@ -174,6 +179,8 @@ fn create_test_entity<'a, R, F, P>(
         &world.read_resource::<slog::Logger>(),
     ).unwrap();
     let shader_param = draw::ShaderParam::default();
+
+    let mut body_handles = Vec::new();
 
     for (drawable, mesh) in objects {
         let physics = properties.clone().map(|props| {
@@ -198,9 +205,13 @@ fn create_test_entity<'a, R, F, P>(
                 pos,
             );
 
+            let scaled_mesh = mesh
+                .scale(scale.get().into())
+                .expect(&format!("Failed to scale mesh for entity: `{}`", name));
+
             let collider = phys_world.add_collider(
                 COLLIDER_MARGIN,
-                ShapeHandle::new(mesh),
+                ShapeHandle::new(scaled_mesh),
                 handle,
                 Isometry::identity(),
                 props,
@@ -209,6 +220,8 @@ fn create_test_entity<'a, R, F, P>(
             if let BodyMut::RigidBody(rb) = phys_world.body_mut(handle) {
                 rb.set_status(BodyStatus::Static);
             }
+
+            body_handles.push((handle, collider));
 
             Physics::new(handle, Vec::new(), Some(collider), Vec::new())
         });
@@ -233,6 +246,8 @@ fn create_test_entity<'a, R, F, P>(
 
         map(entity).build();
     }
+
+    body_handles
 }
 
 fn create_dir_light<'a>(
@@ -263,7 +278,7 @@ fn create_point_light<'a, R, F>(
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    create_test_entity(
+    let _ = create_test_entity(
         world,
         factory,
         "light",
@@ -279,7 +294,7 @@ fn create_point_light<'a, R, F>(
             ));
             map(e)
         }),
-    )
+    );
 }
 
 fn create_spot_light<'a, R, F>(
@@ -298,7 +313,7 @@ fn create_spot_light<'a, R, F>(
 {
     let direction = dir_vec_to_quaternion(direction);
 
-    create_test_entity(
+    let _ = create_test_entity(
         world,
         factory,
         "light",

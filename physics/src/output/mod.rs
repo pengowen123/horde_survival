@@ -6,7 +6,7 @@ pub mod direction;
 use specs::DispatcherBuilder;
 use common::na;
 use nphysics3d::world::World;
-use nphysics3d::object::{Body, BodyHandle, Multibody, MultibodyLinkRef, MultibodyLinkMut};
+use nphysics3d::object::{Body, BodyHandle, Multibody, MultibodyLinkRef};
 
 pub fn initialize<'a, 'b>(
     dispatcher: DispatcherBuilder<'a, 'b>,

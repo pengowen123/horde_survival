@@ -9,8 +9,6 @@ use control;
 
 use math::functions;
 
-const PLAYER_SPEED: ::Float = 25.0;
-
 /// A type alias for convenience
 type Euler = cgmath::Euler<Rad<::Float>>;
 
@@ -98,14 +96,13 @@ impl<'a> specs::System<'a> for System {
                 let new_direction = self.update_direction(rot);
                 // Rotate the player entity's direction
                 d.0 = new_direction;
-
-                // Set the yaw of the player entity's physics body (ignoring the pitch and roll)
-                c.set_rotation(Quaternion::from_angle_z(self.current_direction.y));
             }
 
             if let Some(angle) = self.input_state.get_movement_angle() {
-                let dir = d.0 * Quaternion::from_angle_y(angle);
-                c.move_in_direction(dir, PLAYER_SPEED);
+                let dir = Quaternion::from_angle_z(angle + self.current_direction.y) *
+                    cgmath::Vector3::unit_y();
+
+                c.walk_in_direction(dir.truncate());
             }
         }
     }

@@ -58,7 +58,7 @@ fn try_all_shapes(
 }
 
 /// A trait implemented by all `nphysics` shape types
-trait Scale: Sized {
+pub trait Scale: Sized {
     /// Returns `self` scaled by the provided amount
     fn scale(&self, scale: ::Float) -> Option<Self>;
 }

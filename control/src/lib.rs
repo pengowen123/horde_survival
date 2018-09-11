@@ -8,15 +8,25 @@ extern crate common;
 extern crate shred_derive;
 extern crate math;
 
+mod spring;
+mod movement;
+mod controller;
+
+pub use self::spring::Spring;
+pub use self::movement::MovementForceGenerator;
+
 use common::specs::{self, DispatcherBuilder, Join};
 use common::cgmath::{self, Quaternion};
 use common::{Float, shred, na, physics};
 use common::nphysics3d::world::World;
-use common::nphysics3d::object::BodyMut;
-use math::convert;
+use common::nphysics3d::object::{Body, BodyHandle, ColliderHandle};
+use common::nphysics3d::force_generator::ForceGeneratorHandle;
+use common::ncollide3d::query::{self, RayCast};
+use common::cgmath::InnerSpace;
 
 /// Controlled properties of an entity
 pub struct Control {
+    force_generator: ForceGeneratorHandle,
     direction: Option<Quaternion<::Float>>,
     velocity: Option<VelocityModifier>,
 }
@@ -24,17 +34,30 @@ pub struct Control {
 /// A modifier to be applied to the velocity of an entity
 #[derive(Clone, Copy, Debug)]
 pub enum VelocityModifier {
-    /// Set the velocity to the value
-    SetTo(cgmath::Vector3<::Float>),
-    /// Set the velocity to moving at the provided speed, in the provided direction
-    MoveForward(Quaternion<::Float>, ::Float),
+    /// Walk horizontally in the provided direction, ignoring the vertical component
+    WalkForward(cgmath::Vector2<::Float>),
 }
 
 impl Control {
-    pub fn new(direction: Option<Quaternion<::Float>>, velocity: Option<VelocityModifier>) -> Self {
+    /// Returns a new `Control`
+    pub fn new(
+        body_handle: BodyHandle,
+        movement: movement::MovementForceGenerator,
+        spring: spring::Spring,
+        world: &mut World<::Float>,
+    ) -> Self {
+        let force_generator = world.add_force_generator(
+            controller::ControllerForceGenerator::new(
+                spring,
+                movement,
+                body_handle,
+            )
+        );
+
         Self {
-            direction,
-            velocity,
+            force_generator,
+            direction: None,
+            velocity: None,
         }
     }
 
@@ -43,29 +66,27 @@ impl Control {
         self.direction = Some(direction);
     }
 
-    /// Sets the velocity of the entity to the provided value
-    ///
-    /// The velocity is reset every update, so this must be called every update in order for the
-    /// velocity to persist.
-    pub fn set_velocity(&mut self, velocity: cgmath::Vector3<::Float>) {
-        self.velocity = Some(VelocityModifier::SetTo(velocity));
-    }
-
-    /// Sets the velocity of the entity so that it moves at the provided speed in the provided
-    /// direction
-    pub fn move_in_direction(&mut self, direction: Quaternion<::Float>, speed: ::Float) {
-        self.velocity = Some(VelocityModifier::MoveForward(direction, speed));
-    }
-}
-
-impl Default for Control {
-    fn default() -> Self {
-        Control::new(None, None)
+    /// Makes the entity walk horizontally in the provided direction, ignoring the vertical
+    /// component
+    pub fn walk_in_direction(&mut self, direction: cgmath::Vector2<::Float>) {
+        self.velocity = Some(VelocityModifier::WalkForward(direction));
     }
 }
 
 impl specs::Component for Control {
     type Storage = specs::VecStorage<Self>;
+}
+
+pub struct FloorColliderHandle(Option<ColliderHandle>);
+
+impl FloorColliderHandle {
+    pub fn set_handle(&mut self, handle: ColliderHandle) {
+        self.0 = Some(handle);
+    }
+
+    pub fn get_handle(&self) -> Option<ColliderHandle> {
+        self.0
+    }
 }
 
 pub struct System;
@@ -75,6 +96,7 @@ pub struct Data<'a> {
     control: specs::WriteStorage<'a, Control>,
     physics: specs::WriteStorage<'a, physics::Physics>,
     world: specs::WriteExpect<'a, World<::Float>>,
+    floor_handle: specs::ReadExpect<'a, FloorColliderHandle>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -87,41 +109,64 @@ impl<'a> specs::System<'a> for System {
                 c.direction = None;
             }
 
-            let new_velocity = c.velocity.map(|modifier| {
-                match modifier {
-                    VelocityModifier::SetTo(velocity) => {
-                        convert::to_na_vector(velocity)
-                    }
-                    VelocityModifier::MoveForward(direction, speed) => {
-                        let direction = convert::to_na_quaternion(direction);
-                        (direction * -na::Vector3::z()).normalize() * speed
-                    }
+            let walk_dir = c.velocity.map(|direction| {
+                match direction {
+                    VelocityModifier::WalkForward(direction) => direction.normalize()
                 }
             });
 
             c.velocity = None;
 
-            match data.world.body_mut(p.get_root_handle()) {
-                // The `control` system only works for rigid bodies
-                BodyMut::RigidBody(body) => {
-                    if let Some(vel) = new_velocity {
-                        body.set_linear_velocity(vel);
+            let mut current_spring_length = None;
 
-                        // The body must be activated because if it is sleeping then setting the velocity
-                        // won't do anything
-                        body.activate();
-                    } else {
-                        let vel_z = body.velocity().linear.z;
+            if let Some(handle) = p.get_root_collider() {
+                if let Some(entity_collider) = data.world.collider(handle) {
+                    if let Some(floor_handle) = data.floor_handle.get_handle() {
+                        if let Some(floor_collider) = data.world.collider(floor_handle) {
+                            let entity_pos =
+                                na::Point3::origin() +
+                                entity_collider.position().translation.vector;
 
-                        body.set_linear_velocity(na::Vector3::new(0.0, 0.0, vel_z));
+                            let ray = query::Ray::new(entity_pos, -na::Vector3::z());
+
+                            current_spring_length = floor_collider
+                                .shape()
+                                .toi_with_ray(floor_collider.position(), &ray, false);
+                        }
                     }
-                },
-                // TODO: Maybe use a multibody for controlled entities to allow for joints
-                //       This is blocked on nphysics#127
-                BodyMut::Multibody(multibody) => {
-                },
-                _ => continue,
+                }
+            }
+
+            let current_entity_velocity = {
+                let body = data.world.body(p.get_root_handle());
+
+                match body {
+                    Body::RigidBody(rb) => {
+                        rb.velocity().linear
+                    }
+                    _ => na::zero(),
+                }
             };
+
+            let mut controller = data.world
+                .force_generator_mut(c.force_generator)
+                .downcast_mut::<controller::ControllerForceGenerator>().unwrap();
+
+            if let Some(length) = current_spring_length {
+                controller.spring.set_current_length(length);
+            } else {
+                println!("No collision");
+                controller.spring.reset_current_length();
+            }
+
+            if let Some(walk_dir) = walk_dir {
+                controller.movement.set_walk_direction(walk_dir);
+            } else {
+                controller.movement.reset_walk_direction();
+            }
+
+            // Update the velocity fields on the controller's force generators
+            controller.update_current_entity_velocity(current_entity_velocity);
         }
     }
 }
@@ -134,6 +179,9 @@ pub fn initialize<'a, 'b>(
 
     // Register components
     world.register::<Control>();
+
+    // Add resources
+    world.add_resource(FloorColliderHandle(None));
 
     // Add systems
     dispatcher.with(System, "control", &[])
