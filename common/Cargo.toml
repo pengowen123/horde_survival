@@ -4,7 +4,7 @@ name = "common"
 version = "0.1.0"
 
 [dependencies]
-cgmath = "0.15.0"
+cgmath = "0.16.0"
 glutin = "0.17"
 log = "0.3.8"
 shred = "0.7"

@@ -19,7 +19,7 @@ use common::specs::{self, DispatcherBuilder, Join};
 use common::cgmath::{self, Quaternion};
 use common::{Float, shred, na, physics};
 use common::nphysics3d::world::World;
-use common::nphysics3d::object::{Body, BodyHandle, ColliderHandle};
+use common::nphysics3d::object::{Body, BodyMut, BodyHandle, ColliderHandle};
 use common::nphysics3d::force_generator::ForceGeneratorHandle;
 use common::ncollide3d::query::{self, RayCast};
 use common::cgmath::InnerSpace;
@@ -29,6 +29,8 @@ pub struct Control {
     force_generator: ForceGeneratorHandle,
     direction: Option<Quaternion<::Float>>,
     velocity: Option<VelocityModifier>,
+    friction: ::Float,
+    max_speed: ::Float,
 }
 
 /// A modifier to be applied to the velocity of an entity
@@ -44,8 +46,10 @@ impl Control {
         body_handle: BodyHandle,
         movement: movement::MovementForceGenerator,
         spring: spring::Spring,
+        friction: ::Float,
         world: &mut World<::Float>,
     ) -> Self {
+        let max_speed = movement.max_speed();
         let force_generator = world.add_force_generator(
             controller::ControllerForceGenerator::new(
                 spring,
@@ -56,8 +60,10 @@ impl Control {
 
         Self {
             force_generator,
+            friction,
             direction: None,
             velocity: None,
+            max_speed,
         }
     }
 
@@ -114,6 +120,42 @@ impl<'a> specs::System<'a> for System {
                     VelocityModifier::WalkForward(direction) => direction.normalize()
                 }
             });
+
+            match data.world.body_mut(p.get_root_handle()) {
+                // The `control` system only works for rigid bodies
+                // TODO: Maybe use a multibody for controlled entities to allow for joints
+                //       This is blocked on nphysics#127
+                BodyMut::RigidBody(body) => {
+                    body.set_angular_velocity(na::zero());
+
+                    // Only apply friction is the entity is not trying to walk
+                    if c.velocity.is_none() {
+                        let mut vel = body.velocity().linear;
+
+                        // Apply friction to the entity's horizontal velocity
+                        vel[0] *= c.friction;
+                        vel[1] *= c.friction;
+
+                        body.set_linear_velocity(vel);
+                    } else {
+                        let mut vel = body.velocity().linear;
+
+                        let magnitude = cgmath::Vector2::new(vel[0], vel[1]).magnitude();
+
+                        if magnitude > c.max_speed {
+                            vel[0] = vel[0] / magnitude * c.max_speed;
+                            vel[1] = vel[1] / magnitude * c.max_speed;
+                        }
+
+                        body.set_linear_velocity(vel);
+
+                        // If the entity is trying to walk, activate its physics body and apply the
+                        // movement speed limit
+                        body.activate();
+                    }
+                },
+                _ => continue,
+            }
 
             c.velocity = None;
 

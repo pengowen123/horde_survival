@@ -19,7 +19,7 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         for (d, p) in (&data.direction, &mut data.param).join() {
-            p.rotation = cgmath::Quaternion::from_sv(d.0.s as f32, d.0.v.cast()).into();
+            p.rotation = cgmath::Quaternion::from_sv(d.0.s as f32, d.0.v.cast().unwrap()).into();
         }
     }
 }

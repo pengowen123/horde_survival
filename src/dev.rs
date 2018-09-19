@@ -102,7 +102,7 @@ where
             };
             let dir = cgmath::Vector3::new(1.0, -1.0, -1.0);
             let pos = cgmath::Point3::new(-10.0, 10.0, 5.0);
-            let lsm = LightSpaceMatrix::from_components(proj, pos, dir.cast());
+            let lsm = LightSpaceMatrix::from_components(proj, pos, dir.cast().unwrap());
             dir_light(dir.x, dir.y, dir.z, Some(lsm));
         }
 

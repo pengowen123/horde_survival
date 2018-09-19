@@ -35,6 +35,10 @@ impl MovementForceGenerator {
     pub fn update_horizontal_velocity(&mut self, new_velocity: cgmath::Vector2<::Float>) {
         self.horizontal_velocity = new_velocity;
     }
+
+    pub fn max_speed(&self) -> ::Float {
+        self.max_speed
+    }
 }
 
 impl MovementForceGenerator {

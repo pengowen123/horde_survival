@@ -22,7 +22,7 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         for (s, p) in (&data.space, &mut data.param).join() {
-            p.translation = cgmath::Matrix4::from_translation(s.0.cast::<f32>().to_vec());
+            p.translation = cgmath::Matrix4::from_translation(s.0.cast::<f32>().unwrap().to_vec());
         }
     }
 }

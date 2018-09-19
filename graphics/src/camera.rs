@@ -101,8 +101,8 @@ impl<'a> specs::System<'a> for System {
     fn run(&mut self, data: Self::SystemData) {
         for (s, d, _) in (&data.space, &data.direction, &data.player).join() {
             *data.camera.lock().unwrap() = Camera::new(
-                s.0.cast(),
-                d.0.cast(),
+                s.0.cast().unwrap(),
+                d.0.cast().unwrap(),
                 data.window_info.aspect_ratio(),
                 data.config.camera.fov,
             );

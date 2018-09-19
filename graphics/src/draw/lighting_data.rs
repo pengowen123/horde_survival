@@ -96,7 +96,7 @@ impl<'a> specs::System<'a> for System {
 
         // Collect all directional light entities
         for (i, (l, d)) in (&data.dir_light, &data.direction).join().enumerate() {
-            let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast();
+            let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast().unwrap();
 
             let light = lighting::DirectionalLight::from_components(
                 *l,
@@ -109,7 +109,7 @@ impl<'a> specs::System<'a> for System {
 
         // Collect all point light entities
         for (i, (l, s)) in (&data.point_light, &data.space).join().enumerate() {
-            let pos: [f32; 3] = s.0.cast().into();
+            let pos: [f32; 3] = s.0.cast().unwrap().into();
             let light = lighting::PointLight::from_components(*l, pos);
 
             light_info.point_lights[i] = light;
@@ -117,8 +117,8 @@ impl<'a> specs::System<'a> for System {
 
         // Collect all spot light entities
         for (i, (l, d, s)) in (&data.spot_light, &data.direction, &data.space).join().enumerate() {
-            let pos: [f32; 3] = s.0.cast().into();
-            let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast();
+            let pos: [f32; 3] = s.0.cast().unwrap().into();
+            let dir: cgmath::Vector3<f32> = cgmath::Vector3::from(*d).cast().unwrap();
             let light = lighting::SpotLight::from_components(*l, pos, dir.into());
 
             light_info.spot_lights[i] = light;

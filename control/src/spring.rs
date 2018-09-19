@@ -5,7 +5,7 @@ use common::na;
 
 // TODO: Fine tune these
 const SPRING_LENGTH_CUTOFF: ::Float = 8.0;
-const SPRING_VELOCITY_CUTOFF: ::Float = 4.0;
+const SPRING_LENGTH_RE_ENABLE_PERCENTAGE: ::Float = 0.75;
 
 pub struct Spring {
     pub current_length: Option<::Float>,
@@ -13,6 +13,7 @@ pub struct Spring {
     length: ::Float,
     stiffness: ::Float,
     friction: ::Float,
+    enabled: bool,
 }
 
 impl Spring {
@@ -27,6 +28,7 @@ impl Spring {
             length,
             stiffness,
             friction,
+            enabled: true,
         }
     }
 
@@ -55,9 +57,13 @@ impl Spring {
 
         let delta_length = self.length - current_length;
 
-        if (delta_length.abs() > SPRING_LENGTH_CUTOFF) ||
-            self.current_velocity > SPRING_VELOCITY_CUTOFF
-        {
+        if delta_length.abs() > SPRING_LENGTH_CUTOFF {
+            self.enabled = false;
+        } else if current_length < self.length * SPRING_LENGTH_RE_ENABLE_PERCENTAGE {
+            self.enabled = true;
+        }
+
+        if !self.enabled {
             return None;
         }
 
@@ -67,8 +73,6 @@ impl Spring {
 
             force + dampener
         };
-
-        println!("length: {}", current_length);
 
         Some(total_force)
     }
