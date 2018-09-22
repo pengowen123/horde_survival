@@ -79,6 +79,7 @@ pub struct BindConfig {
     pub move_backward: Bind,
     pub move_left: Bind,
     pub move_right: Bind,
+    pub jump: Bind,
     pub reload_shaders: Bind,
 }
 
@@ -88,6 +89,7 @@ pub enum BindName {
     MoveBackward,
     MoveLeft,
     MoveRight,
+    Jump,
 }
 
 impl BindConfig {
@@ -101,16 +103,28 @@ impl BindConfig {
             BindName::MoveLeft => &mut self.move_left,
             BindName::MoveRight => &mut self.move_right,
             BindName::MoveBackward => &mut self.move_backward,
+            BindName::Jump => &mut self.jump,
         }
     }
 
     /// Returns whether the provided `Bind` is already assigned to an action
     pub fn is_in_use(&self, bind: &Bind) -> bool {
         // NOTE: If new binds are added, add them here as well
-        self.move_forward == *bind ||
-            self.move_left == *bind ||
-            self.move_right == *bind ||
-            self.move_backward == *bind
+        let binds = [
+            &self.move_forward,
+            &self.move_left,
+            &self.move_right,
+            &self.move_backward,
+            &self.jump,
+        ];
+
+        for b in &binds {
+            if **b == *bind {
+                return true
+            }
+        }
+
+        false
     }
 }
 
@@ -152,6 +166,10 @@ impl Default for BindConfig {
             move_right: Bind {
                 modifiers: Default::default(),
                 key: Key::D,
+            },
+            jump: Bind {
+                modifiers: Default::default(),
+                key: Key::Space,
             },
             reload_shaders: Bind {
                 modifiers: Default::default(),

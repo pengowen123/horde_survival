@@ -67,6 +67,8 @@ pub enum ChangedConfig {
 pub enum Event {
     /// A movement key was pressed or released, and the movement key state should be updated
     ChangeMovementKeyState(Direction, State),
+    /// The player jumped
+    Jump,
     /// The camera should be rotated
     RotateCamera(CameraRotation),
     /// The shaders should be reloaded
@@ -164,6 +166,8 @@ pub fn process_window_event(
                 ElementState::Pressed => {
                     if current_bind == config.bindings.reload_shaders {
                         event = Some(Event::ReloadShaders);
+                    } else if current_bind == config.bindings.jump {
+                        event = Some(Event::Jump);
                     }
                 }
                 ElementState::Released => {

@@ -109,6 +109,13 @@ widget_ids! {
         move_backward_rect,
         move_backward_text,
         move_backward_text_2,
+        jump_canvas,
+        jump_canvas_2,
+        jump_label,
+        jump_button,
+        jump_rect,
+        jump_text,
+        jump_text_2,
     }
 }
 
@@ -135,6 +142,7 @@ struct WaitForKeypressState {
     move_left: bool,
     move_right: bool,
     move_backward: bool,
+    jump: bool,
 }
 
 impl WaitForKeypressState {
@@ -144,15 +152,18 @@ impl WaitForKeypressState {
             move_left: false,
             move_right: false,
             move_backward: false,
+            jump: false,
         }
     }
 
     /// Returns whether a UI element is waiting for a keypress
     fn is_waiting(&self) -> bool {
+        // NOTE: If new keybindings are added, add them here too
         self.move_forward ||
             self.move_left ||
             self.move_right ||
-            self.move_backward
+            self.move_backward ||
+            self.jump
     }
 }
 

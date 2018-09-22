@@ -776,6 +776,40 @@ impl Menus {
         show_warning = show_warning || bind_result.show_warning;
         hide_warning = hide_warning || bind_result.hide_warning;
 
+        // Jump binding option
+        option_canvas(
+            &mut bindings_option_index,
+            ids.jump_canvas,
+            ids.options_bindings_canvas,
+            ui,
+        );
+
+        option_label(
+            "Jump",
+            ids.jump_label,
+            ids.jump_canvas,
+            ui,
+        );
+
+        let bind_result = binding_option(
+            &mut self.wait_for_keypress_state.jump,
+            any_waiting_for_keypress,
+            keypress,
+            config::BindName::Jump,
+            &mut self.new_config.bindings,
+            ids.jump_canvas_2,
+            ids.jump_button,
+            ids.jump_rect,
+            ids.jump_text,
+            ids.jump_text_2,
+            ids.jump_canvas,
+            ui,
+        );
+
+        redraw = redraw || bind_result.redraw;
+        show_warning = show_warning || bind_result.show_warning;
+        hide_warning = hide_warning || bind_result.hide_warning;
+
         // This makes the warning persistent
         if show_warning {
             self.show_key_warning = true;
