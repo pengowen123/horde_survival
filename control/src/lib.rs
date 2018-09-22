@@ -19,10 +19,12 @@ use common::specs::{self, DispatcherBuilder, Join};
 use common::cgmath::{self, Quaternion};
 use common::{Float, shred, na, physics};
 use common::nphysics3d::world::World;
+use common::nphysics3d::algebra::Velocity3;
 use common::nphysics3d::object::{Body, BodyMut, BodyHandle, ColliderHandle};
 use common::nphysics3d::force_generator::ForceGeneratorHandle;
 use common::ncollide3d::query::{self, RayCast};
 use common::cgmath::InnerSpace;
+use math::convert;
 
 /// Controlled properties of an entity
 pub struct Control {
@@ -160,6 +162,7 @@ impl<'a> specs::System<'a> for System {
             c.velocity = None;
 
             let mut current_spring_length = None;
+            let mut ground_normal = None;
 
             if let Some(handle) = p.get_root_collider() {
                 if let Some(entity_collider) = data.world.collider(handle) {
@@ -171,44 +174,62 @@ impl<'a> specs::System<'a> for System {
 
                             let ray = query::Ray::new(entity_pos, -na::Vector3::z());
 
-                            current_spring_length = floor_collider
+                            let intersection = floor_collider
                                 .shape()
-                                .toi_with_ray(floor_collider.position(), &ray, false);
+                                .toi_and_normal_with_ray(floor_collider.position(), &ray, false);
+
+                            if let Some(intersection) = intersection {
+                                current_spring_length = Some(intersection.toi);
+                                ground_normal = Some(intersection.normal);
+                            }
                         }
                     }
                 }
             }
 
             let current_entity_velocity = {
-                let body = data.world.body(p.get_root_handle());
-
-                match body {
-                    Body::RigidBody(rb) => {
-                        rb.velocity().linear
-                    }
-                    _ => na::zero(),
+                if let Body::RigidBody(rb) = data.world.body(p.get_root_handle()) {
+                    rb.velocity().linear
+                } else {
+                    na::zero()
                 }
             };
 
-            let mut controller = data.world
-                .force_generator_mut(c.force_generator)
-                .downcast_mut::<controller::ControllerForceGenerator>().unwrap();
+            let is_ground_too_steep = {
+                let mut controller = data.world
+                    .force_generator_mut(c.force_generator)
+                    .downcast_mut::<controller::ControllerForceGenerator>().unwrap();
 
-            if let Some(length) = current_spring_length {
-                controller.spring.set_current_length(length);
-            } else {
-                println!("No collision");
-                controller.spring.reset_current_length();
+                if let Some(length) = current_spring_length {
+                    controller.spring.set_current_length(length);
+                } else {
+                    println!("No collision");
+                    controller.spring.reset_current_length();
+                }
+
+                let is_ground_too_steep = controller.movement.update_ground_normal(
+                    ground_normal
+                        .map(convert::to_cgmath_vector)
+                        .unwrap_or(cgmath::Vector3::unit_z())
+                );
+
+                if let Some(walk_dir) = walk_dir {
+                    controller.movement.set_walk_direction(walk_dir);
+                } else {
+                    controller.movement.reset_walk_direction();
+                }
+
+                // Update the velocity fields on the controller's force generators
+                controller.update_current_entity_velocity(current_entity_velocity);
+
+                is_ground_too_steep
+            };
+
+            if is_ground_too_steep {
+                if let BodyMut::RigidBody(rb) = data.world.body_mut(p.get_root_handle()) {
+                    rb.set_velocity(Velocity3::zero());
+                }
             }
-
-            if let Some(walk_dir) = walk_dir {
-                controller.movement.set_walk_direction(walk_dir);
-            } else {
-                controller.movement.reset_walk_direction();
-            }
-
-            // Update the velocity fields on the controller's force generators
-            controller.update_current_entity_velocity(current_entity_velocity);
         }
     }
 }

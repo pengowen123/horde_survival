@@ -15,6 +15,15 @@ where
     cgmath::Point3::new(val[0], val[1], val[2])
 }
 
+/// Returns a `cgmath::Vector3` from a value that can be indexed
+pub fn to_cgmath_vector<V, N>(val: V) -> cgmath::Vector3<N>
+where
+    N: cgmath::BaseNum,
+    V: Index<usize, Output = N>,
+{
+    cgmath::Vector3::new(val[0], val[1], val[2])
+}
+
 /// Returns a `cgmath::Matrix4` rotation matrix from the provided
 /// `nalgebra::QuaternionBase`
 pub fn to_cgmath_quaternion<T>(quat: na::UnitQuaternion<T>) -> cgmath::Quaternion<T>
