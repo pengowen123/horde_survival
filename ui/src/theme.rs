@@ -1,6 +1,6 @@
 //! Themes for the UI
 
-use common::conrod::{Theme, color};
+use common::conrod::{color, Theme};
 
 use std::time::Duration;
 

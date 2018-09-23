@@ -1,8 +1,8 @@
 //! A component and system to tie the position of an entity to the position of its physics body
 
-use specs::{self, Join};
 use common::{self, physics};
 use nphysics3d::world::World;
+use specs::{self, Join};
 
 use math::convert;
 
@@ -23,7 +23,9 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         for (p, s, _) in (&data.physics, &mut data.space, &data.tie).join() {
-            let pos = get_isometry(&data.world, p.get_root_handle()).translation.vector;
+            let pos = get_isometry(&data.world, p.get_root_handle())
+                .translation
+                .vector;
             s.0 = convert::to_cgmath_point(pos);
         }
     }

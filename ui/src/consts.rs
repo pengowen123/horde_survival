@@ -2,14 +2,8 @@
 //!
 //! Constants are used to keep UI elements with similar purposes consistent in appearance
 
-use common::conrod::{
-    self,
-    Colorable,
-    Sizeable,
-    Labelable,
-    color,
-};
 use common::conrod::widget::{self, button};
+use common::conrod::{self, color, Colorable, Labelable, Sizeable};
 
 pub const UI_BACKGROUND_COLOR: conrod::Color = color::LIGHT_CHARCOAL;
 pub const GENERIC_BUTTON_WIDTH: conrod::Scalar = 300.0;
@@ -23,9 +17,9 @@ pub const GENERIC_BUTTON_SPACING: conrod::Scalar = GENERIC_BUTTON_HEIGHT * -1.2;
 /// Creates a button with the properties specified by the `GENERIC_BUTTON_*` constants
 pub fn create_generic_button<'a>(
     button: widget::Button<'a, button::Flat>,
-    label: &'a str
+    label: &'a str,
 ) -> widget::Button<'a, button::Flat> {
-     button
+    button
         .w_h(GENERIC_BUTTON_WIDTH, GENERIC_BUTTON_HEIGHT)
         .color(GENERIC_BUTTON_COLOR)
         .label(label)

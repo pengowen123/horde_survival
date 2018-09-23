@@ -1,12 +1,12 @@
 //! Implementation of the main menu
 
-use common::conrod::{self, Colorable, Positionable, color};
 use common::conrod::widget::{self, Widget};
-use common::{UiState, glutin, config};
+use common::conrod::{self, color, Colorable, Positionable};
+use common::{config, glutin, UiState};
 use window::window_event;
 
-use menus::{Menus, options};
-use consts::{self, UI_BACKGROUND_COLOR, GENERIC_BUTTON_SPACING};
+use consts::{self, GENERIC_BUTTON_SPACING, UI_BACKGROUND_COLOR};
+use menus::{options, Menus};
 
 const TITLE_TEXT_FONT_SIZE: u32 = 46;
 
@@ -22,8 +22,7 @@ impl Menus {
         let ids = &self.ids;
 
         // Root canvas
-        widget::Canvas::new()
-            .set(ids.main_menu_root_canvas, ui);
+        widget::Canvas::new().set(ids.main_menu_root_canvas, ui);
 
         // The main canvas
         widget::Canvas::new()

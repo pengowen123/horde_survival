@@ -2,36 +2,37 @@
 
 use gfx;
 
-use pass::PassSetup;
 use builder::GraphBuilder;
 use error::BuildError;
+use pass::PassSetup;
 
 /// A `Module`
 pub struct Module<R, C, F, CF, DF>
-where R: gfx::Resources,
-      C: gfx::CommandBuffer<R>,
-      F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     passes: Vec<PassSetup<R, C, F, CF, DF>>,
 }
 
 impl<R, C, F, CF, DF> Module<R, C, F, CF, DF>
-where R: gfx::Resources,
-      C: gfx::CommandBuffer<R>,
-      F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     /// Returns a new `Module`
     pub fn new() -> Self {
-        Self {
-            passes: Vec::new(),
-        }
+        Self { passes: Vec::new() }
     }
 
     /// Adds the provided pass to the `Module`
     ///
     /// The pass will not be setup until `Module::setup_passes` is run.
     pub fn add_pass<P>(mut self, pass: P) -> Self
-        where P: Into<PassSetup<R, C, F, CF, DF>>
+    where
+        P: Into<PassSetup<R, C, F, CF, DF>>,
     {
         self.passes.push(pass.into());
         self
@@ -47,7 +48,7 @@ where R: gfx::Resources,
     /// Calls `PassSetup::setup` on each of this `Module`'s passes
     pub fn setup_passes(
         self,
-        builder: &mut GraphBuilder<R, C, F, CF, DF>
+        builder: &mut GraphBuilder<R, C, F, CF, DF>,
     ) -> Result<(), BuildError<String>> {
         for pass in self.passes {
             pass.setup(builder)?;

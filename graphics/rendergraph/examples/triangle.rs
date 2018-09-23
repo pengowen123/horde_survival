@@ -1,14 +1,14 @@
-extern crate rendergraph;
 extern crate common;
+extern crate rendergraph;
 #[macro_use]
 extern crate gfx;
 
 use common::{gfx_window_glutin, glutin, shred};
-use glutin::{EventsLoop, GlContext};
 use gfx::{
-    format::{Srgba8, DepthStencil},
+    format::{DepthStencil, Srgba8},
     traits::FactoryExt,
 };
+use glutin::{EventsLoop, GlContext};
 
 use std::sync::Arc;
 
@@ -60,14 +60,17 @@ struct TrianglePass<R: gfx::Resources> {
 
 impl<R: gfx::Resources> TrianglePass<R> {
     fn setup<C, F>(builder: &mut rendergraph::builder::GraphBuilder<R, C, F, Srgba8, DepthStencil>)
-        where C: gfx::CommandBuffer<R>,
-              F: gfx::Factory<R>,
+    where
+        C: gfx::CommandBuffer<R>,
+        F: gfx::Factory<R>,
     {
         let main_color = builder.main_color().clone();
         let bundle = {
             let factory = builder.factory();
-            
-            let pso = factory.create_pipeline_simple(VS_DATA, FS_DATA, pipe::new()).unwrap();
+
+            let pso = factory
+                .create_pipeline_simple(VS_DATA, FS_DATA, pipe::new())
+                .unwrap();
             let data = pipe::Data {
                 vbuf: factory.create_vertex_buffer(&[
                     Vertex::new([-0.5, -0.5], [1.0, 0.0, 0.0, 1.0]),
@@ -87,7 +90,9 @@ impl<R: gfx::Resources> TrianglePass<R> {
     }
 }
 
-impl<R: gfx::Resources, C: gfx::CommandBuffer<R>> rendergraph::pass::Pass<R, C> for TrianglePass<R> {
+impl<R: gfx::Resources, C: gfx::CommandBuffer<R>> rendergraph::pass::Pass<R, C>
+    for TrianglePass<R>
+{
     fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, res: &mut shred::Resources) {
         encoder.clear(&self.bundle.data.out_color, [1.0; 4]);
         self.bundle.encode(encoder);
@@ -95,11 +100,11 @@ impl<R: gfx::Resources, C: gfx::CommandBuffer<R>> rendergraph::pass::Pass<R, C> 
 }
 
 fn setup_passes<R, C, F>(
-    builder: &mut rendergraph::builder::GraphBuilder<R, C, F, Srgba8, DepthStencil>
-)
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+    builder: &mut rendergraph::builder::GraphBuilder<R, C, F, Srgba8, DepthStencil>,
+) where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     let triangle_module = rendergraph::module::Module::new()
         .add_pass(TrianglePass::setup as rendergraph::pass::SetupFn<_, _, _, _, _>);
@@ -117,11 +122,7 @@ fn main() {
 
     // Initialize gfx structs
     let (window, device, mut factory, main_color, main_depth) =
-        gfx_window_glutin::init::<Srgba8, DepthStencil>(
-            window_builder,
-            context_builder,
-            &events,
-        );
+        gfx_window_glutin::init::<Srgba8, DepthStencil>(window_builder, context_builder, &events);
 
     unsafe {
         window.make_current().unwrap();

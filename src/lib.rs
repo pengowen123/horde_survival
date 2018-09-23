@@ -4,28 +4,28 @@
 extern crate shred_derive;
 #[macro_use]
 extern crate slog;
-extern crate slog_term;
-extern crate slog_async;
+extern crate assets;
 extern crate common;
-extern crate math;
-extern crate physics;
-extern crate window;
 extern crate control;
 extern crate graphics;
+extern crate math;
+extern crate physics;
+extern crate slog_async;
+extern crate slog_term;
 extern crate ui;
-extern crate assets;
+extern crate window;
 
 // TODO: Remove when no longer needed
 mod dev;
 
-mod player_control;
 mod player;
+mod player_control;
 
-use common::{Float, specs, glutin, config};
 use common::shred;
+use common::{config, glutin, specs, Float};
 use window::window_event;
 
-use std::sync::{Arc, mpsc};
+use std::sync::{mpsc, Arc};
 
 // TODO: Docs
 // TODO: Decide how systems should depend on each other (i think delta should come first always)
@@ -44,11 +44,10 @@ pub fn run(
     let dispatcher_graphics = specs::DispatcherBuilder::new();
 
     // Add assets manager resource
-    let assets = assets::Assets::new(&logger, cli_config.assets_path())
-        .unwrap_or_else(|e| {
-            error!(logger, "Error building asset manager: {}", e;);
-            panic!(common::CRASH_MSG);
-        });
+    let assets = assets::Assets::new(&logger, cli_config.assets_path()).unwrap_or_else(|e| {
+        error!(logger, "Error building asset manager: {}", e;);
+        panic!(common::CRASH_MSG);
+    });
     world.add_resource(Arc::new(assets));
     // Add logger resource
     world.add_resource(logger);
@@ -58,9 +57,9 @@ pub fn run(
     // Call initialization functions (initializes their components and systems)
     let dispatcher_graphics = common::initialize(&mut world, dispatcher_graphics);
     let dispatcher_graphics = window::initialize(&mut world, dispatcher_graphics);
-        
+
     let dispatcher = player_control::initialize(&mut world, dispatcher);
-    
+
     let dispatcher = control::initialize(&mut world, dispatcher);
     let dispatcher = physics::initialize(&mut world, dispatcher);
     ui::add_resources(&mut world);
@@ -74,8 +73,12 @@ pub fn run(
     let dispatcher_graphics = ui::initialize(
         &mut world,
         dispatcher_graphics,
-        window.get_inner_size().unwrap().to_physical(window.get_hidpi_factor()).into(),
-        ui_event_receiver
+        window
+            .get_inner_size()
+            .unwrap()
+            .to_physical(window.get_hidpi_factor())
+            .into(),
+        ui_event_receiver,
     );
 
     // Build the dispatchers
@@ -113,23 +116,18 @@ pub fn run(
                             &log,
                         );
 
-                         // If the game isn't running, only call process_window_event_graphics
+                        // If the game isn't running, only call process_window_event_graphics
                         if !ui_state.is_in_game() {
                             return;
                         }
 
-                       // Collect the latest mouse event
+                        // Collect the latest mouse event
                         if let glutin::WindowEvent::CursorMoved { .. } = event {
                             latest_mouse_move = Some(event);
                             return;
                         }
-                        
-                        window_event::process_window_event(
-                            &config,
-                            &mut channel,
-                            &window,
-                            &event,
-                        );
+
+                        window_event::process_window_event(&config, &mut channel, &window, &event);
                     }
                     _ => {}
                 }

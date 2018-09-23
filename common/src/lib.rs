@@ -1,9 +1,9 @@
 //! Common dependencies and types shared between crates
 
 // ECS
-pub extern crate specs;
 pub extern crate shred;
 pub extern crate shrev;
+pub extern crate specs;
 
 // Math
 pub extern crate cgmath;
@@ -14,11 +14,11 @@ pub extern crate ncollide3d;
 pub extern crate nphysics3d;
 
 // Graphics
-pub extern crate glutin;
 pub extern crate gfx;
 pub extern crate gfx_core;
-pub extern crate gfx_window_glutin;
 pub extern crate gfx_device_gl;
+pub extern crate gfx_window_glutin;
+pub extern crate glutin;
 
 // UI
 pub extern crate conrod;
@@ -27,15 +27,15 @@ pub extern crate conrod;
 pub extern crate time;
 #[macro_use]
 pub extern crate structopt;
-extern crate slog;
 extern crate serde;
+extern crate slog;
 #[macro_use]
 extern crate serde_derive;
 
-mod delta;
 mod components;
-mod resources;
 pub mod config;
+mod delta;
+mod resources;
 pub mod utils;
 
 pub use self::components::*;
@@ -53,7 +53,6 @@ pub fn initialize<'a, 'b>(
     world: &mut specs::World,
     dispatcher: specs::DispatcherBuilder<'a, 'b>,
 ) -> specs::DispatcherBuilder<'a, 'b> {
-
     world.register::<components::Player>();
     world.register::<components::Position>();
     world.register::<components::Direction>();

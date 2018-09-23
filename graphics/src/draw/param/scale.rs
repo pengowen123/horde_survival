@@ -1,9 +1,8 @@
+use common::{self, cgmath};
 /// A system to update the shader parameter representing the scale of an entity's model
 ///
 /// Gets the scale data from the entity's `Scale` component
-
 use specs::{self, Join};
-use common::{self, cgmath};
 
 /// A 3D scale
 pub type Scale = cgmath::Matrix4<f32>;

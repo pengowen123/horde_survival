@@ -10,9 +10,9 @@ extern crate slog;
 
 pub mod shader;
 
-use std::path::{PathBuf, Path};
-use std::io::{self, Read};
 use std::fs::File;
+use std::io::{self, Read};
+use std::path::{Path, PathBuf};
 
 /// A type that calculates paths to assets based on the location of the assets directory
 pub struct Assets {
@@ -24,9 +24,10 @@ pub struct Assets {
 }
 
 impl Assets {
-    pub fn new<P: Into<PathBuf>>(log: &slog::Logger, assets_dir: P)
-        -> Result<Self, shader::IoError>
-    {
+    pub fn new<P: Into<PathBuf>>(
+        log: &slog::Logger,
+        assets_dir: P,
+    ) -> Result<Self, shader::IoError> {
         let assets_dir = assets_dir.into();
         let assets_dir = assets_dir
             .canonicalize()

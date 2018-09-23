@@ -9,12 +9,12 @@ extern crate bitflags;
 #[macro_use]
 extern crate slog;
 
-pub mod info;
 pub mod config;
-pub mod window_event;
+pub mod info;
 pub mod input;
+pub mod window_event;
 
-use common::{Float, glutin};
+use common::{glutin, Float};
 
 use std::sync::Arc;
 
@@ -25,7 +25,6 @@ pub fn initialize<'a, 'b>(
     world: &mut specs::World,
     dispatcher: specs::DispatcherBuilder<'a, 'b>,
 ) -> specs::DispatcherBuilder<'a, 'b> {
-
     world.add_resource(info::WindowInfo::default());
     world.add_resource(window_event::EventChannel::new());
 

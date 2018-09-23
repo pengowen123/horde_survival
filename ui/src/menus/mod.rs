@@ -1,15 +1,15 @@
 //! Implementation of game menus
 
-mod main;
 mod ingame;
-mod pause;
+mod main;
 mod options;
+mod pause;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 
-use common::conrod::widget::id;
 use common::config;
+use common::conrod::widget::id;
 use UiState;
 
 widget_ids! {
@@ -159,11 +159,7 @@ impl WaitForKeypressState {
     /// Returns whether a UI element is waiting for a keypress
     fn is_waiting(&self) -> bool {
         // NOTE: If new keybindings are added, add them here too
-        self.move_forward ||
-            self.move_left ||
-            self.move_right ||
-            self.move_backward ||
-            self.jump
+        self.move_forward || self.move_left || self.move_right || self.move_backward || self.jump
     }
 }
 

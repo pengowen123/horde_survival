@@ -1,7 +1,6 @@
-/// A system to update the shader parameter representing the rotation of an entity's model
-
-use specs::{self, Join};
 use common::{self, cgmath};
+/// A system to update the shader parameter representing the rotation of an entity's model
+use specs::{self, Join};
 
 /// A 3D rotation
 pub type Rotation = cgmath::Matrix4<f32>;

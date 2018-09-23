@@ -2,26 +2,26 @@
 //!
 //! This pass calculates position, normal, color, and specular data for each fragment.
 
-use gfx::{self, state, texture, handle};
-use gfx::traits::FactoryExt;
-use shred;
-use rendergraph::pass::Pass;
-use rendergraph::framebuffer::Framebuffers;
-use rendergraph::error::{RunError, BuildError};
-use window::info::WindowInfo;
+use assets;
 use cgmath::{Matrix4, SquareMatrix};
 use common::config;
+use gfx::traits::FactoryExt;
+use gfx::{self, handle, state, texture};
+use rendergraph::error::{BuildError, RunError};
+use rendergraph::framebuffer::Framebuffers;
+use rendergraph::pass::Pass;
+use shred;
 use specs::Join;
-use assets;
+use window::info::WindowInfo;
 
-use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
-use draw::{DrawableStorageRef, passes, types};
-use draw::passes::resource_pass;
-use draw::glsl::{Vec2, Vec3, Vec4, Mat4};
 use super::gbuffer;
 use camera::Camera;
+use draw::glsl::{Mat4, Vec2, Vec3, Vec4};
+use draw::passes::resource_pass;
+use draw::{passes, types, DrawableStorageRef};
 
 pub struct Output<R: gfx::Resources> {
     pub gbuffer: gbuffer::GeometryBuffer<R>,
@@ -78,18 +78,15 @@ impl<R: gfx::Resources> GeometryPass<R> {
         let vbuf = factory.create_vertex_buffer(&[]);
 
         let texels = [[0x0; 4]];
-        let (_, texture_view) = factory
-            .create_texture_immutable::<gfx::format::Rgba8>(
-                texture::Kind::D2(1, 1, texture::AaMode::Single),
-                texture::Mipmap::Allocated,
-                &[&texels],
-            )?;
+        let (_, texture_view) = factory.create_texture_immutable::<gfx::format::Rgba8>(
+            texture::Kind::D2(1, 1, texture::AaMode::Single),
+            texture::Mipmap::Allocated,
+            &[&texels],
+        )?;
 
         // Create texture sampler info
-        let sampler_info = texture::SamplerInfo::new(
-            texture::FilterMethod::Bilinear,
-            texture::WrapMode::Tile,
-        );
+        let sampler_info =
+            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Tile);
 
         // Create geometry buffer
         let gbuffer = gbuffer::GeometryBuffer::new(factory, window_width, window_height)?;
@@ -115,10 +112,11 @@ impl<R: gfx::Resources> GeometryPass<R> {
 
         Ok((pass, output))
     }
-    
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets)
-        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
-    {
+
+    fn load_pso<F: gfx::Factory<R>>(
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
         let rasterizer = state::Rasterizer {
             cull_face: state::CullFace::Back,
             ..state::Rasterizer::new_fill()
@@ -137,15 +135,20 @@ impl<R: gfx::Resources> GeometryPass<R> {
     }
 }
 
-pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
-    -> Result<(), BuildError<String>>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+pub fn setup_pass<R, C, F>(
+    builder: &mut types::GraphBuilder<R, C, F>,
+) -> Result<(), BuildError<String>>
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
-    let window_dim = builder.get_resources().fetch::<WindowInfo>().physical_dimensions();
+    let window_dim = builder
+        .get_resources()
+        .fetch::<WindowInfo>()
+        .physical_dimensions();
     let window_dim: (u32, u32) = window_dim.into();
-    
+
     let dsv = builder
         .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
         .dsv
@@ -165,17 +168,20 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 }
 
 impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for GeometryPass<R>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     fn name(&self) -> &str {
         "geometry"
     }
 
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
-        -> Result<(), RunError>
-    {
+    fn execute_pass(
+        &mut self,
+        encoder: &mut gfx::Encoder<R, C>,
+        resources: &mut shred::Resources,
+    ) -> Result<(), RunError> {
         encoder.clear(&self.bundle.data.out_pos, [0.0; 4]);
         encoder.clear(&self.bundle.data.out_normal, [0.0; 4]);
         encoder.clear(&self.bundle.data.out_color, [0.0; 4]);
@@ -205,8 +211,8 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
 
             // TODO: use the entity's material
             //encoder.update_constant_buffer(
-                //&data.material,
-                //&drawable.material(),
+            //&data.material,
+            //&drawable.material(),
             //);
 
             // Update texture maps
@@ -217,13 +223,9 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
             self.bundle.data.vbuf = d.vertex_buffer().clone();
 
             // Draw the model
-            encoder.draw(
-                d.slice(),
-                &self.bundle.pso,
-                &self.bundle.data,
-            );
+            encoder.draw(d.slice(), &self.bundle.pso, &self.bundle.data);
         }
-        
+
         Ok(())
     }
 
@@ -242,7 +244,6 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
         framebuffers: &mut Framebuffers<R, types::ColorFormat, types::DepthFormat>,
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
-
         // Build a new geometry buffer using the new window dimensions
         let gbuffer = gbuffer::GeometryBuffer::new(factory, new_dimensions.0, new_dimensions.1)?;
 
@@ -252,7 +253,8 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Geometry
         self.bundle.data.out_color = gbuffer.color.rtv().clone();
         // Update shader depth output to the resized depth target
         self.bundle.data.out_depth = framebuffers
-            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?.dsv
+            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
+            .dsv
             .clone();
 
         framebuffers.add_framebuffer("gbuffer", gbuffer);

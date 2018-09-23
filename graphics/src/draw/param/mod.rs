@@ -1,16 +1,16 @@
 //! Components and systems to pass additional parameters (such as rotation) to the shaders
 
-pub mod translation;
 pub mod rotation;
 pub mod scale;
+pub mod translation;
 
 use common::cgmath::{self, One};
-use specs::{self, DispatcherBuilder, Join};
 use gfx;
+use specs::{self, DispatcherBuilder, Join};
 
-use self::translation::Translation;
 use self::rotation::Rotation;
 use self::scale::Scale;
+use self::translation::Translation;
 use draw::components;
 
 /// A type that stores all individual parameters to pass the the graphics system
@@ -77,7 +77,6 @@ pub fn init<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> DispatcherBuilder<'a, 'b> {
-
     // Register components
     world.register::<ShaderParam>();
 

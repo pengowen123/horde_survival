@@ -7,23 +7,23 @@ extern crate rendergraph;
 extern crate quick_error;
 #[macro_use]
 extern crate shred_derive;
-extern crate image_utils;
 extern crate common;
-extern crate window;
-extern crate math;
-extern crate ui;
 extern crate genmesh;
+extern crate image_utils;
+extern crate math;
 extern crate obj;
+extern crate ui;
+extern crate window;
 #[macro_use]
 extern crate slog;
 extern crate assets;
 
+mod camera;
 pub mod draw;
 pub mod obj_loading;
-mod camera;
 
-use common::{Float, cgmath, shred, glutin, gfx_window_glutin, gfx_device_gl, config};
 use common::specs::{self, DispatcherBuilder};
+use common::{cgmath, config, gfx_device_gl, gfx_window_glutin, glutin, shred, Float};
 
 use std::sync::{Arc, Mutex};
 
@@ -33,11 +33,12 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     dispatcher: DispatcherBuilder<'a, 'b>,
     dispatcher_graphics: DispatcherBuilder<'c, 'd>,
     init_test_entities: Box<Fn(&mut specs::World, &mut gfx_device_gl::Factory)>,
-) -> (DispatcherBuilder<'a, 'b>,
-      DispatcherBuilder<'c, 'd>,
-      window::Window,
-      glutin::EventsLoop)
-{
+) -> (
+    DispatcherBuilder<'a, 'b>,
+    DispatcherBuilder<'c, 'd>,
+    window::Window,
+    glutin::EventsLoop,
+) {
     // The camera resource must exist before calling draw::initialize
     world.add_resource(Arc::new(Mutex::new(camera::Camera::new_default(1.0, 45.0))));
 

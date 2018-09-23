@@ -1,9 +1,9 @@
 //! Initialization of the physics system
 
-use specs::{self, DispatcherBuilder};
-use nphysics3d;
-use na;
 use common::physics;
+use na;
+use nphysics3d;
+use specs::{self, DispatcherBuilder};
 
 use output;
 use System;
@@ -15,7 +15,6 @@ pub fn initialize<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> DispatcherBuilder<'a, 'b> {
-
     // Register components
     world.register::<physics::Physics>();
 

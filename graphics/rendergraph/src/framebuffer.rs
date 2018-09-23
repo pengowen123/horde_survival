@@ -3,8 +3,8 @@
 
 use gfx::{self, handle};
 
-use std::collections::HashMap;
 use std::any::Any;
+use std::collections::HashMap;
 use std::{error, fmt};
 
 /// An error while accessing a framebuffer
@@ -17,10 +17,7 @@ pub struct FramebufferError {
 impl FramebufferError {
     /// Returns a new `FramebufferError`, with the provided name and kind
     pub fn new(name: String, kind: FramebufferErrorKind) -> Self {
-        Self {
-            name,
-            kind,
-        }
+        Self { name, kind }
     }
 
     /// Returns the name of the framebuffer
@@ -41,10 +38,10 @@ pub enum FramebufferErrorKind {
 impl fmt::Display for FramebufferError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.kind {
-            FramebufferErrorKind::NotFound =>
-                writeln!(f, "Framebuffer not found: {}", self.name),
-            FramebufferErrorKind::DowncastError =>
-                writeln!(f, "Framebuffer was not of the expected type: {}", self.name),
+            FramebufferErrorKind::NotFound => writeln!(f, "Framebuffer not found: {}", self.name),
+            FramebufferErrorKind::DowncastError => {
+                writeln!(f, "Framebuffer was not of the expected type: {}", self.name)
+            }
         }
     }
 }
@@ -66,7 +63,7 @@ impl<R: gfx::Resources, CF, DF> Framebuffers<R, CF, DF> {
     /// Returns a new `Framebuffers`, with the provided main color and depth targets
     pub fn new(
         main_color: handle::RenderTargetView<R, CF>,
-        main_depth: handle::DepthStencilView<R, DF>
+        main_depth: handle::DepthStencilView<R, DF>,
     ) -> Self {
         Framebuffers {
             main_color,
@@ -87,13 +84,19 @@ impl<R: gfx::Resources, CF, DF> Framebuffers<R, CF, DF> {
 
     /// Adds a framebuffer
     pub fn add_framebuffer<S, F>(&mut self, name: S, framebuffer: F)
-        where S: Into<String>,
-              F: Any
+    where
+        S: Into<String>,
+        F: Any,
     {
         let name = name.into();
         let framebuffer: Box<F> = framebuffer.into();
-        assert!(self.framebuffers.insert(name.clone(), framebuffer).is_none(),
-                "A framebuffer with this name has already been added: {}", name);
+        assert!(
+            self.framebuffers
+                .insert(name.clone(), framebuffer)
+                .is_none(),
+            "A framebuffer with this name has already been added: {}",
+            name
+        );
     }
 
     /// Returns the framebuffer with the provided name
@@ -103,11 +106,14 @@ impl<R: gfx::Resources, CF, DF> Framebuffers<R, CF, DF> {
     pub fn get_framebuffer<T: 'static>(&self, name: &str) -> Result<&T, FramebufferError> {
         self.framebuffers
             .get(name)
-            .ok_or(FramebufferError::new(name.to_string(), FramebufferErrorKind::NotFound))
-            .and_then(|o| {
-                o.downcast_ref()
-                    .ok_or(FramebufferError::new(name.to_string(),
-                                                FramebufferErrorKind::DowncastError))
+            .ok_or(FramebufferError::new(
+                name.to_string(),
+                FramebufferErrorKind::NotFound,
+            )).and_then(|o| {
+                o.downcast_ref().ok_or(FramebufferError::new(
+                    name.to_string(),
+                    FramebufferErrorKind::DowncastError,
+                ))
             })
     }
 }

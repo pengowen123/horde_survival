@@ -2,7 +2,7 @@
 //!
 //! The UI is only calculated here; a draw list is sent to the graphics system to be rendered
 
-#![recursion_limit="128"]
+#![recursion_limit = "128"]
 
 #[macro_use]
 extern crate shred_derive;
@@ -12,20 +12,20 @@ extern crate conrod as conrod_macros;
 extern crate window;
 #[macro_use]
 extern crate slog;
-extern crate petgraph;
 extern crate assets;
-use common::{specs, shred};
+extern crate petgraph;
+use common::{shred, specs};
 
+mod consts;
 mod menus;
 mod theme;
-mod consts;
 
-use common::conrod::{self, Ui, UiBuilder, Dimensions, render, gfx};
-use common::{UiState, glutin, config};
+use common::conrod::{self, gfx, render, Dimensions, Ui, UiBuilder};
+use common::{config, glutin, UiState};
 use window::window_event;
 
-use std::sync::{Arc, Mutex, MutexGuard, mpsc};
-use std::time::{Instant, Duration};
+use std::sync::{mpsc, Arc, Mutex, MutexGuard};
+use std::time::{Duration, Instant};
 
 pub const UPS: u64 = 60;
 const UPDATE_INTERVAL: Duration = Duration::from_nanos(1_000_000_000 / UPS);
@@ -45,9 +45,7 @@ impl UiDrawList {
 
 /// An image map resource for the UI
 // NOTE: This is initialized by the graphics system because of the `R` type parameter
-pub struct ImageMap<R: gfx::Resources>(
-    Mutex<Map<R>>
-);
+pub struct ImageMap<R: gfx::Resources>(Mutex<Map<R>>);
 
 /// The image map type used by the UI
 pub type Map<R> = conrod::image::Map<(gfx::handle::ShaderResourceView<R, [f32; 4]>, (u32, u32))>;
@@ -190,42 +188,41 @@ impl<'a> specs::System<'a> for System {
             self.ui.global_input().events().next().is_some() ||
             // Rebuild widgets regardless of events if the in-game menu is active
             data.ui_state.is_in_game();
- 
+
         // Reset the `force_redraw` flag
         self.menus.set_force_redraw(false);
 
         // Rebuild the UI widgets based on the UI state
         if rebuild_widgets {
             let mut ui = self.ui.set_widgets();
-            
+
             match *data.ui_state {
-                UiState::MainMenu =>
-                    self.menus.set_widgets_main_menu(
-                        &mut ui,
-                        &mut data.ui_state,
-                        &data.window,
-                        &mut data.event_channel,
-                        &mut data.config
-                    ),
-                UiState::InGame =>
-                    self.menus.set_widgets_in_game(&mut ui, &mut data.ui_state, &data.window),
-                UiState::PauseMenu =>
-                    self.menus.set_widgets_pause_menu(
-                        &mut ui,
-                        &mut data.ui_state,
-                        &data.window,
-                        &mut data.event_channel,
-                    ),
-                UiState::OptionsMenu =>
-                    self.menus.set_widgets_options_menu(
-                        &mut ui,
-                        &mut data.ui_state,
-                        keypress,
-                        &mut data.event_channel,
-                        &mut data.config,
-                        &data.log,
-                    ),
-                UiState::Exit => {},
+                UiState::MainMenu => self.menus.set_widgets_main_menu(
+                    &mut ui,
+                    &mut data.ui_state,
+                    &data.window,
+                    &mut data.event_channel,
+                    &mut data.config,
+                ),
+                UiState::InGame => {
+                    self.menus
+                        .set_widgets_in_game(&mut ui, &mut data.ui_state, &data.window)
+                }
+                UiState::PauseMenu => self.menus.set_widgets_pause_menu(
+                    &mut ui,
+                    &mut data.ui_state,
+                    &data.window,
+                    &mut data.event_channel,
+                ),
+                UiState::OptionsMenu => self.menus.set_widgets_options_menu(
+                    &mut ui,
+                    &mut data.ui_state,
+                    keypress,
+                    &mut data.event_channel,
+                    &mut data.config,
+                    &data.log,
+                ),
+                UiState::Exit => {}
             }
         }
     }
@@ -246,7 +243,9 @@ pub fn initialize<'a, 'b>(
 ) -> specs::DispatcherBuilder<'a, 'b> {
     let log = world.read_resource::<slog::Logger>();
     let window_dim: Dimensions = [window_dim.0.into(), window_dim.1.into()];
-    let reader_id = world.write_resource::<window_event::EventChannel>().register_reader();
+    let reader_id = world
+        .write_resource::<window_event::EventChannel>()
+        .register_reader();
     let config = world.read_resource::<config::Config>();
     let assets = world.read_resource::<Arc<assets::Assets>>();
     let ui = System::new(window_dim, events, &log, reader_id, &config, &assets);

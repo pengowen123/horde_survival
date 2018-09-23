@@ -1,26 +1,26 @@
 //! Temporary hacks to set the game up for testing
 //! Will be removed when no longer needed
 
-use slog;
-use common::gfx;
-use common::specs::{self, Builder};
-use common::cgmath::*;
-use common::na::{self, Translation3};
-use common::nphysics3d::math::{Inertia, Isometry};
-use common::ncollide3d::shape::ShapeHandle;
-use common::nphysics3d::world::World;
-use common::nphysics3d::object::{self, BodyHandle, BodyMut, BodyStatus, ColliderHandle};
-use common::*;
-use common::physics::*;
-use math::functions::dir_vec_to_quaternion;
-use math::convert;
-use control::FloorColliderHandle;
-use graphics::obj_loading;
-use graphics::draw::{self, Material, LightSpaceMatrix};
-use graphics::draw::components::*;
 use assets::Assets;
-use player::{self, COLLIDER_MARGIN};
+use common::cgmath::*;
+use common::gfx;
+use common::na::{self, Translation3};
+use common::ncollide3d::shape::ShapeHandle;
+use common::nphysics3d::math::{Inertia, Isometry};
+use common::nphysics3d::object::{self, BodyHandle, BodyMut, BodyStatus, ColliderHandle};
+use common::nphysics3d::world::World;
+use common::physics::*;
+use common::specs::{self, Builder};
+use common::*;
+use control::FloorColliderHandle;
+use graphics::draw::components::*;
+use graphics::draw::{self, LightSpaceMatrix, Material};
+use graphics::obj_loading;
+use math::convert;
+use math::functions::dir_vec_to_quaternion;
 use physics::scale::Scale as ScaleTrait;
+use player::{self, COLLIDER_MARGIN};
+use slog;
 
 use std::sync::Arc;
 
@@ -42,7 +42,9 @@ where
     )[0];
 
     // Set the floor collider handle to the test map's first collision object
-    world.write_resource::<FloorColliderHandle>().set_handle(floor_collider);
+    world
+        .write_resource::<FloorColliderHandle>()
+        .set_handle(floor_collider);
 
     player::add_player_entity(world);
 
@@ -83,12 +85,7 @@ where
         {
             #[allow(unused)]
             let mut dir_light = |x, y, z, shadows| {
-                create_dir_light(
-                    world,
-                    [x, y, z],
-                    light_color,
-                    shadows,
-                ).build();
+                create_dir_light(world, [x, y, z], light_color, shadows).build();
             };
 
             let ortho_size = 60.0;
@@ -146,7 +143,6 @@ where
             //spot_light([-4.0, -4.0, 10.0], [1.0, 1.0, -1.0]);
             //spot_light([0.0, 0.0, 65.0], [0.0, 0.0, -1.0]);
         }
-
     }
 }
 
@@ -199,11 +195,7 @@ where
             let dir = convert::to_na_quaternion(dir.0);
 
             let isometry = Isometry::from_parts(Translation3::from_vector(pos_vec), dir);
-            let handle = phys_world.add_rigid_body(
-                isometry,
-                Inertia::zero(),
-                pos,
-            );
+            let handle = phys_world.add_rigid_body(isometry, Inertia::zero(), pos);
 
             let scaled_mesh = mesh
                 .scale(scale.get().into())
@@ -260,10 +252,7 @@ fn create_dir_light<'a>(
 
     world
         .create_entity()
-        .with(DirectionalLight::new(
-            color,
-            lsm,
-        ))
+        .with(DirectionalLight::new(color, lsm))
         .with(Direction(direction))
 }
 
@@ -288,10 +277,7 @@ fn create_point_light<'a, R, F>(
         Material::new(0.0),
         None,
         Box::new(move |e| {
-            let e = e.with(PointLight::new(
-                color,
-                attenuation,
-            ));
+            let e = e.with(PointLight::new(color, attenuation));
             map(e)
         }),
     );
@@ -324,12 +310,7 @@ fn create_spot_light<'a, R, F>(
         None,
         Box::new(move |e| {
             let e = e.with(
-                SpotLight::new(
-                    color,
-                    angle.into(),
-                    outer_angle.into(),
-                    attenuation,
-                ).unwrap(),
+                SpotLight::new(color, angle.into(), outer_angle.into(), attenuation).unwrap(),
             );
 
             map(e)

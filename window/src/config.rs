@@ -1,6 +1,6 @@
 //! A system to apply configuration changes to the window
 
-use common::{glutin, specs, config};
+use common::{config, glutin, specs};
 
 use window_event;
 
@@ -10,9 +10,7 @@ pub struct System {
 
 impl System {
     pub fn new(reader_id: window_event::ReaderId) -> Self {
-        Self {
-            reader_id,
-        }
+        Self { reader_id }
     }
 }
 
@@ -31,8 +29,8 @@ impl<'a> specs::System<'a> for System {
             match e {
                 window_event::Event::ConfigChanged(window_event::ChangedConfig::Window) => {
                     let config = &data.config.window;
-                    let new_window_size = glutin::dpi::LogicalSize::new(config.width.into(),
-                                                                        config.height.into());
+                    let new_window_size =
+                        glutin::dpi::LogicalSize::new(config.width.into(), config.height.into());
                     data.window.set_min_dimensions(Some(new_window_size));
                     data.window.set_inner_size(new_window_size);
                     let fullscreen = if config.fullscreen {
@@ -42,7 +40,7 @@ impl<'a> specs::System<'a> for System {
                     };
                     data.window.set_fullscreen(fullscreen);
                 }
-                _ => {},
+                _ => {}
             }
         }
     }

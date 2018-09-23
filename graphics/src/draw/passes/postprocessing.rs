@@ -1,19 +1,19 @@
 //! Postprocessing pass
 
-use gfx::{self, texture, state, handle};
-use gfx::traits::FactoryExt;
-use rendergraph::pass::Pass;
-use rendergraph::framebuffer::Framebuffers;
-use rendergraph::error::{RunError, BuildError};
-use shred::Resources;
-use common::config;
 use assets;
+use common::config;
+use gfx::traits::FactoryExt;
+use gfx::{self, handle, state, texture};
+use rendergraph::error::{BuildError, RunError};
+use rendergraph::framebuffer::Framebuffers;
+use rendergraph::pass::Pass;
+use shred::Resources;
 
 use std::collections::HashMap;
 
-use draw::{types, utils, passes};
-use draw::passes::resource_pass;
 use draw::glsl::{Vec2, Vec4};
+use draw::passes::resource_pass;
+use draw::{passes, types, utils};
 
 gfx_defines! {
     vertex Vertex {
@@ -47,7 +47,8 @@ impl<R: gfx::Resources> PostPass<R> {
         main_color: handle::RenderTargetView<R, types::ColorFormat>,
         enabled: bool,
     ) -> Result<Self, BuildError<String>>
-        where F: gfx::Factory<R>,
+    where
+        F: gfx::Factory<R>,
     {
         let pso = Self::load_pso(factory, assets, enabled)?;
         // Create a screen quad to render to
@@ -69,14 +70,16 @@ impl<R: gfx::Resources> PostPass<R> {
             enabled,
         })
     }
-    
+
     /// Loads the postprocessing PSO
     ///
     /// The shaders will be the postprocessing shaders if `enabled` is `true`, or a simple
     /// pass-through otherwise.
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets, enabled: bool)
-        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
-    {
+    fn load_pso<F: gfx::Factory<R>>(
+        factory: &mut F,
+        assets: &assets::Assets,
+        enabled: bool,
+    ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
         let mut defines = HashMap::new();
 
         if enabled {
@@ -96,23 +99,25 @@ impl<R: gfx::Resources> PostPass<R> {
     }
 }
 
-pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
-    -> Result<(), BuildError<String>>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+pub fn setup_pass<R, C, F>(
+    builder: &mut types::GraphBuilder<R, C, F>,
+) -> Result<(), BuildError<String>>
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
-    let main_color = {
-        builder.main_color().clone()
-    };
+    let main_color = { builder.main_color().clone() };
 
-    let srv =
-        builder
-            .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
-            .srv
-            .clone();
+    let srv = builder
+        .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?
+        .srv
+        .clone();
 
-    let enabled = builder.get_resources().fetch::<config::GraphicsConfig>().postprocessing;
+    let enabled = builder
+        .get_resources()
+        .fetch::<config::GraphicsConfig>()
+        .postprocessing;
 
     let pass = PostPass::new(builder.factory, builder.assets, srv, main_color, enabled)?;
 
@@ -122,19 +127,22 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 }
 
 impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass<R>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     fn name(&self) -> &str {
         "postprocessing"
     }
 
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
-        -> Result<(), RunError>
-    {
+    fn execute_pass(
+        &mut self,
+        encoder: &mut gfx::Encoder<R, C>,
+        _: &mut Resources,
+    ) -> Result<(), RunError> {
         self.bundle.encode(encoder);
-        
+
         Ok(())
     }
 
@@ -154,9 +162,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for PostPass
         _: &mut F,
     ) -> Result<(), BuildError<String>> {
         let intermediate_target = framebuffers
-            .get_framebuffer::<resource_pass::IntermediateTarget<R>>(
-                "intermediate_target"
-            )?;
+            .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
 
         // Update shader input to the resized intermediate target
         self.bundle.data.texture.0 = intermediate_target.srv.clone();

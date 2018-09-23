@@ -2,24 +2,24 @@
 //!
 //! Uses the data in the geometry buffer to calculate lighting.
 
-use gfx::{self, format, handle, state, texture};
-use gfx::traits::FactoryExt;
-use rendergraph::pass::Pass;
-use rendergraph::framebuffer::Framebuffers;
-use rendergraph::error::{RunError, BuildError};
-use shred::Resources;
+use assets;
 use cgmath::{self, SquareMatrix};
 use common::config;
-use assets;
+use gfx::traits::FactoryExt;
+use gfx::{self, format, handle, state, texture};
+use rendergraph::error::{BuildError, RunError};
+use rendergraph::framebuffer::Framebuffers;
+use rendergraph::pass::Pass;
+use shred::Resources;
 
-use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
-use draw::{passes, types, components, utils, lighting_data};
-use draw::passes::{shadow, resource_pass};
-use draw::glsl::{Vec2, Vec3, Vec4, Mat4, vec4};
+use super::{gbuffer, geometry_pass};
 use camera::Camera;
-use super::{geometry_pass, gbuffer};
+use draw::glsl::{vec4, Mat4, Vec2, Vec3, Vec4};
+use draw::passes::{resource_pass, shadow};
+use draw::{components, lighting_data, passes, types, utils};
 
 // These constants are inserted into the shaders at runtime; changes here will affect the shaders as
 // well
@@ -44,10 +44,10 @@ gfx_defines! {
         ambient: Vec4 = "ambient",
         diffuse: Vec4 = "diffuse",
         specular: Vec4 = "specular",
-        
+
         has_shadows: f32 = "has_shadows",
         enabled: f32 = "enabled",
-        
+
         _padding: Vec2 = "_padding",
     }
 
@@ -62,7 +62,7 @@ gfx_defines! {
         constant: f32 = "constant",
         linear: f32 = "linear",
         quadratic: f32 = "quadratic",
-        
+
         enabled: f32 = "enabled",
     }
 
@@ -192,7 +192,8 @@ impl<R: gfx::Resources> LightingPass<R> {
         shadows_enabled: bool,
         shadow_map_size: texture::Size,
     ) -> Result<Self, BuildError<String>>
-        where F: gfx::Factory<R>,
+    where
+        F: gfx::Factory<R>,
     {
         let pso = Self::load_pso(factory, assets, shadows_enabled)?;
 
@@ -201,10 +202,10 @@ impl<R: gfx::Resources> LightingPass<R> {
         let vbuf = factory.create_vertex_buffer(&vertices);
 
         // Create texture sampler info
-        let sampler_info = texture::SamplerInfo::new(texture::FilterMethod::Bilinear,
-                                                     texture::WrapMode::Tile);
+        let sampler_info =
+            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Tile);
 
-        let shadow_sampler_info =  texture::SamplerInfo {
+        let shadow_sampler_info = texture::SamplerInfo {
             border: texture::PackedColor::from([1.0; 4]),
             ..texture::SamplerInfo::new(texture::FilterMethod::Scale, texture::WrapMode::Border)
         };
@@ -238,7 +239,7 @@ impl<R: gfx::Resources> LightingPass<R> {
 
         Ok(pass)
     }
-    
+
     fn load_pso<F: gfx::Factory<R>>(
         factory: &mut F,
         assets: &assets::Assets,
@@ -267,18 +268,20 @@ impl<R: gfx::Resources> LightingPass<R> {
     }
 }
 
-pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
-    -> Result<(), BuildError<String>>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+pub fn setup_pass<R, C, F>(
+    builder: &mut types::GraphBuilder<R, C, F>,
+) -> Result<(), BuildError<String>>
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     let gbuffer = {
         let gbuffer = builder
             .get_pass_output::<geometry_pass::Output<R>>("gbuffer")?
             .gbuffer
             .clone();
-        
+
         gbuffer
     };
     let (rtv, dsv) = {
@@ -300,7 +303,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         let config = builder.get_resources().fetch::<config::GraphicsConfig>();
         (config.shadows, config.shadow_map_size)
     };
-    
+
     let pass = LightingPass::new(
         builder.factory,
         builder.assets,
@@ -318,23 +321,25 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 }
 
 impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for LightingPass<R>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     fn name(&self) -> &str {
         "lighting"
     }
 
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
-        -> Result<(), RunError>
-    {
+    fn execute_pass(
+        &mut self,
+        encoder: &mut gfx::Encoder<R, C>,
+        resources: &mut Resources,
+    ) -> Result<(), RunError> {
         let camera = resources.fetch::<Arc<Mutex<Camera>>>();
         let lighting_data = resources.fetch::<Arc<Mutex<lighting_data::LightingData>>>();
         let mut lighting_data = lighting_data.lock().unwrap();
-        let dir_light_space_matrix = resources
-            .fetch::<Arc<Mutex<shadow::DirShadowSource>>>();
-        
+        let dir_light_space_matrix = resources.fetch::<Arc<Mutex<shadow::DirShadowSource>>>();
+
         let dir_light_space_matrix = dir_light_space_matrix
             .lock()
             .unwrap()
@@ -373,7 +378,7 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
     fn reload_shaders(
         &mut self,
         factory: &mut F,
-        assets: &assets::Assets
+        assets: &assets::Assets,
     ) -> Result<(), BuildError<String>> {
         self.bundle.pso = Self::load_pso(factory, assets, self.shadows)?;
 
@@ -390,7 +395,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Lighting
             let intermediate_target = framebuffers
                 .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
 
-            (intermediate_target.rtv.clone(), intermediate_target.dsv.clone())
+            (
+                intermediate_target.rtv.clone(),
+                intermediate_target.dsv.clone(),
+            )
         };
 
         let gbuffer = framebuffers.get_framebuffer::<gbuffer::GeometryBuffer<R>>("gbuffer")?;

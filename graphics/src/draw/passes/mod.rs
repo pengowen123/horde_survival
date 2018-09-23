@@ -2,17 +2,17 @@
 
 pub mod main;
 pub mod postprocessing;
-pub mod skybox;
-pub mod shadow;
 pub mod resource_pass;
+pub mod shadow;
+pub mod skybox;
 
-use gfx::{self, pso};
-use gfx::traits::FactoryExt;
-use rendergraph::error::BuildError;
 use assets;
+use gfx::traits::FactoryExt;
+use gfx::{self, pso};
+use rendergraph::error::BuildError;
 
-use std::path::Path;
 use std::collections::HashMap;
+use std::path::Path;
 
 use assets::shader;
 
@@ -37,10 +37,12 @@ where
         .map_err(|e| BuildError::Custom(e.into()))?;
     let fs = shader::load_shader_file(assets, fs_path, &defines)
         .map_err(|e| BuildError::Custom(e.into()))?;
-    
+
     // NOTE: If create_pipeline_from_program is used here, the ProgramInfo can be printed, which may
     //       be useful for debugging
     let set = factory.create_shader_set(&vs, &fs)?;
 
-    factory.create_pipeline_state(&set, primitive, rasterizer, init).map_err(|e| e.into())
+    factory
+        .create_pipeline_state(&set, primitive, rasterizer, init)
+        .map_err(|e| e.into())
 }

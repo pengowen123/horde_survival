@@ -2,8 +2,8 @@
 
 pub mod directional;
 
-use specs::{self, Join};
 use cgmath;
+use specs::{self, Join};
 
 use std::sync::{Arc, Mutex};
 
@@ -65,7 +65,7 @@ pub struct Data<'a> {
 }
 impl<'a> specs::System<'a> for ShadowSourceSystem {
     type SystemData = Data<'a>;
-    
+
     fn run(&mut self, data: Self::SystemData) {
         for (i, dir_light) in (&data.dir_light).join().enumerate() {
             if i > 0 {

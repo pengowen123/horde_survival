@@ -8,18 +8,18 @@ extern crate math;
 #[macro_use]
 extern crate shred_derive;
 
-pub mod scale;
 mod init;
 mod output;
+pub mod scale;
 
 pub use init::initialize;
 
-#[allow(unused_imports)]
-use common::shred;
-use common::{Float, Delta, na, ncollide3d, nphysics3d};
-use common::specs::{self, Join};
 use common::nphysics3d::world::World;
 use common::physics;
+#[allow(unused_imports)]
+use common::shred;
+use common::specs::{self, Join};
+use common::{na, ncollide3d, nphysics3d, Delta, Float};
 
 pub struct System;
 

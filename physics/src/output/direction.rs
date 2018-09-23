@@ -1,7 +1,7 @@
 //! A component and system to tie the direction of an entity to the direction of its physics body
 
-use specs::{self, Join};
 use nphysics3d::world::World;
+use specs::{self, Join};
 
 use common::{self, physics};
 use math::convert;

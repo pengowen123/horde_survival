@@ -1,12 +1,12 @@
 //! Implementation of the pause menu
 
-use common::conrod::{self, Colorable, Positionable};
 use common::conrod::widget::{self, Widget};
-use common::{UiState, glutin};
+use common::conrod::{self, Colorable, Positionable};
+use common::{glutin, UiState};
 use window::window_event;
 
-use menus::{Menus, options};
-use consts::{self, UI_BACKGROUND_COLOR, GENERIC_BUTTON_SPACING};
+use consts::{self, GENERIC_BUTTON_SPACING, UI_BACKGROUND_COLOR};
+use menus::{options, Menus};
 
 impl Menus {
     pub fn set_widgets_pause_menu(

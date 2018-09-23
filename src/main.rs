@@ -2,19 +2,19 @@
 extern crate quick_error;
 #[macro_use]
 extern crate slog;
-extern crate slog_term;
-extern crate slog_async;
-extern crate ron;
+extern crate common;
 extern crate directories;
 extern crate horde_survival;
-extern crate common;
+extern crate ron;
+extern crate slog_async;
+extern crate slog_term;
 
-use slog::Drain;
 use directories::ProjectDirs;
+use slog::Drain;
 
 use std::fs;
-use std::path::PathBuf;
 use std::io::{self, Read, Write};
+use std::path::PathBuf;
 
 use common::config;
 
@@ -60,13 +60,12 @@ fn get_default_config(log: &slog::Logger) -> config::Config {
 
 /// Returns the path of the project directory selected by `f`, creating it if does not exist
 fn get_project_dir_path<F>(f: F) -> Result<PathBuf, Error>
-    where F: FnOnce(&ProjectDirs) -> PathBuf
+where
+    F: FnOnce(&ProjectDirs) -> PathBuf,
 {
     let project_dirs = match ProjectDirs::from("", "horde_survival", "horde_survival") {
         Some(d) => d,
-        None => {
-            return Err(Error::ProjectDir)
-        }
+        None => return Err(Error::ProjectDir),
     };
     let path = f(&project_dirs);
 
@@ -78,10 +77,10 @@ fn get_project_dir_path<F>(f: F) -> Result<PathBuf, Error>
                 .expect("Project directory path contained invalid unicode")
                 .to_string();
 
-            return Err(Error::Io((e, path)))
-         }
+            return Err(Error::Io((e, path)));
+        }
     }
-    
+
     Ok(path)
 }
 
@@ -97,7 +96,8 @@ fn get_default_assets_path() -> Result<PathBuf, Error> {
 /// Loads a `Config` from the configuration file
 fn load_config() -> Result<config::Config, Error> {
     let config_file_path = get_config_dir_path()?.join(CONFIG_FILE_NAME);
-    let config_file_path_str = config_file_path.to_str()
+    let config_file_path_str = config_file_path
+        .to_str()
         .expect("Config file path contained invalid unicode");
 
     let mut file = fs::File::open(&config_file_path)
@@ -117,7 +117,8 @@ fn save_config(config: config::Config) -> Result<(), Error> {
     let serialized = ron::ser::to_string_pretty(&config, ron::ser::PrettyConfig::default())?;
 
     let config_file_path = get_config_dir_path()?.join(CONFIG_FILE_NAME);
-    let config_file_path_str = config_file_path.to_str()
+    let config_file_path_str = config_file_path
+        .to_str()
         .expect("Config file path contained invalid unicode");
 
     let mut file = fs::File::create(&config_file_path)
@@ -142,18 +143,15 @@ fn load_config_or_default(log: &slog::Logger) -> config::Config {
 fn main() {
     let logger = init_logger();
     let config = load_config_or_default(&logger);
-    let cli_config = config::CommandLineConfig::new(
-        get_default_assets_path()
-        .unwrap_or_else(|e| {
+    let cli_config =
+        config::CommandLineConfig::new(get_default_assets_path().unwrap_or_else(|e| {
             error!(logger, "Error loading default assets path: {}", e;);
             panic!(common::CRASH_MSG);
-        })
-    );
+        }));
 
     let new_config = horde_survival::run(config, cli_config, logger.clone());
 
-    save_config(new_config)
-        .unwrap_or_else(|e| {
-            error!(logger, "Error writing to configuration file: {}", e;);
-        });
+    save_config(new_config).unwrap_or_else(|e| {
+        error!(logger, "Error writing to configuration file: {}", e;);
+    });
 }

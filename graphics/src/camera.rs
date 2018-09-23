@@ -1,7 +1,7 @@
 //! A resource to store the camera, and a system to update it
 
-use common::specs::{self, ReadStorage, Join};
-use common::cgmath::{self, Rotation3, EuclideanSpace, SquareMatrix};
+use common::cgmath::{self, EuclideanSpace, Rotation3, SquareMatrix};
+use common::specs::{self, Join, ReadStorage};
 use common::{self, config};
 use window::info;
 
@@ -35,7 +35,6 @@ impl Camera {
         aspect_ratio: f32,
         fov: f32,
     ) -> Self {
-
         let proj = cgmath::perspective(cgmath::Deg(fov), aspect_ratio, NEAR, FAR);
         let pos_vec = pos.to_vec();
         let view = (cgmath::Matrix4::from_translation(pos_vec) * cgmath::Matrix4::from(direction))
@@ -70,7 +69,7 @@ impl Camera {
     }
 
     /// Calculates the `view` matrix for the skybox camera
-    /// 
+    ///
     /// It is rotated to account for coordinate space differences.
     pub fn skybox_view(&self) -> cgmath::Matrix4<f32> {
         self.view * cgmath::Matrix4::from_angle_x(cgmath::Deg(90.0))
@@ -81,7 +80,6 @@ impl Camera {
         self.eye_position
     }
 }
-
 
 pub struct System;
 

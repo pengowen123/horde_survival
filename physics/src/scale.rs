@@ -1,14 +1,15 @@
 //! Scaling of `ncollide3d` shapes
 
 // TODO: Make sure the scale implementations are correct
-use ncollide3d::shape::{self, ShapeHandle};
 use na;
+use ncollide3d::shape::{self, ShapeHandle};
 
 /// Returns a shape that is `shape` scaled by a factor of `scale_factor`
 #[inline]
-pub fn scale_shape(shape: &ShapeHandle<::Float>, scale_factor: ::Float)
-    -> Option<ShapeHandle<::Float>>
-{
+pub fn scale_shape(
+    shape: &ShapeHandle<::Float>,
+    scale_factor: ::Float,
+) -> Option<ShapeHandle<::Float>> {
     try_all_shapes(&**shape, scale_factor)
 }
 
@@ -88,12 +89,8 @@ impl Scale for shape::Compound<::Float> {
                         na::Translation3::from_vector(transform.translation.vector),
                         transform.rotation,
                     );
-                    Some((
-                        new_transform,
-                        try_all_shapes(&**shape, scale)?,
-                    ))
-                })
-                .collect::<Option<_>>()?,
+                    Some((new_transform, try_all_shapes(&**shape, scale)?))
+                }).collect::<Option<_>>()?,
         ))
     }
 }
@@ -106,11 +103,7 @@ impl Scale for shape::Cone<::Float> {
 
 impl Scale for shape::ConvexHull<::Float> {
     fn scale(&self, scale: ::Float) -> Option<Self> {
-        let points: Vec<_> = self
-            .points()
-            .iter()
-            .map(|p| p * scale)
-            .collect();
+        let points: Vec<_> = self.points().iter().map(|p| p * scale).collect();
 
         Some(Self::try_from_points(&points).unwrap())
     }
@@ -143,8 +136,7 @@ impl Scale for shape::Polyline<::Float> {
             .map(|v| {
                 let new = v * scale;
                 new
-            })
-            .collect();
+            }).collect();
 
         Some(Self::new(new_vertices))
     }
@@ -158,7 +150,11 @@ impl Scale for shape::Segment<::Float> {
 
 impl Scale for shape::Triangle<::Float> {
     fn scale(&self, scale: ::Float) -> Option<Self> {
-        Some(Self::new(self.a() * scale, self.b() * scale, self.c() * scale))
+        Some(Self::new(
+            self.a() * scale,
+            self.b() * scale,
+            self.c() * scale,
+        ))
     }
 }
 
@@ -170,8 +166,7 @@ impl Scale for shape::TriMesh<::Float> {
             .map(|v| {
                 let new = v * scale;
                 new
-            })
-            .collect();
+            }).collect();
         // Indices are shared between original and scaled mesh
         let indices: Vec<_> = self.indices().clone();
 

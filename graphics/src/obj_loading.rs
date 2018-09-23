@@ -1,19 +1,19 @@
 //! OBJ loading
 
-use gfx::traits::FactoryExt;
-use gfx::{self, handle, format};
+use assets;
 use common::ncollide3d::shape;
 use common::{self, na};
+use genmesh::{self, Triangulate};
+use gfx::traits::FactoryExt;
+use gfx::{self, format, handle};
 use image_utils;
 use obj;
-use genmesh::{self, Triangulate};
 use slog;
-use assets;
 
 use std::io::{self, BufReader};
-use std::path::{PathBuf, Path};
+use std::path::{Path, PathBuf};
 
-use draw::{Vertex, Drawable, Material};
+use draw::{Drawable, Material, Vertex};
 
 type Polygon = genmesh::Polygon<obj::IndexTuple>;
 
@@ -32,14 +32,11 @@ where
 {
     // Read data from the file
     let path = assets.get_model_path(name.to_owned() + ".obj");
-    let data = assets::read_bytes(&path).map_err(|e| {
-        ObjError::Io(IoError(path.clone(), e))
-    })?;
+    let data = assets::read_bytes(&path).map_err(|e| ObjError::Io(IoError(path.clone(), e)))?;
 
     let mut buf_reader = BufReader::new(data.as_slice());
-    let mut obj = obj::Obj::load_buf(&mut buf_reader).map_err(|e| {
-        ObjError::Io(IoError(path, e))
-    })?;
+    let mut obj =
+        obj::Obj::load_buf(&mut buf_reader).map_err(|e| ObjError::Io(IoError(path, e)))?;
 
     for path in &mut obj.material_libs {
         *path = assets.get_model_path(&path).to_str().unwrap().to_string();
@@ -114,8 +111,7 @@ where
                 // re-borrow lifetime error
                 .collect::<Vec<_>>()
                 .into_iter()
-        })
-        .collect()
+        }).collect()
 }
 
 // TODO: Use indices instead of cloning data to save memory
@@ -158,7 +154,7 @@ fn load_object<'a>(
                 error!(log, "Material `{}` has no diffuse texture", material.name;);
                 // TODO: Just use a default texture instead of crashing here
                 panic!(common::CRASH_MSG);
-            })
+            }),
         ));
     }
 
@@ -227,9 +223,8 @@ where
     CF::Channel: format::TextureChannel,
     CF::Surface: format::TextureSurface,
 {
-    let data = assets::read_bytes(&path).map_err(|e| {
-        ObjError::Io(IoError(path.as_ref().to_owned(), e))
-    })?;
+    let data = assets::read_bytes(&path)
+        .map_err(|e| ObjError::Io(IoError(path.as_ref().to_owned(), e)))?;
 
     image_utils::load_texture::<_, _, CF>(factory, &data, image_utils::PNG).map_err(|e| e.into())
 }

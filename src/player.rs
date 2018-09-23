@@ -1,15 +1,15 @@
 //! Setup for the player entity
 
 use common::ncollide3d::shape::{self, ShapeHandle};
-use common::nphysics3d::volumetric::Volumetric;
-use common::nphysics3d::object;
 use common::nphysics3d::math::Isometry;
-use common::{Player, Position, Direction};
+use common::nphysics3d::object;
+use common::nphysics3d::volumetric::Volumetric;
 use common::physics::{Physics, PhysicsTiedPosition};
 use common::specs::{self, Builder};
 use common::{cgmath, na, nphysics3d};
+use common::{Direction, Player, Position};
 
-use control::{Control, Spring, MovementForceGenerator};
+use control::{Control, MovementForceGenerator, Spring};
 
 /// The radius of the collider of the player physics body
 pub const PLAYER_COLLIDER_RADIUS: ::Float = 0.5;
@@ -75,16 +75,10 @@ pub fn add_player_entity(world: &mut specs::World) {
             let spring = Spring::new(
                 PLAYER_SPRING_HEIGHT,
                 PLAYER_SPRING_STIFFNESS,
-                PLAYER_SPRING_FRICTION
+                PLAYER_SPRING_FRICTION,
             );
 
-            Control::new(
-                handle,
-                movement,
-                spring,
-                PLAYER_FRICTION,
-                &mut phys_world,
-            )
+            Control::new(handle, movement, spring, PLAYER_FRICTION, &mut phys_world)
         };
 
         (physics, control)

@@ -26,7 +26,6 @@ where
         width: texture::Size,
         height: texture::Size,
     ) -> Result<Self, gfx::CombinedError> {
-
         let (_, srv, rtv) = factory.create_render_target(width, height)?;
 
         Ok(ViewPair {

@@ -2,9 +2,9 @@
 //!
 //! Turns raw window events into a single, high level event type
 
-use common::glutin::{self, WindowEvent, KeyboardInput, VirtualKeyCode, ElementState};
 use common::cgmath::{self, Rad};
-use common::{self, UiState, shrev, config};
+use common::glutin::{self, ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
+use common::{self, config, shrev, UiState};
 use slog;
 
 use input::Direction;
@@ -103,14 +103,14 @@ pub fn process_window_event(
                 None => return,
             };
 
-            let diff_pitch = position.y  - center.y;
-            let diff_yaw = position.x  - center.x;
+            let diff_pitch = position.y - center.y;
+            let diff_yaw = position.x - center.x;
 
             // Yaw control is inverted, so invert it again to fix it
             let diff_yaw = -diff_yaw;
             // Pitch control is also inverted
             let diff_pitch = -diff_pitch;
-            
+
             // TODO: Investigate how sensitivity scales with monitor size, and maybe fix the
             //       handling of it
             let rot_pitch = diff_pitch as ::Float * config.camera.sensitivity;
@@ -120,12 +120,13 @@ pub fn process_window_event(
             channel.single_write(Event::RotateCamera(camera_rot));
         }
         WindowEvent::KeyboardInput {
-            input: KeyboardInput {
-                state,
-                virtual_keycode,
-                modifiers,
-                ..
-            },
+            input:
+                KeyboardInput {
+                    state,
+                    virtual_keycode,
+                    modifiers,
+                    ..
+                },
             ..
         } => {
             let mut event = None;
@@ -141,26 +142,41 @@ pub fn process_window_event(
             let current_bind = config::Bind::new(key.clone(), modifiers.into());
 
             // Handle movement keys
-            event = event.or_else(|| get_movement_event(&current_bind,
-                                                        &config.bindings.move_forward,
-                                                        state,
-                                                        Direction::Forward));
+            event = event.or_else(|| {
+                get_movement_event(
+                    &current_bind,
+                    &config.bindings.move_forward,
+                    state,
+                    Direction::Forward,
+                )
+            });
 
-            event = event.or_else(|| get_movement_event(&current_bind,
-                                                        &config.bindings.move_backward,
-                                                        state,
-                                                        Direction::Backward));
+            event = event.or_else(|| {
+                get_movement_event(
+                    &current_bind,
+                    &config.bindings.move_backward,
+                    state,
+                    Direction::Backward,
+                )
+            });
 
-            event = event.or_else(|| get_movement_event(&current_bind,
-                                                        &config.bindings.move_left,
-                                                        state,
-                                                        Direction::Left));
+            event = event.or_else(|| {
+                get_movement_event(
+                    &current_bind,
+                    &config.bindings.move_left,
+                    state,
+                    Direction::Left,
+                )
+            });
 
-            event = event.or_else(|| get_movement_event(&current_bind,
-                                                        &config.bindings.move_right,
-                                                        state,
-                                                        Direction::Right));
-
+            event = event.or_else(|| {
+                get_movement_event(
+                    &current_bind,
+                    &config.bindings.move_right,
+                    state,
+                    Direction::Right,
+                )
+            });
 
             match state {
                 ElementState::Pressed => {
@@ -170,8 +186,7 @@ pub fn process_window_event(
                         event = Some(Event::Jump);
                     }
                 }
-                ElementState::Released => {
-                }
+                ElementState::Released => {}
             }
 
             if let Some(e) = event {
@@ -230,12 +245,13 @@ pub fn process_window_event_graphics(
 ) {
     match *event {
         WindowEvent::KeyboardInput {
-            input: KeyboardInput {
-                state,
-                virtual_keycode,
-                modifiers: _,
-                ..
-            },
+            input:
+                KeyboardInput {
+                    state,
+                    virtual_keycode,
+                    modifiers: _,
+                    ..
+                },
             ..
         } => {
             if let Some(key) = virtual_keycode {
@@ -250,7 +266,7 @@ pub fn process_window_event_graphics(
                                 UiState::PauseMenu => {
                                     unpause(ui_state, window, channel);
                                 }
-                                _ => {},
+                                _ => {}
                             }
                         }
                     }
@@ -271,13 +287,8 @@ pub fn process_window_event_graphics(
     }
 }
 
-
 /// Unpauses the game
-pub fn unpause(
-    ui_state: &mut UiState,
-    window: &glutin::Window,
-    event_channel: &mut EventChannel,
-) {
+pub fn unpause(ui_state: &mut UiState, window: &glutin::Window, event_channel: &mut EventChannel) {
     // Center the cursor so the camera doesn't jump when the game unpauses
     // FIXME: This only mitigates the issue but doesn't fix it entirely
     common::utils::set_cursor_pos_to_window_center(window);

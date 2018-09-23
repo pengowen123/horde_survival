@@ -1,7 +1,7 @@
 //! A custom force generator that acts as a spring used to make the player's physics body float
 
-use common::nphysics3d::math::Force;
 use common::na;
+use common::nphysics3d::math::Force;
 
 // TODO: Fine tune these
 pub const SPRING_LENGTH_DELTA_DISABLE_PERCENTAGE: ::Float = 0.4;
@@ -20,11 +20,7 @@ pub struct Spring {
 }
 
 impl Spring {
-    pub fn new(
-        length: ::Float,
-        stiffness: ::Float,
-        friction: ::Float,
-    ) -> Self {
+    pub fn new(length: ::Float, stiffness: ::Float, friction: ::Float) -> Self {
         Self {
             current_length: None,
             current_velocity: 0.0,
@@ -104,9 +100,7 @@ impl Spring {
             }
         }
 
-        if !self.enabled.1 &&
-           current_length < self.length * SPRING_LENGTH_RE_ENABLE_PERCENTAGE
-        {
+        if !self.enabled.1 && current_length < self.length * SPRING_LENGTH_RE_ENABLE_PERCENTAGE {
             self.enable();
         }
 

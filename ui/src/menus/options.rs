@@ -1,16 +1,16 @@
 //! Implementation of the options menu
 
-use common::{UiState, gfx, config, glutin};
-use common::conrod::{self, Colorable, Positionable, Sizeable, Labelable, color};
 use common::conrod::widget::{self, Widget};
-use window::window_event;
-use slog;
+use common::conrod::{self, color, Colorable, Labelable, Positionable, Sizeable};
+use common::{config, gfx, glutin, UiState};
 use petgraph;
+use slog;
+use window::window_event;
 
-use std::{fmt, cmp};
+use std::{cmp, fmt};
 
-use menus::{Menus, Ids, AutoRevertState, WaitForKeypressState};
 use consts::{self, UI_BACKGROUND_COLOR};
+use menus::{AutoRevertState, Ids, Menus, WaitForKeypressState};
 use theme;
 
 const AUTO_REVERT_TIME: u64 = 15;
@@ -39,7 +39,7 @@ impl Into<config::Config> for ConfigUiState {
 
         // Scale sensitivity so that 1.0 is DEFAULT_SENSITIVITY
         camera.sensitivity *= config::DEFAULT_SENSITIVITY;
-        
+
         config::Config {
             graphics: self.graphics.into(),
             window: self.window.into(),
@@ -345,8 +345,7 @@ impl Menus {
         let bottom_canvas_height_pct = 1.0 - top_canvas_height_pct;
 
         // Root canvas
-        widget::Canvas::new()
-            .set(ids.options_root_canvas, ui);
+        widget::Canvas::new().set(ids.options_root_canvas, ui);
 
         // Top canvas
         widget::Canvas::new()
@@ -368,11 +367,10 @@ impl Menus {
             (ids.options_window_canvas, "Window"),
             (ids.options_graphics_canvas, "Graphics"),
             (ids.options_bindings_canvas, "Key Bindings"),
-            ])
-            .middle_of(ids.options_top_canvas)
-            .wh_of(ids.options_top_canvas)
-            .bar_thickness(50.0)
-            .set(ids.options_submenu_tabs, ui);
+        ]).middle_of(ids.options_top_canvas)
+        .wh_of(ids.options_top_canvas)
+        .bar_thickness(50.0)
+        .set(ids.options_submenu_tabs, ui);
 
         let mut exit_options_menu = false;
         let mut update_config = false;
@@ -416,12 +414,7 @@ impl Menus {
             ui,
         );
 
-        option_label(
-            "Field of view",
-            ids.fov_label,
-            ids.fov_canvas,
-            ui,
-        );
+        option_label("Field of view", ids.fov_label, ids.fov_canvas, ui);
 
         if let Some(new_fov) = widget::Slider::new(self.new_config.camera.fov.round(), 30.0, 120.0)
             .mid_right_with_margin_on(ids.fov_canvas, OPTION_MARGIN)
@@ -524,12 +517,7 @@ impl Menus {
             ui,
         );
 
-        option_label(
-            "V-sync",
-            ids.vsync_label,
-            ids.vsync_canvas,
-            ui,
-        );
+        option_label("V-sync", ids.vsync_label, ids.vsync_canvas, ui);
 
         if toggle_button(
             &mut self.new_config.window.vsync,
@@ -588,12 +576,7 @@ impl Menus {
             ui,
         );
 
-        option_label(
-            "Shadows",
-            ids.shadows_label,
-            ids.shadows_canvas,
-            ui,
-        );
+        option_label("Shadows", ids.shadows_label, ids.shadows_canvas, ui);
 
         if toggle_button(
             &mut self.new_config.graphics.shadows,
@@ -682,12 +665,7 @@ impl Menus {
             ui,
         );
 
-        option_label(
-            "Move left",
-            ids.move_left_label,
-            ids.move_left_canvas,
-            ui,
-        );
+        option_label("Move left", ids.move_left_label, ids.move_left_canvas, ui);
 
         let bind_result = binding_option(
             &mut self.wait_for_keypress_state.move_left,
@@ -784,12 +762,7 @@ impl Menus {
             ui,
         );
 
-        option_label(
-            "Jump",
-            ids.jump_label,
-            ids.jump_canvas,
-            ui,
-        );
+        option_label("Jump", ids.jump_label, ids.jump_canvas, ui);
 
         let bind_result = binding_option(
             &mut self.wait_for_keypress_state.jump,
@@ -857,14 +830,13 @@ impl Menus {
         if update_config {
             // If the window dimensions or fullscreen options were changed, show the auto-revert
             // window settings pop-up
-            if self.new_config.window.fullscreen != self.current_config.window.fullscreen ||
-                self.new_config.window.dimensions != self.current_config.window.dimensions
+            if self.new_config.window.fullscreen != self.current_config.window.fullscreen
+                || self.new_config.window.dimensions != self.current_config.window.dimensions
             {
-                self.auto_revert_state =
-                    Some(AutoRevertState::new(
-                            self.current_config.window.dimensions.clone(),
-                            self.current_config.window.fullscreen,
-                    ));
+                self.auto_revert_state = Some(AutoRevertState::new(
+                    self.current_config.window.dimensions.clone(),
+                    self.current_config.window.fullscreen,
+                ));
             }
 
             send_config_changed_events(&self.current_config, &self.new_config, event_channel);
@@ -901,9 +873,9 @@ impl Menus {
 /// Creates a button meant to transition between UI menus from the options menu
 fn options_transition_button<'a>(
     button: widget::Button<'a, widget::button::Flat>,
-    label: &'a str
+    label: &'a str,
 ) -> widget::Button<'a, widget::button::Flat> {
-     button
+    button
         .w_h(OPTIONS_TRANSITION_BUTTON_WIDTH, 50.0)
         .color(consts::GENERIC_BUTTON_COLOR)
         .label(label)
@@ -1016,11 +988,7 @@ fn toggle_button(
     extra_margin: conrod::Scalar,
     ui: &mut conrod::UiCell,
 ) -> bool {
-    let text = if *state {
-        "On"
-    } else {
-        "Off"
-    };
+    let text = if *state { "On" } else { "Off" };
 
     if widget::Button::new()
         .color(color::RED)
@@ -1060,19 +1028,27 @@ fn get_config_changed_events(a: &ConfigUiState, b: &ConfigUiState) -> Vec<window
     let mut events = Vec::new();
 
     if a.graphics != b.graphics {
-        events.push(window_event::Event::ConfigChanged(window_event::ChangedConfig::Graphics));
+        events.push(window_event::Event::ConfigChanged(
+            window_event::ChangedConfig::Graphics,
+        ));
     }
 
     if a.window != b.window {
-        events.push(window_event::Event::ConfigChanged(window_event::ChangedConfig::Window));
+        events.push(window_event::Event::ConfigChanged(
+            window_event::ChangedConfig::Window,
+        ));
     }
 
     if a.camera != b.camera {
-        events.push(window_event::Event::ConfigChanged(window_event::ChangedConfig::Camera));
+        events.push(window_event::Event::ConfigChanged(
+            window_event::ChangedConfig::Camera,
+        ));
     }
 
     if a.bindings != b.bindings {
-        events.push(window_event::Event::ConfigChanged(window_event::ChangedConfig::Bindings));
+        events.push(window_event::Event::ConfigChanged(
+            window_event::ChangedConfig::Bindings,
+        ));
     }
 
     events
@@ -1243,7 +1219,7 @@ fn binding_option(
     let mut result = BindResult::new();
     let (w, h) = (200.0, OPTION_HEIGHT * 0.8);
 
-    if *waiting_for_keypress  {
+    if *waiting_for_keypress {
         widget::Canvas::new()
             .w_h(w, h)
             .color(color::RED.clicked())
@@ -1270,15 +1246,14 @@ fn binding_option(
                         result.redraw = true;
                         *waiting_for_keypress = false;
                     }
-                    glutin::VirtualKeyCode::LAlt |
-                    glutin::VirtualKeyCode::RAlt |
-                    glutin::VirtualKeyCode::LControl |
-                    glutin::VirtualKeyCode::RControl |
-                    glutin::VirtualKeyCode::LShift |
-                    glutin::VirtualKeyCode::RShift |
-                    glutin::VirtualKeyCode::LWin |
-                    glutin::VirtualKeyCode::RWin
-                    => {
+                    glutin::VirtualKeyCode::LAlt
+                    | glutin::VirtualKeyCode::RAlt
+                    | glutin::VirtualKeyCode::LControl
+                    | glutin::VirtualKeyCode::RControl
+                    | glutin::VirtualKeyCode::LShift
+                    | glutin::VirtualKeyCode::RShift
+                    | glutin::VirtualKeyCode::LWin
+                    | glutin::VirtualKeyCode::RWin => {
                         // The above keys cannot be bound
                     }
                     _ => {

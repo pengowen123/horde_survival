@@ -1,8 +1,8 @@
 //! Components related to graphics
 
-use specs;
-use gfx;
 use common::cgmath::{self, Angle};
+use gfx;
+use specs;
 
 use draw::param;
 use draw::passes::main::{geometry_pass, lighting};
@@ -124,14 +124,8 @@ pub struct DirectionalLight {
 
 impl DirectionalLight {
     /// Creates a new `DirectionalLight` with the provided properties
-    pub fn new(
-        color: LightColor,
-        shadows: Option<LightSpaceMatrix>,
-    ) -> Self {
-        Self {
-            color,
-            shadows,
-        }
+    pub fn new(color: LightColor, shadows: Option<LightSpaceMatrix>) -> Self {
+        Self { color, shadows }
     }
 }
 
@@ -146,14 +140,8 @@ pub struct PointLight {
 
 impl PointLight {
     /// Creates a new `PointLight` with the provided properties
-    pub fn new(
-        color: LightColor,
-        attenuation: LightAttenuation,
-    ) -> Self {
-        Self {
-            color,
-            attenuation,
-        }
+    pub fn new(color: LightColor, attenuation: LightAttenuation) -> Self {
+        Self { color, attenuation }
     }
 }
 

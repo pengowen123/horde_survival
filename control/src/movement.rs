@@ -1,8 +1,8 @@
 //! A custom force generator that is used to apply movements to the player's physics body
 
-use common::nphysics3d::math::Force;
 use common::cgmath::{self, InnerSpace, Zero};
 use common::na;
+use common::nphysics3d::math::Force;
 
 const GROUND_STEEPNESS_FORCE: ::Float = 5000.0;
 
@@ -55,10 +55,12 @@ impl MovementForceGenerator {
 
         if ground_angle > cgmath::Rad(3.141 / 4.0) {
             // Apply the force in the direction of the normal, ignoring the vertical component
-            let force_dir = na::Vector3::new(self.ground_normal.x, self.ground_normal.y, 0.0)
-                .normalize();
+            let force_dir =
+                na::Vector3::new(self.ground_normal.x, self.ground_normal.y, 0.0).normalize();
 
-            Some(Force::linear(force_dir * ground_angle.0 * GROUND_STEEPNESS_FORCE))
+            Some(Force::linear(
+                force_dir * ground_angle.0 * GROUND_STEEPNESS_FORCE,
+            ))
         } else {
             None
         }
@@ -97,9 +99,7 @@ impl MovementForceGenerator {
         }
 
         if let Some(walk_force) = walk_force {
-            force = force
-                .map(|f| f + walk_force)
-                .or_else(|| Some(walk_force));
+            force = force.map(|f| f + walk_force).or_else(|| Some(walk_force));
         }
 
         force

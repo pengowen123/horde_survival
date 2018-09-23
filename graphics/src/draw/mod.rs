@@ -6,47 +6,51 @@
 #[macro_use]
 mod utils;
 pub mod components;
-mod passes;
-mod param;
-mod init;
-mod types;
 mod factory_ext;
-mod lighting_data;
-mod render_target;
 mod glsl;
+mod init;
+mod lighting_data;
+mod param;
+mod passes;
+mod render_target;
+mod types;
 
 pub use self::init::initialize;
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
+pub use self::components::Drawable;
+pub use self::param::ShaderParam;
 pub use self::passes::main::geometry_pass::Vertex;
 pub use self::passes::main::lighting::Material;
 pub use self::passes::shadow::{DirShadowSource, LightSpaceMatrix};
 pub use self::types::{ColorFormat, DepthFormat};
-pub use self::components::Drawable;
-pub use self::param::ShaderParam;
 
-use gfx::{self, handle};
-use common::{self, shred, specs, conrod, config};
+use assets;
 use common::glutin::{self, GlContext};
-use rendergraph::{RenderGraph, builder, module, pass};
+use common::{self, config, conrod, shred, specs};
+use gfx::{self, handle};
 use rendergraph::error::Error;
-use window::{self, info, window_event};
+use rendergraph::{builder, module, pass, RenderGraph};
 use slog;
 use ui;
-use assets;
+use window::{self, info, window_event};
 
 use std::sync::{Arc, Mutex};
 
-use self::passes::{postprocessing, skybox, resource_pass, shadow};
-use self::passes::main::{geometry_pass, lighting};
 use self::lighting_data::LightingData;
+use self::passes::main::{geometry_pass, lighting};
+use self::passes::{postprocessing, resource_pass, shadow, skybox};
 use camera::Camera;
 
 /// A function that creates new window target views
-pub type CreateNewWindowViews<R> =
-    Box<Fn(&glutin::GlWindow) ->
-        (handle::RenderTargetView<R, types::ColorFormat>,
-         handle::DepthStencilView<R, types::DepthFormat>)>;
+pub type CreateNewWindowViews<R> = Box<
+    Fn(
+        &glutin::GlWindow
+    ) -> (
+        handle::RenderTargetView<R, types::ColorFormat>,
+        handle::DepthStencilView<R, types::DepthFormat>,
+    ),
+>;
 
 /// A `specs::Storage` for the `Drawable` component
 pub type DrawableStorage<'a, R> = specs::ReadStorage<'a, components::Drawable<R>>;
@@ -62,9 +66,7 @@ unsafe impl<R: gfx::Resources> Sync for DrawableStorageRef<R> {}
 impl<R: gfx::Resources> DrawableStorageRef<R> {
     pub fn new<'a>(storage: &'a DrawableStorage<'a, R>) -> Self {
         let storage = storage as *const DrawableStorage<'a, R>;
-        let storage: *const DrawableStorage<'static, R> = unsafe {
-            ::std::mem::transmute(storage)
-        };
+        let storage: *const DrawableStorage<'static, R> = unsafe { ::std::mem::transmute(storage) };
 
         DrawableStorageRef(Some(storage))
     }
@@ -76,7 +78,8 @@ impl<R: gfx::Resources> DrawableStorageRef<R> {
 
     /// Returns a non-null pointer to the `DrawableStorage`
     pub fn get<'a>(&'a self) -> *const DrawableStorage<'a, R> {
-        self.0.expect("`DrawableStorageRef::get` called on a null pointer")
+        self.0
+            .expect("`DrawableStorageRef::get` called on a null pointer")
     }
 }
 
@@ -145,10 +148,9 @@ where
             let resource_module = module::Module::new()
                 .add_pass(resource_pass::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
 
-            let shadow_module = module::Module::new()
-                .add_pass(
-                    shadow::directional::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>
-                    );
+            let shadow_module = module::Module::new().add_pass(
+                shadow::directional::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>,
+            );
 
             let main_module = module::Module::new()
                 .add_pass(geometry_pass::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>)
@@ -156,7 +158,7 @@ where
 
             let skybox_module = module::Module::new()
                 .add_pass(skybox::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
-            
+
             let postprocessing_module = module::Module::new()
                 .add_pass(postprocessing::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
 
@@ -177,16 +179,13 @@ where
 
             builder.build(device, encoder, window)
         };
-        
+
         // Build the UI renderer
-        let ui_renderer = conrod::backend::gfx::Renderer::new(
-            &mut factory,
-            &out_color,
-            dpi,
-        ).unwrap_or_else(|e| {
-            error!(log, "Error building UI renderer: {}", e;);
-            panic!(common::CRASH_MSG);
-        });
+        let ui_renderer = conrod::backend::gfx::Renderer::new(&mut factory, &out_color, dpi)
+            .unwrap_or_else(|e| {
+                error!(log, "Error building UI renderer: {}", e;);
+                panic!(common::CRASH_MSG);
+            });
 
         Self {
             factory,
@@ -255,25 +254,27 @@ where
                         (self.create_new_window_views)(self.graph.window());
 
                     // Handle window resize for render passes
-                    self.graph.handle_window_resize(
-                        resized_main_color.clone(),
-                        resized_main_depth,
-                        &mut self.factory,
-                    ).unwrap_or_else(|e| {
-                        error!(data.log, "Error handling window resize: {}", e;);
-                    });
-                    
+                    self.graph
+                        .handle_window_resize(
+                            resized_main_color.clone(),
+                            resized_main_depth,
+                            &mut self.factory,
+                        ).unwrap_or_else(|e| {
+                            error!(data.log, "Error handling window resize: {}", e;);
+                        });
+
                     // Handle window resize for UI renderer
                     self.ui_renderer.on_resize(resized_main_color);
                 }
                 window_event::Event::ConfigChanged(window_event::ChangedConfig::Graphics) => {
                     info!(data.log, "Applying graphics configuration changes";);
-                    self.graph.apply_config(&data.config.graphics, &mut self.factory, &data.assets)
+                    self.graph
+                        .apply_config(&data.config.graphics, &mut self.factory, &data.assets)
                         .unwrap_or_else(|e| {
                             error!(data.log, "Error apply graphics configuration: {}", e;);
                         });
                 }
-                _ => {},
+                _ => {}
             }
         }
 
@@ -295,7 +296,7 @@ where
 
         let (win_w, win_h): (f64, f64) = data.window_info.physical_dimensions().into();
         let image_map = &*data.ui_image_map.get();
-        
+
         if let Some(draw_list) = data.ui_draw_list.walk() {
             self.ui_renderer.fill(
                 self.graph.encoder(),
@@ -307,7 +308,8 @@ where
             warn!(data.log, "UI draw list not found";);
         }
 
-        self.ui_renderer.draw(&mut self.factory, self.graph.encoder(), image_map);
+        self.ui_renderer
+            .draw(&mut self.factory, self.graph.encoder(), image_map);
 
         self.graph.finish_frame().unwrap_or_else(|e| {
             error!(data.log, "Error finishing frame: {}", e);

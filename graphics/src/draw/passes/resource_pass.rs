@@ -1,13 +1,13 @@
 //! This pass handles resources such as intermediate targets that are used by other passes
 
-use gfx::{self, handle, format, texture};
-use window::info::WindowInfo;
-use rendergraph::pass::Pass;
-use rendergraph::framebuffer::Framebuffers;
-use rendergraph::error::{RunError, BuildError};
-use common::config;
-use shred::Resources;
 use assets;
+use common::config;
+use gfx::{self, format, handle, texture};
+use rendergraph::error::{BuildError, RunError};
+use rendergraph::framebuffer::Framebuffers;
+use rendergraph::pass::Pass;
+use shred::Resources;
+use window::info::WindowInfo;
 
 use draw::types;
 
@@ -22,26 +22,24 @@ pub struct IntermediateTarget<R: gfx::Resources> {
 }
 
 impl<R: gfx::Resources> IntermediateTarget<R> {
-    fn new<F: gfx::Factory<R>>(factory: &mut F, dimensions: (texture::Size, texture::Size))
-        -> Result<Self, BuildError<String>>
-    {
-        let (_, srv, rtv) = factory
-            .create_render_target(dimensions.0, dimensions.1)?;
+    fn new<F: gfx::Factory<R>>(
+        factory: &mut F,
+        dimensions: (texture::Size, texture::Size),
+    ) -> Result<Self, BuildError<String>> {
+        let (_, srv, rtv) = factory.create_render_target(dimensions.0, dimensions.1)?;
         let (_, _, dsv) = factory.create_depth_stencil(dimensions.0, dimensions.1)?;
-        
-        Ok(IntermediateTarget {
-            rtv,
-            srv,
-            dsv,
-        })
+
+        Ok(IntermediateTarget { rtv, srv, dsv })
     }
 }
 
-pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
-    -> Result<(), BuildError<String>>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+pub fn setup_pass<R, C, F>(
+    builder: &mut types::GraphBuilder<R, C, F>,
+) -> Result<(), BuildError<String>>
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     let intermediate_target = {
         let dim: (u32, u32) = builder
@@ -56,7 +54,7 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     let pass = ResourcePass {
         intermediate_target: intermediate_target.clone(),
     };
-    
+
     builder.add_pass(pass);
     builder.add_pass_output("intermediate_target", intermediate_target);
 
@@ -68,28 +66,27 @@ pub struct ResourcePass<R: gfx::Resources> {
 }
 
 impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for ResourcePass<R>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     fn name(&self) -> &str {
         "resource"
     }
 
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, _: &mut Resources)
-        -> Result<(), RunError>
-    {
+    fn execute_pass(
+        &mut self,
+        encoder: &mut gfx::Encoder<R, C>,
+        _: &mut Resources,
+    ) -> Result<(), RunError> {
         encoder.clear(&self.intermediate_target.rtv, [0.0; 4]);
         encoder.clear_depth(&self.intermediate_target.dsv, 1.0);
-        
+
         Ok(())
     }
 
-    fn reload_shaders(
-        &mut self,
-        _: &mut F,
-        _: &assets::Assets,
-    ) -> Result<(), BuildError<String>> {
+    fn reload_shaders(&mut self, _: &mut F, _: &assets::Assets) -> Result<(), BuildError<String>> {
         Ok(())
     }
 
@@ -100,7 +97,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Resource
         factory: &mut F,
     ) -> Result<(), BuildError<String>> {
         // Build new intermediate targets using the new window dimensions
-        let dim = (new_dimensions.0 as texture::Size, new_dimensions.1 as texture::Size);
+        let dim = (
+            new_dimensions.0 as texture::Size,
+            new_dimensions.1 as texture::Size,
+        );
 
         let intermediate_target = IntermediateTarget::new(factory, dim)?;
 

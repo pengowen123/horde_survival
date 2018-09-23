@@ -1,9 +1,9 @@
 //! Math used by various systems
 
-extern crate common;
 extern crate alga;
+extern crate common;
 
-use common::{na, cgmath};
+use common::{cgmath, na};
 
-pub mod functions;
 pub mod convert;
+pub mod functions;

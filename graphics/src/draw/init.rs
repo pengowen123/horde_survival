@@ -1,17 +1,17 @@
 //! Initialization of the rendering system
 
-use specs::{self, DispatcherBuilder};
 use common::glutin::{self, EventsLoop, GlContext};
 use common::{self, config};
-use gfx_window_glutin;
 use gfx;
-use window;
+use gfx_window_glutin;
 use slog;
+use specs::{self, DispatcherBuilder};
 use ui;
+use window;
 
 use std::sync::{Arc, Mutex};
 
-use draw::{self, param, components, lighting_data, passes};
+use draw::{self, components, lighting_data, param, passes};
 
 use gfx_device_gl;
 /// Initializes rendering-related components and systems
@@ -20,22 +20,19 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     dispatcher: DispatcherBuilder<'a, 'b>,
     dispatcher_graphics: DispatcherBuilder<'c, 'd>,
     init_test_entities: Box<Fn(&mut specs::World, &mut gfx_device_gl::Factory)>,
-) -> (DispatcherBuilder<'a, 'b>,
-      DispatcherBuilder<'c, 'd>,
-      window::Window,
-      EventsLoop)
-{
-
+) -> (
+    DispatcherBuilder<'a, 'b>,
+    DispatcherBuilder<'c, 'd>,
+    window::Window,
+    EventsLoop,
+) {
     // Initialize window settings
     let events = EventsLoop::new();
     let (window_builder, context_builder) = {
         let config = world.read_resource::<config::Config>();
-        let context_builder = glutin::ContextBuilder::new()
-            .with_vsync(config.window.vsync);
-        let size = glutin::dpi::LogicalSize::new(
-            config.window.width as f64,
-            config.window.height as f64,
-        );
+        let context_builder = glutin::ContextBuilder::new().with_vsync(config.window.vsync);
+        let size =
+            glutin::dpi::LogicalSize::new(config.window.width as f64, config.window.height as f64);
         let fullscreen = if config.window.fullscreen {
             Some(events.get_primary_monitor())
         } else {
@@ -79,7 +76,9 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     world.register::<components::SpotLight>();
 
     // Add resources
-    world.add_resource(Arc::new(Mutex::new(passes::shadow::DirShadowSource::new_none())));
+    world.add_resource(Arc::new(Mutex::new(
+        passes::shadow::DirShadowSource::new_none(),
+    )));
 
     // Initialize subsystems
     let dispatcher = param::init(world, dispatcher);
@@ -95,14 +94,14 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     let create_new_window_views = |window: &glutin::GlWindow| gfx_window_glutin::new_views(window);
     let create_new_window_views = Box::new(create_new_window_views);
     let draw = draw::System::new(
-            factory,
-            window.clone(),
-            device,
-            main_color,
-            main_depth,
-            encoder,
-            &mut world.res,
-            create_new_window_views,
+        factory,
+        window.clone(),
+        device,
+        main_color,
+        main_depth,
+        encoder,
+        &mut world.res,
+        create_new_window_views,
     );
 
     // Add systems
@@ -115,12 +114,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
                 "shader-param-rotation",
                 "shader-param-scale",
             ],
-        )
-        .with(
-            passes::shadow::ShadowSourceSystem,
-            "shadow-source",
-            &[],
-            );
+        ).with(passes::shadow::ShadowSourceSystem, "shadow-source", &[]);
 
     let dispatcher_graphics = dispatcher_graphics.with_thread_local(draw);
 

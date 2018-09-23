@@ -28,7 +28,9 @@ pub struct System {
 
 impl System {
     pub fn new() -> Self {
-        Self { last_update: Instant::now() }
+        Self {
+            last_update: Instant::now(),
+        }
     }
 }
 
@@ -36,9 +38,8 @@ impl<'a> specs::System<'a> for System {
     type SystemData = specs::Write<'a, Delta>;
 
     fn run(&mut self, mut data: Self::SystemData) {
-        data.0 = Duration::from_std(self.last_update.elapsed()).expect(
-            "Delta duration conversion failure",
-        );
+        data.0 = Duration::from_std(self.last_update.elapsed())
+            .expect("Delta duration conversion failure");
         self.last_update = Instant::now();
     }
 }

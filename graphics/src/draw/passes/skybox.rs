@@ -1,22 +1,22 @@
 //! Skybox pass
 
-use gfx::{self, state, handle, format};
-use gfx::traits::FactoryExt;
-use image_utils;
-use rendergraph::pass::Pass;
-use rendergraph::framebuffer::Framebuffers;
-use rendergraph::error::{RunError, BuildError};
-use shred::Resources;
-use common::config;
 use assets::{self, read_bytes};
+use common::config;
+use gfx::traits::FactoryExt;
+use gfx::{self, format, handle, state};
+use image_utils;
+use rendergraph::error::{BuildError, RunError};
+use rendergraph::framebuffer::Framebuffers;
+use rendergraph::pass::Pass;
+use shred::Resources;
 
-use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
-use draw::{types, passes};
-use draw::passes::resource_pass;
-use draw::glsl::{Vec2, Vec4, Mat4};
 use camera::Camera;
+use draw::glsl::{Mat4, Vec2, Vec4};
+use draw::passes::resource_pass;
+use draw::{passes, types};
 
 gfx_defines! {
     vertex Vertex {
@@ -55,7 +55,8 @@ impl<R: gfx::Resources> SkyboxPass<R> {
         rtv: handle::RenderTargetView<R, format::Rgba8>,
         dsv: handle::DepthStencilView<R, types::DepthFormat>,
     ) -> Result<Self, BuildError<String>>
-        where F: gfx::Factory<R>,
+    where
+        F: gfx::Factory<R>,
     {
         let pso = Self::load_pso(factory, assets)?;
 
@@ -68,7 +69,7 @@ impl<R: gfx::Resources> SkyboxPass<R> {
         ];
 
         let indices = [0u16, 1, 2, 0, 2, 3];
-        
+
         let (vbuf, slice) = factory.create_vertex_buffer_with_slice(&vertices, &indices[..]);
 
         // Create the skybox
@@ -98,10 +99,10 @@ impl<R: gfx::Resources> SkyboxPass<R> {
             },
             image_utils::JPEG,
         )?;
-        
+
         let sampler_info = gfx::texture::SamplerInfo::new(
             gfx::texture::FilterMethod::Bilinear,
-            gfx::texture::WrapMode::Clamp
+            gfx::texture::WrapMode::Clamp,
         );
 
         let data = pipe::Data {
@@ -116,10 +117,11 @@ impl<R: gfx::Resources> SkyboxPass<R> {
             bundle: gfx::Bundle::new(slice, pso, data),
         })
     }
-    
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets)
-        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
-    {
+
+    fn load_pso<F: gfx::Factory<R>>(
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
         passes::load_pso(
             assets,
             factory,
@@ -133,24 +135,21 @@ impl<R: gfx::Resources> SkyboxPass<R> {
     }
 }
 
-pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
-    -> Result<(), BuildError<String>>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+pub fn setup_pass<R, C, F>(
+    builder: &mut types::GraphBuilder<R, C, F>,
+) -> Result<(), BuildError<String>>
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     let (rtv, dsv) = {
-        let target =
-            builder.get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
+        let target = builder
+            .get_pass_output::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
         (target.rtv.clone(), target.dsv.clone())
     };
 
-    let pass = SkyboxPass::new(
-        builder.factory,
-        builder.assets,
-        rtv,
-        dsv,
-    )?;
+    let pass = SkyboxPass::new(builder.factory, builder.assets, rtv, dsv)?;
 
     builder.add_pass(pass);
 
@@ -158,17 +157,20 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
 }
 
 impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPass<R>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     fn name(&self) -> &str {
         "skybox"
     }
 
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut Resources)
-        -> Result<(), RunError>
-    {
+    fn execute_pass(
+        &mut self,
+        encoder: &mut gfx::Encoder<R, C>,
+        resources: &mut Resources,
+    ) -> Result<(), RunError> {
         let camera = resources.fetch::<Arc<Mutex<Camera>>>();
         let camera = camera.lock().unwrap();
         let locals = Locals {
@@ -176,13 +178,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPa
             view: camera.skybox_view().into(),
         };
 
-        encoder.update_constant_buffer(
-            &self.bundle.data.locals,
-            &locals,
-        );
+        encoder.update_constant_buffer(&self.bundle.data.locals, &locals);
 
         self.bundle.encode(encoder);
-        
+
         Ok(())
     }
 
@@ -206,7 +205,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for SkyboxPa
             let intermediate_target = framebuffers
                 .get_framebuffer::<resource_pass::IntermediateTarget<R>>("intermediate_target")?;
 
-            (intermediate_target.rtv.clone(), intermediate_target.dsv.clone())
+            (
+                intermediate_target.rtv.clone(),
+                intermediate_target.dsv.clone(),
+            )
         };
 
         // Update shader outputs to the resized targets

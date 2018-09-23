@@ -1,8 +1,8 @@
 //! Conversion functions between `cgmath` and `nalgebra` types
 
-use na;
-use cgmath;
 use alga::general::Real;
+use cgmath;
+use na;
 
 use std::ops::Index;
 
@@ -65,7 +65,7 @@ where
 mod tests {
     use super::*;
 
-    use cgmath::{Rotation3, InnerSpace, Deg};
+    use cgmath::{Deg, InnerSpace, Rotation3};
 
     #[test]
     fn test_to_na_quaternion() {

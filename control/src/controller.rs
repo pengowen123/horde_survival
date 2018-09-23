@@ -1,13 +1,13 @@
 //! A force generator composed from the spring and the movement force generators
 
-use common::nphysics3d::force_generator::{ForceGenerator};
+use common::nphysics3d::force_generator::ForceGenerator;
 use common::nphysics3d::math::Force;
-use common::nphysics3d::solver::IntegrationParameters;
 use common::nphysics3d::object::{BodyHandle, BodySet};
+use common::nphysics3d::solver::IntegrationParameters;
 use common::{cgmath, na};
 
-use spring;
 use movement;
+use spring;
 
 pub struct ControllerForceGenerator {
     pub spring: spring::Spring,
@@ -30,9 +30,8 @@ impl ControllerForceGenerator {
 
     pub fn update_current_entity_velocity(&mut self, new_velocity: na::Vector3<::Float>) {
         self.spring.current_velocity = new_velocity[2];
-        self.movement.update_horizontal_velocity(
-            cgmath::Vector2::new(new_velocity[0], new_velocity[1])
-        );
+        self.movement
+            .update_horizontal_velocity(cgmath::Vector2::new(new_velocity[0], new_velocity[1]));
     }
 }
 
@@ -58,7 +57,7 @@ impl ForceGenerator<::Float> for ControllerForceGenerator {
             total_force += force;
             applied = true;
         }
-        
+
         if applied {
             bodies.body_part_mut(self.body).apply_force(&total_force);
         }

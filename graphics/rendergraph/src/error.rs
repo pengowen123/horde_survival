@@ -4,7 +4,7 @@ use gfx;
 use glutin;
 use image_utils;
 
-use std::{fmt, io, error};
+use std::{error, fmt, io};
 
 use builder::PassOutputError;
 use framebuffer::FramebufferError;
@@ -21,10 +21,7 @@ pub struct Error<S> {
 impl<S> Error<S> {
     /// Constructs a new `Error` from the name of the pass that caused it and the error itself
     pub fn new(pass_name: String, kind: ErrorKind<S>) -> Self {
-        Self {
-            pass_name,
-            kind,
-        }
+        Self { pass_name, kind }
     }
 
     /// Returns the name of the pass that caused the error
@@ -67,7 +64,9 @@ pub enum ErrorKind<S> {
 impl<S: fmt::Debug + fmt::Display> fmt::Display for ErrorKind<S> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ErrorKind::Build(ref e) => writeln!(fmt, "Error building component of render graph: {}", e),
+            ErrorKind::Build(ref e) => {
+                writeln!(fmt, "Error building component of render graph: {}", e)
+            }
             ErrorKind::Run(ref e) => writeln!(fmt, "Error running render graph: {}", e),
         }
     }
@@ -121,8 +120,11 @@ impl<S: fmt::Debug + fmt::Display> fmt::Display for BuildError<S> {
             TextureCreation(e) => writeln!(fmt, "Error creating texture: {}", e),
             TargetCreation(e) => writeln!(fmt, "Error creating target: {}", e),
             ResourceCreation(e) => writeln!(fmt, "Error creating resource view: {}", e),
-            Creation(e) =>
-                writeln!(fmt, "Error creating target, texture, or resource view: {}", e),
+            Creation(e) => writeln!(
+                fmt,
+                "Error creating target, texture, or resource view: {}",
+                e
+            ),
             Image(e) => writeln!(fmt, "Image error: {}", e),
             Program(e) => writeln!(fmt, "Program linking error: {}", e),
             Io(e, path) => writeln!(fmt, "Io error (at path `{}`): {}", path, e),
@@ -233,7 +235,7 @@ impl fmt::Display for RunError {
             BufferUpdate(e) => writeln!(fmt, "Error updating buffer: {}", e),
             ContextError(e) => writeln!(fmt, "Error manipulating GL context: {}", e),
             String(e) => writeln!(fmt, "Error: {}", e),
-            Custom(e) => writeln!(fmt, "Custom `RunError`: {}", e)
+            Custom(e) => writeln!(fmt, "Custom `RunError`: {}", e),
         }
     }
 }

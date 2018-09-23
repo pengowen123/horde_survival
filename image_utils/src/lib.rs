@@ -9,13 +9,13 @@ extern crate quick_error;
 
 use common::gfx;
 
-use gfx::{texture, format};
 use gfx::handle::ShaderResourceView;
+use gfx::{format, texture};
 
 use std::io::Cursor;
 
-pub use image::{ImageError, PNG, JPEG};
 pub use format::{Rgba8, Srgba8};
+pub use image::{ImageError, JPEG, PNG};
 
 /// Loads a texture from the provided data
 pub fn load_texture<F, R, CF>(
@@ -95,23 +95,20 @@ where
     CF::Channel: format::TextureChannel,
     CF::Surface: format::TextureSurface,
 {
-    let images = data.as_array()
+    let images = data
+        .as_array()
         .into_iter()
         .map(|d| image::load(Cursor::new(d), format).map(|i| i.to_rgba()))
         .collect::<Result<Vec<_>, _>>()?;
 
     let data: [&[u8]; 6] = [
-        &images[0],
-        &images[1],
-        &images[2],
-        &images[3],
-        &images[4],
-        &images[5],
+        &images[0], &images[1], &images[2], &images[3], &images[4], &images[5],
     ];
 
     let kind = texture::Kind::Cube(images[0].dimensions().0 as u16);
 
-    let texture = factory.create_texture_immutable_u8::<CF>(kind, texture::Mipmap::Allocated, &data[..])?;
+    let texture =
+        factory.create_texture_immutable_u8::<CF>(kind, texture::Mipmap::Allocated, &data[..])?;
 
     Ok(texture.1)
 }

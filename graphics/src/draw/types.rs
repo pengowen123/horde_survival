@@ -4,15 +4,7 @@ use gfx::{self, format};
 use rendergraph::builder;
 
 /// A `GraphBuilder` with color and depth format types specific to this crate
-pub type GraphBuilder<'a, R, C, F> =
-    builder::GraphBuilder<
-        'a,
-        R,
-        C,
-        F,
-        ColorFormat,
-        DepthFormat
-    >;
+pub type GraphBuilder<'a, R, C, F> = builder::GraphBuilder<'a, R, C, F, ColorFormat, DepthFormat>;
 
 /// The color format for graphics
 // FIXME: Manually gamma correct in shaders when glutin actually uses the provided color format

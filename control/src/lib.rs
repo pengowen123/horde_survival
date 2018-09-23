@@ -8,21 +8,21 @@ extern crate common;
 extern crate shred_derive;
 extern crate math;
 
-mod spring;
-mod movement;
 mod controller;
+mod movement;
+mod spring;
 
-pub use self::spring::Spring;
 pub use self::movement::MovementForceGenerator;
+pub use self::spring::Spring;
 
-use common::specs::{self, DispatcherBuilder, Join};
-use common::cgmath::{self, Quaternion};
-use common::{Float, shred, na, physics};
-use common::nphysics3d::world::World;
-use common::nphysics3d::object::{Body, BodyMut, BodyHandle, ColliderHandle};
-use common::nphysics3d::force_generator::ForceGeneratorHandle;
-use common::ncollide3d::query::{self, RayCast};
 use common::cgmath::InnerSpace;
+use common::cgmath::{self, Quaternion};
+use common::ncollide3d::query::{self, RayCast};
+use common::nphysics3d::force_generator::ForceGeneratorHandle;
+use common::nphysics3d::object::{Body, BodyHandle, BodyMut, ColliderHandle};
+use common::nphysics3d::world::World;
+use common::specs::{self, DispatcherBuilder, Join};
+use common::{na, physics, shred, Float};
 use math::convert;
 
 /// Controlled properties of an entity
@@ -52,13 +52,11 @@ impl Control {
         world: &mut World<::Float>,
     ) -> Self {
         let max_speed = movement.max_speed();
-        let force_generator = world.add_force_generator(
-            controller::ControllerForceGenerator::new(
-                spring,
-                movement,
-                body_handle,
-            )
-        );
+        let force_generator = world.add_force_generator(controller::ControllerForceGenerator::new(
+            spring,
+            movement,
+            body_handle,
+        ));
 
         Self {
             force_generator,
@@ -123,10 +121,8 @@ impl<'a> specs::System<'a> for System {
                 c.direction = None;
             }
 
-            let walk_dir = c.velocity.map(|direction| {
-                match direction {
-                    VelocityModifier::WalkForward(direction) => direction.normalize()
-                }
+            let walk_dir = c.velocity.map(|direction| match direction {
+                VelocityModifier::WalkForward(direction) => direction.normalize(),
             });
 
             match data.world.body_mut(p.get_root_handle()) {
@@ -161,7 +157,7 @@ impl<'a> specs::System<'a> for System {
                         // movement speed limit
                         body.activate();
                     }
-                },
+                }
                 _ => continue,
             }
 
@@ -174,15 +170,16 @@ impl<'a> specs::System<'a> for System {
                 if let Some(entity_collider) = data.world.collider(handle) {
                     if let Some(floor_handle) = data.floor_handle.get_handle() {
                         if let Some(floor_collider) = data.world.collider(floor_handle) {
-                            let entity_pos =
-                                na::Point3::origin() +
-                                entity_collider.position().translation.vector;
+                            let entity_pos = na::Point3::origin()
+                                + entity_collider.position().translation.vector;
 
                             let ray = query::Ray::new(entity_pos, -na::Vector3::z());
 
-                            let intersection = floor_collider
-                                .shape()
-                                .toi_and_normal_with_ray(floor_collider.position(), &ray, false);
+                            let intersection = floor_collider.shape().toi_and_normal_with_ray(
+                                floor_collider.position(),
+                                &ray,
+                                false,
+                            );
 
                             if let Some(intersection) = intersection {
                                 current_spring_length = Some(intersection.toi);
@@ -202,9 +199,11 @@ impl<'a> specs::System<'a> for System {
             };
 
             let (is_ground_too_steep, set_vertical_velocity, spring_enabled) = {
-                let mut controller = data.world
+                let mut controller = data
+                    .world
                     .force_generator_mut(c.force_generator)
-                    .downcast_mut::<controller::ControllerForceGenerator>().unwrap();
+                    .downcast_mut::<controller::ControllerForceGenerator>()
+                    .unwrap();
 
                 if let Some(length) = current_spring_length {
                     controller.spring.set_current_length(length);
@@ -216,7 +215,7 @@ impl<'a> specs::System<'a> for System {
                 let is_ground_too_steep = controller.movement.update_ground_normal(
                     ground_normal
                         .map(convert::to_cgmath_vector)
-                        .unwrap_or(cgmath::Vector3::unit_z())
+                        .unwrap_or(cgmath::Vector3::unit_z()),
                 );
 
                 if is_ground_too_steep {
@@ -244,7 +243,11 @@ impl<'a> specs::System<'a> for System {
                 // Update the velocity fields on the controller's force generators
                 controller.update_current_entity_velocity(current_entity_velocity);
 
-                (is_ground_too_steep, jump_velocity, controller.spring.is_enabled())
+                (
+                    is_ground_too_steep,
+                    jump_velocity,
+                    controller.spring.is_enabled(),
+                )
             };
 
             if let BodyMut::RigidBody(rb) = data.world.body_mut(p.get_root_handle()) {
@@ -284,7 +287,6 @@ pub fn initialize<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> DispatcherBuilder<'a, 'b> {
-
     // Register components
     world.register::<Control>();
 

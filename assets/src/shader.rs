@@ -1,14 +1,14 @@
 //! Shader loading and preprocessing
 
-use regex::bytes::{Regex, Replacer, Captures};
+use regex::bytes::{Captures, Regex, Replacer};
 
-use std::path::{Path, PathBuf};
-use std::{io, fmt};
-use std::string::FromUtf8Error;
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::string::FromUtf8Error;
+use std::{fmt, io};
 
-use Assets;
 use read_bytes;
+use Assets;
 
 const MAX_RECURSION_DEPTH: usize = 32;
 
@@ -28,10 +28,14 @@ impl IoError {
 
 impl fmt::Display for IoError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(fmt,
-                 "Io error while reading `{}`: {}",
-                 self.path().to_str().expect("Path contained invalid unicode"),
-                 self.err())
+        writeln!(
+            fmt,
+            "Io error while reading `{}`: {}",
+            self.path()
+                .to_str()
+                .expect("Path contained invalid unicode"),
+            self.err()
+        )
     }
 }
 
@@ -102,17 +106,15 @@ pub fn load_shader_file_impl(
 fn load_shader_file_with_includes(
     assets: &Assets,
     path: &Path,
-    recurses: usize
+    recurses: usize,
 ) -> Result<Vec<u8>, ShaderLoadingError> {
     if recurses > MAX_RECURSION_DEPTH {
         return Err(ShaderLoadingError::MaxIncludeRecursion);
     }
 
     let path = assets.get_shader_path(path);
-    let bytes = read_bytes(&path)
-        .map_err(|err| {
-            ShaderLoadingError::Io(IoError(path.to_owned(), err))
-        })?;
+    let bytes =
+        read_bytes(&path).map_err(|err| ShaderLoadingError::Io(IoError(path.to_owned(), err)))?;
 
     lazy_static! {
         static ref FIND_INCLUDE: Regex = Regex::new(r#"#include "(.*)""#).unwrap();

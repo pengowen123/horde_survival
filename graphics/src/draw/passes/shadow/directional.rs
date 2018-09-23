@@ -1,23 +1,23 @@
 //! Pipeline declaration for shadows from directional lights
 
-use gfx::{self, state, handle, texture};
-use gfx::traits::FactoryExt;
-use specs::Join;
-use cgmath::{Matrix4, SquareMatrix};
-use rendergraph::pass::Pass;
-use rendergraph::framebuffer::Framebuffers;
-use rendergraph::error::{RunError, BuildError};
-use common::config;
-use shred;
 use assets;
+use cgmath::{Matrix4, SquareMatrix};
+use common::config;
+use gfx::traits::FactoryExt;
+use gfx::{self, handle, state, texture};
+use rendergraph::error::{BuildError, RunError};
+use rendergraph::framebuffer::Framebuffers;
+use rendergraph::pass::Pass;
+use shred;
+use specs::Join;
 
-use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
-use draw::{DrawableStorageRef, types, passes};
+use draw::glsl::Mat4;
 use draw::passes::main::geometry_pass;
 use draw::passes::shadow;
-use draw::glsl::Mat4;
+use draw::{passes, types, DrawableStorageRef};
 
 pub struct Output<R: gfx::Resources> {
     pub srv: handle::ShaderResourceView<R, [f32; 4]>,
@@ -49,20 +49,13 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
         enabled: bool,
     ) -> Result<(Self, Output<R>), BuildError<String>> {
         // Make a 1x1 shadow map if shadows are disabled
-        let shadow_map_size = if enabled {
-            shadow_map_size
-        } else {
-            1
-        };
+        let shadow_map_size = if enabled { shadow_map_size } else { 1 };
 
-        let (_, srv, dsv) = factory.create_depth_stencil(
-            shadow_map_size,
-            shadow_map_size,
-        )?;
+        let (_, srv, dsv) = factory.create_depth_stencil(shadow_map_size, shadow_map_size)?;
 
         let vbuf = factory.create_vertex_buffer(&[]);
         let slice = gfx::Slice::new_match_vertex_buffer(&vbuf);
-        
+
         let data = pipe::Data {
             vbuf,
             locals: factory.create_constant_buffer(1),
@@ -75,16 +68,15 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
             enabled,
         };
 
-        let output = Output {
-            srv,
-        };
-        
+        let output = Output { srv };
+
         Ok((pass, output))
     }
 
-    fn load_pso<F: gfx::Factory<R>>(factory: &mut F, assets: &assets::Assets)
-        -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>>
-    {
+    fn load_pso<F: gfx::Factory<R>>(
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<gfx::PipelineState<R, pipe::Meta>, BuildError<String>> {
         passes::load_pso(
             assets,
             factory,
@@ -98,11 +90,13 @@ impl<R: gfx::Resources> DirectionalShadowPass<R> {
     }
 }
 
-pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
-    -> Result<(), BuildError<String>>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+pub fn setup_pass<R, C, F>(
+    builder: &mut types::GraphBuilder<R, C, F>,
+) -> Result<(), BuildError<String>>
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     let (enabled, shadow_map_size) = {
         let config = builder.get_resources().fetch::<config::GraphicsConfig>();
@@ -110,12 +104,8 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
         (config.shadows, config.shadow_map_size)
     };
 
-    let (pass, output) = DirectionalShadowPass::new(
-        builder.factory,
-        builder.assets,
-        shadow_map_size,
-        enabled,
-    )?;
+    let (pass, output) =
+        DirectionalShadowPass::new(builder.factory, builder.assets, shadow_map_size, enabled)?;
 
     builder.add_pass(pass);
     builder.add_pass_output("dir_shadow_map", output);
@@ -123,19 +113,21 @@ pub fn setup_pass<R, C, F>(builder: &mut types::GraphBuilder<R, C, F>)
     Ok(())
 }
 
-
 impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for DirectionalShadowPass<R>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    F: gfx::Factory<R>,
 {
     fn name(&self) -> &str {
         "directional_light_shadows"
     }
 
-    fn execute_pass(&mut self, encoder: &mut gfx::Encoder<R, C>, resources: &mut shred::Resources)
-        -> Result<(), RunError>
-    {
+    fn execute_pass(
+        &mut self,
+        encoder: &mut gfx::Encoder<R, C>,
+        resources: &mut shred::Resources,
+    ) -> Result<(), RunError> {
         if !self.enabled {
             return Ok(());
         }
@@ -144,8 +136,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
 
         let drawable = resources.fetch::<DrawableStorageRef<R>>();
         let drawable = unsafe { &*drawable.get() };
-        
-        let shadow_source = resources.fetch::<Arc<Mutex<shadow::DirShadowSource>>>().clone();
+
+        let shadow_source = resources
+            .fetch::<Arc<Mutex<shadow::DirShadowSource>>>()
+            .clone();
         let light_space_matrix = match shadow_source.lock().unwrap().light_space_matrix() {
             Some(m) => m,
             // If there is no shadow source, just return (depth buffer was already cleared)
@@ -159,14 +153,14 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
         for d in drawable.join() {
             let model = d.param().get_model_matrix();
             locals.model = model.into();
-            
+
             encoder.update_constant_buffer(&self.bundle.data.locals, &locals);
-            
+
             self.bundle.data.vbuf = d.vertex_buffer().clone();
             self.bundle.slice = d.slice().clone();
             self.bundle.encode(encoder);
         }
-        
+
         Ok(())
     }
 
@@ -217,12 +211,10 @@ impl<R, C, F> Pass<R, C, F, types::ColorFormat, types::DepthFormat> for Directio
         }
 
         if make_shadow_map {
-            let (_, srv, dsv) = factory.create_depth_stencil(
-                config.shadow_map_size,
-                config.shadow_map_size,
-            )?;
+            let (_, srv, dsv) =
+                factory.create_depth_stencil(config.shadow_map_size, config.shadow_map_size)?;
             self.bundle.data.out_depth = dsv.clone();
-            
+
             framebuffers.add_framebuffer("dir_shadow_map", Output { srv });
         }
 

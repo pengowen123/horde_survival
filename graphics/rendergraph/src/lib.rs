@@ -2,30 +2,31 @@
 
 #![deny(missing_docs)]
 
+extern crate assets;
 extern crate common;
 extern crate image_utils;
-extern crate assets;
 
-use common::{glutin, shred, gfx, gfx_core, config};
+use common::{config, gfx, gfx_core, glutin, shred};
 
-pub mod pass;
-pub mod module;
 pub mod builder;
 pub mod error;
 pub mod framebuffer;
+pub mod module;
+pub mod pass;
 
-use shred::Resources;
+use gfx::{format, handle};
 use glutin::GlContext;
-use gfx::{handle, format};
+use shred::Resources;
 
 use std::sync::Arc;
 
 /// A type that stores all passes and can run them
 pub struct RenderGraph<R, C, D, F, CF, DF>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          D: gfx::Device,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    D: gfx::Device,
+    F: gfx::Factory<R>,
 {
     passes: Vec<Box<pass::Pass<R, C, F, CF, DF>>>,
     resources: Resources,
@@ -37,10 +38,11 @@ pub struct RenderGraph<R, C, D, F, CF, DF>
 }
 
 impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          D: gfx::Device<Resources = R, CommandBuffer = C>,
-          F: gfx::Factory<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    D: gfx::Device<Resources = R, CommandBuffer = C>,
+    F: gfx::Factory<R>,
 {
     /// Returns a new `RenderGraph` that contains the provided passes and resources
     ///
@@ -92,17 +94,15 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
     }
 
     /// Reloads the shaders for all passes in the `RenderGraph`
-    pub fn reload_shaders(&mut self, factory: &mut F, assets: &assets::Assets)
-        -> Result<(), error::Error<String>>
-    {
+    pub fn reload_shaders(
+        &mut self,
+        factory: &mut F,
+        assets: &assets::Assets,
+    ) -> Result<(), error::Error<String>> {
         for pass in &mut self.passes {
-            pass.reload_shaders(factory, assets)
-                .map_err(|e|  {
-                    error::Error::new(
-                        pass.name().to_string(),
-                        error::ErrorKind::Build(e),
-                    )
-                })?;
+            pass.reload_shaders(factory, assets).map_err(|e| {
+                error::Error::new(pass.name().to_string(), error::ErrorKind::Build(e))
+            })?;
         }
         Ok(())
     }
@@ -116,22 +116,17 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
     ) -> Result<(), error::Error<String>> {
         let new_dimensions = resized_main_color.get_dimensions();
         let new_dimensions = (new_dimensions.0, new_dimensions.1);
-        
+
         self.main_color = resized_main_color;
         self.main_depth = resized_main_depth;
-        
-        let mut framebuffers = framebuffer::Framebuffers::new(
-            self.main_color.clone(),
-            self.main_depth.clone(),
-        );
+
+        let mut framebuffers =
+            framebuffer::Framebuffers::new(self.main_color.clone(), self.main_depth.clone());
 
         for pass in &mut self.passes {
             pass.handle_window_resize(new_dimensions, &mut framebuffers, factory)
                 .map_err(|e| {
-                    error::Error::new(
-                        pass.name().to_string(),
-                        error::ErrorKind::Build(e),
-                    )
+                    error::Error::new(pass.name().to_string(), error::ErrorKind::Build(e))
                 })?;
         }
         Ok(())
@@ -144,24 +139,19 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
         factory: &mut F,
         assets: &assets::Assets,
     ) -> Result<(), error::Error<String>> {
-        let mut framebuffers = framebuffer::Framebuffers::new(
-            self.main_color.clone(),
-            self.main_depth.clone(),
-        );
+        let mut framebuffers =
+            framebuffer::Framebuffers::new(self.main_color.clone(), self.main_depth.clone());
 
         for pass in &mut self.passes {
             pass.apply_config(config, &mut framebuffers, factory, assets)
                 .map_err(|e| {
-                    error::Error::new(
-                        pass.name().to_string(),
-                        error::ErrorKind::Build(e),
-                    )
+                    error::Error::new(pass.name().to_string(), error::ErrorKind::Build(e))
                 })?;
         }
 
         Ok(())
     }
-    
+
     /// Returns a reference to the window used by the `RenderGraph`
     pub fn window(&self) -> &glutin::GlWindow {
         &*self.window
@@ -173,21 +163,22 @@ impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
 }
 
 impl<R, C, D, F, CF, DF> RenderGraph<R, C, D, F, CF, DF>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          D: gfx::Device<Resources = R, CommandBuffer = C>,
-          F: gfx::Factory<R>,
-          CF: format::Formatted,
-          CF::Surface: format::RenderSurface,
-          CF::Channel: format::RenderChannel,
-          CF::View: Default,
-          gfx_core::command::ClearColor: From<CF::View>,
-          DF: format::Formatted,
-          DF::Surface: format::DepthSurface,
-          DF::Channel: format::RenderChannel,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    D: gfx::Device<Resources = R, CommandBuffer = C>,
+    F: gfx::Factory<R>,
+    CF: format::Formatted,
+    CF::Surface: format::RenderSurface,
+    CF::Channel: format::RenderChannel,
+    CF::View: Default,
+    gfx_core::command::ClearColor: From<CF::View>,
+    DF: format::Formatted,
+    DF::Surface: format::DepthSurface,
+    DF::Channel: format::RenderChannel,
 {
     /// Clears the main color and depth targets
-    /// 
+    ///
     /// This should be called before `RenderGraph::execute_passes`.
     pub fn clear_targets(&mut self) {
         self.encoder.clear(&self.main_color, CF::View::default());

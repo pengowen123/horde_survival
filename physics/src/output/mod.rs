@@ -1,16 +1,14 @@
 //! Systems to tie properties of an entity's physics body to other components
 
-pub mod position;
 pub mod direction;
+pub mod position;
 
-use specs::DispatcherBuilder;
 use common::na;
-use nphysics3d::world::World;
 use nphysics3d::object::{Body, BodyHandle, Multibody, MultibodyLinkRef};
+use nphysics3d::world::World;
+use specs::DispatcherBuilder;
 
-pub fn initialize<'a, 'b>(
-    dispatcher: DispatcherBuilder<'a, 'b>,
-) -> DispatcherBuilder<'a, 'b> {
+pub fn initialize<'a, 'b>(dispatcher: DispatcherBuilder<'a, 'b>) -> DispatcherBuilder<'a, 'b> {
     // Add systems
     dispatcher
         .with(position::System, "physics-tied-position", &["physics"])
@@ -24,9 +22,7 @@ pub fn get_isometry(world: &World<::Float>, handle: BodyHandle) -> na::Isometry3
     match world.body(handle) {
         Body::RigidBody(b) => b.position(),
         Body::Ground(b) => b.position(),
-        Body::Multibody(b) => {
-            get_first_multibody_link(b).position()
-        },
+        Body::Multibody(b) => get_first_multibody_link(b).position(),
     }
 }
 

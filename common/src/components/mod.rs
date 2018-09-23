@@ -2,8 +2,8 @@
 
 pub mod physics;
 
+use cgmath::{self, InnerSpace, Rotation3};
 use specs;
-use cgmath::{self, Rotation3, InnerSpace};
 
 /// A flag that represents an entity being a player entity
 ///
@@ -65,7 +65,6 @@ impl Default for Scale {
         Scale(1.0, None)
     }
 }
-
 
 impl From<Direction> for cgmath::Vector3<::Float> {
     /// Converts this `Direction` to a direction vector

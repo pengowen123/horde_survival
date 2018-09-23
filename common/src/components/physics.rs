@@ -1,7 +1,6 @@
+use nphysics3d::object::{BodyHandle, ColliderHandle};
 /// Physics components
-
 use specs;
-use nphysics3d::object::{ColliderHandle, BodyHandle};
 
 /// A component for any entity that should be simulated by the physics engine
 pub struct Physics {

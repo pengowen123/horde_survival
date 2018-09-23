@@ -34,7 +34,10 @@ impl CommandLineConfig {
     }
     /// Returns the value of the `assets_path` option, or the default if it was not specified
     pub fn assets_path(&self) -> PathBuf {
-        self.config.assets_path.clone().unwrap_or_else(|| self.default_assets_path.clone())
+        self.config
+            .assets_path
+            .clone()
+            .unwrap_or_else(|| self.default_assets_path.clone())
     }
 }
 
@@ -120,7 +123,7 @@ impl BindConfig {
 
         for b in &binds {
             if **b == *bind {
-                return true
+                return true;
             }
         }
 
@@ -236,10 +239,7 @@ pub struct Bind {
 
 impl Bind {
     pub fn new(key: Key, modifiers: ModifiersState) -> Self {
-        Self {
-            key,
-            modifiers,
-        }
+        Self { key, modifiers }
     }
 }
 
@@ -252,10 +252,10 @@ impl fmt::Display for Bind {
         let key_string = format!("{:?}", self.key);
 
         let mut string = String::with_capacity(
-            key_string.len() +
-            (CTRL_PREFIX.len() * self.modifiers.ctrl as usize) +
-            (SHIFT_PREFIX.len() * self.modifiers.ctrl as usize) +
-            (ALT_PREFIX.len() * self.modifiers.ctrl as usize)
+            key_string.len()
+                + (CTRL_PREFIX.len() * self.modifiers.ctrl as usize)
+                + (SHIFT_PREFIX.len() * self.modifiers.ctrl as usize)
+                + (ALT_PREFIX.len() * self.modifiers.ctrl as usize),
         );
 
         if self.modifiers.ctrl {

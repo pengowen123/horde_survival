@@ -1,11 +1,11 @@
 //! A system that processes input events and controls the player entity
 
 use common;
-use common::specs::{self, Join, DispatcherBuilder};
-use common::cgmath::{self, Quaternion, Rotation3, Rad};
-use window::window_event::{self, Event, State};
-use window::input;
+use common::cgmath::{self, Quaternion, Rad, Rotation3};
+use common::specs::{self, DispatcherBuilder, Join};
 use control;
+use window::input;
+use window::window_event::{self, Event, State};
 
 use math::functions;
 
@@ -54,7 +54,7 @@ impl System {
                 Event::Jump => {
                     self.jump = true;
                 }
-                _ => {},
+                _ => {}
             }
         }
     }
@@ -110,8 +110,8 @@ impl<'a> specs::System<'a> for System {
             }
 
             if let Some(angle) = self.input_state.get_movement_angle() {
-                let dir = Quaternion::from_angle_z(angle + self.current_direction.y) *
-                    cgmath::Vector3::unit_y();
+                let dir = Quaternion::from_angle_z(angle + self.current_direction.y)
+                    * cgmath::Vector3::unit_y();
 
                 c.walk_in_direction(dir.truncate());
             }
@@ -124,7 +124,6 @@ pub fn initialize<'a, 'b>(
     world: &mut specs::World,
     dispatcher: DispatcherBuilder<'a, 'b>,
 ) -> DispatcherBuilder<'a, 'b> {
-
     let mut event_channel = world.write_resource::<window_event::EventChannel>();
     let reader_id = event_channel.register_reader();
     // Initialize systems

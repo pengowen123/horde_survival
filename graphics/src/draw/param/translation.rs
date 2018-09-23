@@ -1,10 +1,9 @@
+use common;
+use common::cgmath::{self, EuclideanSpace};
 /// A system to update the shader parameter representing the translation of an entity's model
 ///
 /// Gets the translation data from the entity's position
-
 use specs::{self, Join};
-use common::cgmath::{self, EuclideanSpace};
-use common;
 
 /// A 3D translation
 pub type Translation = cgmath::Matrix4<f32>;
