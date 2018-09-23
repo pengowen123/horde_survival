@@ -24,16 +24,19 @@ pub const COLLIDER_MARGIN: ::Float = 0.01;
 pub const PLAYER_SPRING_HEIGHT: ::Float = 5.0;
 
 /// The stiffness of the spring
-pub const PLAYER_SPRING_STIFFNESS: ::Float = 10000.0;
+pub const PLAYER_SPRING_STIFFNESS: ::Float = 11000.0;
 
 /// The friction of the spring
-pub const PLAYER_SPRING_FRICTION: ::Float = 1100.0;
+pub const PLAYER_SPRING_FRICTION: ::Float = 1300.0;
 
 /// The maximum speed of the player physics body
 const PLAYER_MAX_SPEED: ::Float = 10.0;
 
 /// The acceleration rate of the player physics body
 const PLAYER_ACCELERATION: ::Float = 5000.0;
+
+/// The jump strength of the player physics body
+const PLAYER_JUMP_STRENGTH: ::Float = 13.0;
 
 pub fn add_player_entity(world: &mut specs::World) {
     let (physics, control) = {
@@ -58,13 +61,16 @@ pub fn add_player_entity(world: &mut specs::World) {
             geom,
             handle,
             Isometry::identity(),
-            object::Material::new(0.0, 100.0),
+            object::Material::new(0.0, 0.0),
         );
 
         let physics = Physics::new(handle, vec![], Some(collider), vec![]);
         let control = {
-            let movement =
-                MovementForceGenerator::new(PLAYER_ACCELERATION, PLAYER_MAX_SPEED);
+            let movement = MovementForceGenerator::new(
+                PLAYER_ACCELERATION,
+                PLAYER_MAX_SPEED,
+                PLAYER_JUMP_STRENGTH,
+            );
 
             let spring = Spring::new(
                 PLAYER_SPRING_HEIGHT,

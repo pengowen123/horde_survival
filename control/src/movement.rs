@@ -10,16 +10,18 @@ pub struct MovementForceGenerator {
     horizontal_velocity: cgmath::Vector2<::Float>,
     acceleration: ::Float,
     max_speed: ::Float,
+    jump_strength: ::Float,
     walk_dir: Option<cgmath::Vector2<::Float>>,
     ground_normal: cgmath::Vector3<::Float>,
 }
 
 impl MovementForceGenerator {
-    pub fn new(acceleration: ::Float, max_speed: ::Float) -> Self {
+    pub fn new(acceleration: ::Float, max_speed: ::Float, jump_strength: ::Float) -> Self {
         Self {
             horizontal_velocity: cgmath::Vector2::zero(),
             acceleration,
             max_speed,
+            jump_strength,
             walk_dir: None,
             ground_normal: cgmath::Vector3::unit_z(),
         }
@@ -67,8 +69,14 @@ impl MovementForceGenerator {
         self.horizontal_velocity = new_velocity;
     }
 
+    /// Returns the maximum speed of this `MovementForceGenerator`
     pub fn max_speed(&self) -> ::Float {
         self.max_speed
+    }
+
+    /// Returns the jump strength of this `MovementForceGenerator`
+    pub fn jump_strength(&self) -> ::Float {
+        self.jump_strength
     }
 }
 
@@ -85,17 +93,13 @@ impl MovementForceGenerator {
         let mut force = None;
 
         if let Some(ground_steepness_force) = ground_steepness_force {
-            force = force
-                .map(|f| f + ground_steepness_force)
-                .or_else(|| Some(ground_steepness_force));
+            return Some(ground_steepness_force);
         }
 
         if let Some(walk_force) = walk_force {
-            if ground_steepness_force.is_none() {
-                force = force
-                    .map(|f| f + walk_force)
-                    .or_else(|| Some(walk_force));
-            }
+            force = force
+                .map(|f| f + walk_force)
+                .or_else(|| Some(walk_force));
         }
 
         force

@@ -17,6 +17,8 @@ pub struct System {
     reader_id: window_event::ReaderId,
     /// The rotation to apply to the player entity
     rotate_direction: Option<window_event::CameraRotation>,
+    /// Whether the player entity should jump
+    jump: bool,
     /// Internally used for clamping the camera controls
     current_direction: Euler,
     /// Input state
@@ -28,6 +30,7 @@ impl System {
         Self {
             reader_id,
             rotate_direction: None,
+            jump: false,
             current_direction: cgmath::Quaternion::from_angle_x(cgmath::Deg(0.0)).into(),
             input_state: Default::default(),
         }
@@ -35,6 +38,7 @@ impl System {
 
     fn check_input(&mut self, event_channel: &window_event::EventChannel) {
         self.rotate_direction = None;
+        self.jump = false;
 
         for e in event_channel.read(&mut self.reader_id) {
             match e {
@@ -46,6 +50,9 @@ impl System {
                         State::Enabled => self.input_state.insert(input),
                         State::Disabled => self.input_state.remove(input),
                     }
+                }
+                Event::Jump => {
+                    self.jump = true;
                 }
                 _ => {},
             }
@@ -96,6 +103,10 @@ impl<'a> specs::System<'a> for System {
                 let new_direction = self.update_direction(rot);
                 // Rotate the player entity's direction
                 d.0 = new_direction;
+            }
+
+            if self.jump {
+                c.jump();
             }
 
             if let Some(angle) = self.input_state.get_movement_angle() {

@@ -8,6 +8,8 @@ use common::physics;
 use output;
 use System;
 
+pub const GRAVITY_SCALE: ::Float = 2.0;
+
 /// Initializes physics-related systems and components
 pub fn initialize<'a, 'b>(
     world: &mut specs::World,
@@ -19,7 +21,7 @@ pub fn initialize<'a, 'b>(
 
     // Add resources
     let mut physics_world = nphysics3d::world::World::new();
-    physics_world.set_gravity(na::Vector3::new(0.0, 0.0, -9.81));
+    physics_world.set_gravity(na::Vector3::new(0.0, 0.0, -9.81 * GRAVITY_SCALE));
 
     world.add_resource(physics_world);
 

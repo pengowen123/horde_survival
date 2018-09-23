@@ -19,7 +19,6 @@ use common::specs::{self, DispatcherBuilder, Join};
 use common::cgmath::{self, Quaternion};
 use common::{Float, shred, na, physics};
 use common::nphysics3d::world::World;
-use common::nphysics3d::algebra::Velocity3;
 use common::nphysics3d::object::{Body, BodyMut, BodyHandle, ColliderHandle};
 use common::nphysics3d::force_generator::ForceGeneratorHandle;
 use common::ncollide3d::query::{self, RayCast};
@@ -31,6 +30,7 @@ pub struct Control {
     force_generator: ForceGeneratorHandle,
     direction: Option<Quaternion<::Float>>,
     velocity: Option<VelocityModifier>,
+    jump: bool,
     friction: ::Float,
     max_speed: ::Float,
 }
@@ -65,6 +65,7 @@ impl Control {
             friction,
             direction: None,
             velocity: None,
+            jump: false,
             max_speed,
         }
     }
@@ -78,6 +79,11 @@ impl Control {
     /// component
     pub fn walk_in_direction(&mut self, direction: cgmath::Vector2<::Float>) {
         self.velocity = Some(VelocityModifier::WalkForward(direction));
+    }
+
+    /// Makes the entity jump
+    pub fn jump(&mut self) {
+        self.jump = true;
     }
 }
 
@@ -195,7 +201,7 @@ impl<'a> specs::System<'a> for System {
                 }
             };
 
-            let is_ground_too_steep = {
+            let (is_ground_too_steep, set_vertical_velocity, spring_enabled) = {
                 let mut controller = data.world
                     .force_generator_mut(c.force_generator)
                     .downcast_mut::<controller::ControllerForceGenerator>().unwrap();
@@ -213,21 +219,60 @@ impl<'a> specs::System<'a> for System {
                         .unwrap_or(cgmath::Vector3::unit_z())
                 );
 
+                if is_ground_too_steep {
+                    controller.spring.reset_wait_for_threshold_flag();
+                }
+
                 if let Some(walk_dir) = walk_dir {
                     controller.movement.set_walk_direction(walk_dir);
                 } else {
                     controller.movement.reset_walk_direction();
                 }
 
+                let jump_velocity = if c.jump {
+                    c.jump = false;
+                    if controller.spring.is_enabled() {
+                        controller.spring.disable_until_reenable_threshold();
+                        Some(controller.movement.jump_strength())
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+
                 // Update the velocity fields on the controller's force generators
                 controller.update_current_entity_velocity(current_entity_velocity);
 
-                is_ground_too_steep
+                (is_ground_too_steep, jump_velocity, controller.spring.is_enabled())
             };
 
-            if is_ground_too_steep {
-                if let BodyMut::RigidBody(rb) = data.world.body_mut(p.get_root_handle()) {
-                    rb.set_velocity(Velocity3::zero());
+            if let BodyMut::RigidBody(rb) = data.world.body_mut(p.get_root_handle()) {
+                if is_ground_too_steep {
+                    let mut vel = *rb.velocity();
+
+                    vel.linear[0] = 0.0;
+                    vel.linear[1] = 0.0;
+
+                    // If the entity is jumping, don't reset its vertical velocity because it would
+                    // cause strange behavior when an entity jumps against a wall that is too steep
+                    // to stand on
+                    if spring_enabled {
+                        vel.linear[2] = 0.0;
+                    }
+
+                    rb.set_velocity(vel);
+                }
+
+                if let Some(new_vel) = set_vertical_velocity {
+                    // Entities cannot jump if the ground beneath them is too steep to stand on
+                    if !is_ground_too_steep {
+                        let mut vel = *rb.velocity();
+
+                        vel.linear[2] = new_vel;
+
+                        rb.set_velocity(vel);
+                    }
                 }
             }
         }

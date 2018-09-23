@@ -37,7 +37,7 @@ where
         Direction::default(),
         5.0,
         Material::new(32.0),
-        Some(object::Material::new(0.0, 100.0)),
+        Some(object::Material::new(0.0, 0.0)),
         Box::new(|e| e),
     )[0];
 
