@@ -16,6 +16,7 @@ use control::FloorColliderHandle;
 use graphics::draw::components::*;
 use graphics::draw::{self, LightSpaceMatrix, Material};
 use graphics::obj_loading;
+use graphics::particles::{Particle, ParticleSource, SpawnParticleFn};
 use math::convert;
 use math::functions::dir_vec_to_quaternion;
 use physics::scale::Scale as ScaleTrait;
@@ -59,11 +60,12 @@ where
         //dir,
         //size,
         //Material::new(32.0),
-        //Some(object::Material::new(0.0, 100.0)),
+        //Some(object::Material::new(0.0, 0.0)),
+        //Box::new(|e| e),
         //);
         //};
 
-        //cube([-4.0, 0.0, 5.0], 2.0, Direction::default());
+        //cube([0.0, 0.0, 15.0], 1.0, Direction::default());
         //cube([2.0, 4.0, 1.0], 2.0, Direction::default());
         //cube([3.0, -1.0, 3.0], 2.0, Direction::default());
         //cube(
@@ -71,6 +73,25 @@ where
         //2.0,
         //Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
         //);
+        let particle_source = ParticleSource::new(
+            200,
+            50.0,
+            Box::new(|pos: &Point3<f32>| {
+                Particle::new(
+                    [1.0, 0.0, 0.0, 0.8],
+                    *pos,
+                    Vector3::new(0.0, 0.0, 2.5),
+                    0.0,
+                    2.5,
+                )
+            }) as SpawnParticleFn,
+        );
+
+        world
+            .create_entity()
+            .with(Position(Point3::new(0.0, 0.0, 15.0)))
+            .with(particle_source)
+            .build();
     }
 
     // Create some lights

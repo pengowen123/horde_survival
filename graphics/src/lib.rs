@@ -21,6 +21,7 @@ extern crate assets;
 mod camera;
 pub mod draw;
 pub mod obj_loading;
+pub mod particles;
 
 use common::specs::{self, DispatcherBuilder};
 use common::{cgmath, config, gfx_device_gl, gfx_window_glutin, glutin, shred, Float};
@@ -41,6 +42,9 @@ pub fn initialize<'a, 'b, 'c, 'd>(
 ) {
     // The camera resource must exist before calling draw::initialize
     world.add_resource(Arc::new(Mutex::new(camera::Camera::new_default(1.0, 45.0))));
+
+    // This must be initialized before init_test_entities is called
+    let dispatcher = particles::initialize(world, dispatcher);
 
     // Initialize subsystems
     let (dispatcher, dispatcher_graphics, window, events) =
