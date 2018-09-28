@@ -89,21 +89,23 @@ impl ParticleSource {
     }
 
     fn update(&mut self, dt: f32, source_position: &cgmath::Point3<f32>) {
-        // Spawn new particles
-        self.spawn_dt_accumulator += dt * self.spawn_rate;
-        let new_particles = self.spawn_dt_accumulator.floor();
-        self.spawn_dt_accumulator -= new_particles;
+        if self.enabled {
+            // Spawn new particles
+            self.spawn_dt_accumulator += dt * self.spawn_rate;
+            let new_particles = self.spawn_dt_accumulator.floor();
+            self.spawn_dt_accumulator -= new_particles;
 
-        let mut new_particles = new_particles as usize;
+            let mut new_particles = new_particles as usize;
 
-        while new_particles > 0 && self.particles.len() < self.particles.capacity() {
-            new_particles -= 1;
+            while new_particles > 0 && self.particles.len() < self.particles.capacity() {
+                new_particles -= 1;
 
-            self.particles.push((self.spawn_fn)(source_position));
-        }
+                self.particles.push((self.spawn_fn)(source_position));
+            }
 
-        for i in first_unused_particles(&self.particles, new_particles) {
-            self.particles[i] = (self.spawn_fn)(source_position);
+            for i in first_unused_particles(&self.particles, new_particles) {
+                self.particles[i] = (self.spawn_fn)(source_position);
+            }
         }
 
         // Update particles
@@ -113,6 +115,9 @@ impl ParticleSource {
     }
 
     /// Disables this `ParticleSource`
+    ///
+    /// This prevents new particles from being produced, while still simulating the currently active
+    /// ones.
     pub fn disable(&mut self) {
         self.enabled = false;
     }
@@ -120,6 +125,11 @@ impl ParticleSource {
     /// Enables this `ParticleSource`
     pub fn enable(&mut self) {
         self.enabled = true;
+    }
+
+    /// Returns the list of particles from this `ParticleSource`
+    pub fn particles(&self) -> &[Particle] {
+        &self.particles
     }
 }
 
@@ -228,5 +238,21 @@ mod tests {
         assert_eq!(first_unused_particles(&list, 2), vec![2, 3]);
         assert_eq!(first_unused_particles(&list, 3), vec![2, 3, 4]);
         assert_eq!(first_unused_particles(&list, 4), vec![2, 3, 4]);
+    }
+
+    #[test]
+    fn test_disable_enable() {
+        let mut source = ParticleSource::new(100, 2.0, Box::new(spawn_particle) as SpawnParticleFn);
+        let origin = cgmath::Point3::origin();
+
+        source.disable();
+
+        source.update(1.0, &origin);
+        assert_eq!(source.particles.len(), 0);
+
+        source.enable();
+
+        source.update(1.0, &origin);
+        assert_eq!(source.particles.len(), 2);
     }
 }
