@@ -1,51 +1,14 @@
-//! Components and systems to pass additional parameters (such as rotation) to the shaders
+//! Systems to update the `ShaderParam` component of entities
 
 pub mod rotation;
 pub mod scale;
 pub mod translation;
 
-use common::cgmath::{self, One};
+use common::graphics::ShaderParam;
 use gfx;
 use specs::{self, DispatcherBuilder, Join};
 
-use self::rotation::Rotation;
-use self::scale::Scale;
-use self::translation::Translation;
-use draw::components;
-
-/// A type that stores all individual parameters to pass the the graphics system
-#[derive(Clone, Copy, Debug)]
-pub struct ShaderParam {
-    translation: Translation,
-    rotation: Rotation,
-    scale: Scale,
-}
-
-impl ShaderParam {
-    pub fn new(translation: Translation, rotation: Rotation, scale: Scale) -> Self {
-        Self {
-            translation,
-            rotation,
-            scale,
-        }
-    }
-
-    /// Returns the model matrix, created from the stored translation, rotation, and scale matrices
-    pub fn get_model_matrix(&self) -> cgmath::Matrix4<f32> {
-        self.translation * self.rotation * self.scale
-    }
-}
-
-impl Default for ShaderParam {
-    fn default() -> Self {
-        // Identity transformations (zero translation, zero rotation)
-        ShaderParam::new(One::one(), One::one(), One::one())
-    }
-}
-
-impl specs::Component for ShaderParam {
-    type Storage = specs::VecStorage<Self>;
-}
+use common::graphics::Drawable;
 
 pub struct System<R>(::std::marker::PhantomData<R>);
 
@@ -58,7 +21,7 @@ impl<R: gfx::Resources> System<R> {
 
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
-    drawable: specs::WriteStorage<'a, components::Drawable<R>>,
+    drawable: specs::WriteStorage<'a, Drawable<R>>,
     param: specs::ReadStorage<'a, ShaderParam>,
 }
 

@@ -4,6 +4,7 @@
 use assets::Assets;
 use common::cgmath::*;
 use common::gfx;
+use common::graphics::{Material, Particle, ParticleSource, ShaderParam, SpawnParticleFn};
 use common::na::{self, Translation3};
 use common::ncollide3d::shape::ShapeHandle;
 use common::nphysics3d::math::{Inertia, Isometry};
@@ -14,9 +15,8 @@ use common::specs::{self, Builder};
 use common::*;
 use control::FloorColliderHandle;
 use graphics::draw::components::*;
-use graphics::draw::{self, LightSpaceMatrix, Material};
+use graphics::draw::LightSpaceMatrix;
 use graphics::obj_loading;
-use graphics::particles::{Particle, ParticleSource, SpawnParticleFn};
 use math::convert;
 use math::functions::dir_vec_to_quaternion;
 use physics::scale::Scale as ScaleTrait;
@@ -195,7 +195,7 @@ where
         material,
         &world.read_resource::<slog::Logger>(),
     ).unwrap();
-    let shader_param = draw::ShaderParam::default();
+    let shader_param = ShaderParam::default();
 
     let mut body_handles = Vec::new();
 

@@ -7,6 +7,7 @@ use gfx::{self, handle, state, texture};
 use rendergraph::error::{BuildError, RunError};
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::pass::Pass;
+use rendergraph::resources::TemporaryResources;
 use shred::Resources;
 
 use std::collections::HashMap;
@@ -140,6 +141,7 @@ where
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
         _: &mut Resources,
+        _: TemporaryResources<R>,
     ) -> Result<(), RunError> {
         self.bundle.encode(encoder);
 

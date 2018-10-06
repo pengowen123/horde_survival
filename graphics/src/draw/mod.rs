@@ -18,18 +18,16 @@ mod types;
 pub use self::init::initialize;
 
 // TODO: Remove these re-exports when higher-level functionality is exposed
-pub use self::components::Drawable;
-pub use self::param::ShaderParam;
-pub use self::passes::main::geometry_pass::Vertex;
-pub use self::passes::main::lighting::Material;
 pub use self::passes::shadow::{DirShadowSource, LightSpaceMatrix};
 pub use self::types::{ColorFormat, DepthFormat};
 
 use assets;
 use common::glutin::{self, GlContext};
+use common::graphics::Drawable;
 use common::{self, config, conrod, shred, specs};
 use gfx::{self, handle};
 use rendergraph::error::Error;
+use rendergraph::resources::TemporaryResources;
 use rendergraph::{builder, module, pass, RenderGraph};
 use slog;
 use ui;
@@ -51,37 +49,6 @@ pub type CreateNewWindowViews<R> = Box<
         handle::DepthStencilView<R, types::DepthFormat>,
     ),
 >;
-
-/// A `specs::Storage` for the `Drawable` component
-pub type DrawableStorage<'a, R> = specs::ReadStorage<'a, components::Drawable<R>>;
-
-// NOTE: This should only be passed from draw::System to rendergraph passes, which will always have
-//       a smaller lifetime and run on the same thread, and the contained raw pointer will never be
-//       null (`None` is used to represent null instead), so this should be safe to use
-struct DrawableStorageRef<R: gfx::Resources>(Option<*const DrawableStorage<'static, R>>);
-
-unsafe impl<R: gfx::Resources> Send for DrawableStorageRef<R> {}
-unsafe impl<R: gfx::Resources> Sync for DrawableStorageRef<R> {}
-
-impl<R: gfx::Resources> DrawableStorageRef<R> {
-    pub fn new<'a>(storage: &'a DrawableStorage<'a, R>) -> Self {
-        let storage = storage as *const DrawableStorage<'a, R>;
-        let storage: *const DrawableStorage<'static, R> = unsafe { ::std::mem::transmute(storage) };
-
-        DrawableStorageRef(Some(storage))
-    }
-
-    /// Returns a null `DrawableStorageRef`
-    pub fn new_null() -> Self {
-        DrawableStorageRef(None)
-    }
-
-    /// Returns a non-null pointer to the `DrawableStorage`
-    pub fn get<'a>(&'a self) -> *const DrawableStorage<'a, R> {
-        self.0
-            .expect("`DrawableStorageRef::get` called on a null pointer")
-    }
-}
 
 pub struct System<F, C, R, D>
 where
@@ -213,7 +180,7 @@ where
 
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
-    drawable: specs::ReadStorage<'a, components::Drawable<R>>,
+    drawable: specs::ReadStorage<'a, Drawable<R>>,
     event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
     ui_state: specs::ReadExpect<'a, common::UiState>,
     ui_draw_list: specs::ReadExpect<'a, ui::UiDrawList>,
@@ -278,20 +245,18 @@ where
             }
         }
 
-        // This has the lifetime of this function, and the DrawableStorageRef is set to null before
-        // the function ends, so there shouldn't be any dangling pointers
-        let drawable: &DrawableStorage<R> = &data.drawable;
-
-        self.graph.add_resource(DrawableStorageRef::new(drawable));
-
         self.graph.clear_targets();
 
         // Only run the main graphics pipeline if a menu is not open
         if data.ui_state.is_in_game() {
-            self.graph.execute_passes().unwrap_or_else(|e| {
-                error!(data.log, "Error executing passes: {}", e;);
-                panic!(common::CRASH_MSG);
-            });
+            let temporary_resources = TemporaryResources::new(&data.drawable);
+
+            self.graph
+                .execute_passes(temporary_resources)
+                .unwrap_or_else(|e| {
+                    error!(data.log, "Error executing passes: {}", e;);
+                    panic!(common::CRASH_MSG);
+                });
         }
 
         let (win_w, win_h): (f64, f64) = data.window_info.physical_dimensions().into();
@@ -315,7 +280,5 @@ where
             error!(data.log, "Error finishing frame: {}", e);
             panic!(common::CRASH_MSG);
         });
-
-        self.graph.add_resource(DrawableStorageRef::<R>::new_null());
     }
 }

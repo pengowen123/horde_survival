@@ -1,5 +1,6 @@
 //! Common components
 
+pub mod graphics;
 pub mod physics;
 
 use cgmath::{self, InnerSpace, Rotation3};

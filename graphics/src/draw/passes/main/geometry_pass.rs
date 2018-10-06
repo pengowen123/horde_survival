@@ -5,11 +5,13 @@
 use assets;
 use cgmath::{Matrix4, SquareMatrix};
 use common::config;
+use common::graphics::Vertex;
 use gfx::traits::FactoryExt;
 use gfx::{self, handle, state, texture};
 use rendergraph::error::{BuildError, RunError};
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::pass::Pass;
+use rendergraph::resources::TemporaryResources;
 use shred;
 use specs::Join;
 use window::info::WindowInfo;
@@ -19,21 +21,15 @@ use std::sync::{Arc, Mutex};
 
 use super::gbuffer;
 use camera::Camera;
-use draw::glsl::{Mat4, Vec2, Vec3, Vec4};
+use draw::glsl::{Mat4, Vec4};
 use draw::passes::resource_pass;
-use draw::{passes, types, DrawableStorageRef};
+use draw::{passes, types};
 
 pub struct Output<R: gfx::Resources> {
     pub gbuffer: gbuffer::GeometryBuffer<R>,
 }
 
 gfx_defines! {
-    vertex Vertex {
-        pos: Vec3 = "a_Pos",
-        normal: Vec3 = "a_Normal",
-        uv: Vec2 = "a_Uv",
-    }
-
     constant Locals {
         model: Mat4 = "u_Model",
         view_proj: Mat4 = "u_ViewProj",
@@ -48,12 +44,6 @@ gfx_defines! {
         out_normal: gfx::RenderTarget<gbuffer::GFormat> = "Target1",
         out_color: gfx::RenderTarget<gbuffer::GFormat> = "Target2",
         out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
-    }
-}
-
-impl Vertex {
-    pub fn new(pos: Vec3, uv: Vec2, normal: Vec3) -> Self {
-        Self { pos, normal, uv }
     }
 }
 
@@ -181,6 +171,7 @@ where
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
         resources: &mut shred::Resources,
+        temporary_resources: TemporaryResources<R>,
     ) -> Result<(), RunError> {
         encoder.clear(&self.bundle.data.out_pos, [0.0; 4]);
         encoder.clear(&self.bundle.data.out_normal, [0.0; 4]);
@@ -190,15 +181,12 @@ where
         let camera = camera.lock().unwrap();
         let view_proj = camera.projection() * camera.view();
 
-        let drawable = resources.fetch::<DrawableStorageRef<R>>();
-        let drawable = unsafe { &*drawable.get() };
-
         let mut locals = Locals {
             model: Matrix4::identity().into(),
             view_proj: view_proj.into(),
         };
 
-        for d in drawable.join() {
+        for d in temporary_resources.drawable.join() {
             // Get model-specific transform matrix
             let model = d.param().get_model_matrix();
 

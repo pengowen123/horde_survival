@@ -6,6 +6,7 @@ use gfx::{self, format, handle, texture};
 use rendergraph::error::{BuildError, RunError};
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::pass::Pass;
+use rendergraph::resources::TemporaryResources;
 use shred::Resources;
 use window::info::WindowInfo;
 
@@ -79,6 +80,7 @@ where
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
         _: &mut Resources,
+        _: TemporaryResources<R>,
     ) -> Result<(), RunError> {
         encoder.clear(&self.intermediate_target.rtv, [0.0; 4]);
         encoder.clear_depth(&self.intermediate_target.dsv, 1.0);

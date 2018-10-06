@@ -13,7 +13,7 @@ use slog;
 use std::io::{self, BufReader};
 use std::path::{Path, PathBuf};
 
-use draw::{Drawable, Material, Vertex};
+use common::graphics::{Drawable, Material, Vertex};
 
 type Polygon = genmesh::Polygon<obj::IndexTuple>;
 

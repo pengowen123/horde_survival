@@ -23,9 +23,3 @@ impl format::Formatted for DepthFormat {
         format::Format(format::SurfaceType::D24_S8, format::ChannelType::Unorm)
     }
 }
-
-/// A view into a texture
-pub type TextureView<R> = gfx::handle::ShaderResourceView<R, [f32; 4]>;
-
-/// A vertex buffer
-pub type VertexBuffer<R, V> = gfx::handle::Buffer<R, V>;

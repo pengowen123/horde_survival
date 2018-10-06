@@ -13,6 +13,7 @@ pub mod error;
 pub mod framebuffer;
 pub mod module;
 pub mod pass;
+pub mod resources;
 
 use gfx::{format, handle};
 use glutin::GlContext;
@@ -75,9 +76,12 @@ where
     /// Executes all passes in the `RenderGraph`
     ///
     /// `RenderGraph::finish` must be called after this to display the results to the window.
-    pub fn execute_passes(&mut self) -> Result<(), error::Error<String>> {
+    pub fn execute_passes(
+        &mut self,
+        temporary_resources: resources::TemporaryResources<R>,
+    ) -> Result<(), error::Error<String>> {
         for pass in &mut self.passes {
-            pass.execute_pass(&mut self.encoder, &mut self.resources)
+            pass.execute_pass(&mut self.encoder, &mut self.resources, temporary_resources)
                 .map_err(|e| error::Error::new(pass.name().to_string(), error::ErrorKind::Run(e)))?
         }
 

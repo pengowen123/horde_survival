@@ -1,6 +1,7 @@
 //! Initialization of the rendering system
 
 use common::glutin::{self, EventsLoop, GlContext};
+use common::graphics::Drawable;
 use common::{self, config};
 use gfx;
 use gfx_window_glutin;
@@ -127,6 +128,6 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    world.register::<components::Drawable<R>>();
+    world.register::<Drawable<R>>();
     world.add_resource(ui::ImageMap::<R>::new())
 }

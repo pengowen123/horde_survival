@@ -4,9 +4,6 @@ use common::{self, cgmath};
 /// Gets the scale data from the entity's `Scale` component
 use specs::{self, Join};
 
-/// A 3D scale
-pub type Scale = cgmath::Matrix4<f32>;
-
 pub struct System;
 
 #[derive(SystemData)]
@@ -20,7 +17,7 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         for (s, p) in (&data.scale, &mut data.param).join() {
-            p.scale = cgmath::Matrix4::from_scale(s.get());
+            p.set_scale(cgmath::Matrix4::from_scale(s.get()));
         }
     }
 }

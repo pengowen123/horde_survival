@@ -5,11 +5,13 @@
 use assets;
 use cgmath::{self, SquareMatrix};
 use common::config;
+use common::graphics::Material;
 use gfx::traits::FactoryExt;
 use gfx::{self, format, handle, state, texture};
 use rendergraph::error::{BuildError, RunError};
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::pass::Pass;
+use rendergraph::resources::TemporaryResources;
 use shred::Resources;
 
 use std::collections::HashMap;
@@ -31,10 +33,6 @@ gfx_defines! {
     vertex Vertex {
         pos: Vec2 = "a_Pos",
         uv: Vec2 = "a_Uv",
-    }
-
-    constant Material {
-        shininess: f32 = "u_Material_shininess",
     }
 
     #[derive(Default)]
@@ -114,12 +112,6 @@ gfx_defines! {
 impl Vertex {
     pub fn new(pos: Vec2, uv: Vec2) -> Self {
         Self { pos, uv }
-    }
-}
-
-impl Material {
-    pub fn new(shininess: f32) -> Self {
-        Self { shininess }
     }
 }
 
@@ -334,6 +326,7 @@ where
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
         resources: &mut Resources,
+        _: TemporaryResources<R>,
     ) -> Result<(), RunError> {
         let camera = resources.fetch::<Arc<Mutex<Camera>>>();
         let lighting_data = resources.fetch::<Arc<Mutex<lighting_data::LightingData>>>();

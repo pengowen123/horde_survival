@@ -1,13 +1,10 @@
 use common;
 use common::cgmath::{self, EuclideanSpace};
+use specs::{self, Join};
+
 /// A system to update the shader parameter representing the translation of an entity's model
 ///
 /// Gets the translation data from the entity's position
-use specs::{self, Join};
-
-/// A 3D translation
-pub type Translation = cgmath::Matrix4<f32>;
-
 pub struct System;
 
 #[derive(SystemData)]
@@ -21,7 +18,9 @@ impl<'a> specs::System<'a> for System {
 
     fn run(&mut self, mut data: Self::SystemData) {
         for (s, p) in (&data.space, &mut data.param).join() {
-            p.translation = cgmath::Matrix4::from_translation(s.0.cast::<f32>().unwrap().to_vec());
+            p.set_translation(cgmath::Matrix4::from_translation(
+                s.0.cast::<f32>().unwrap().to_vec(),
+            ));
         }
     }
 }

@@ -3,11 +3,13 @@
 use assets;
 use cgmath::{Matrix4, SquareMatrix};
 use common::config;
+use common::graphics::Vertex;
 use gfx::traits::FactoryExt;
 use gfx::{self, handle, state, texture};
 use rendergraph::error::{BuildError, RunError};
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::pass::Pass;
+use rendergraph::resources::TemporaryResources;
 use shred;
 use specs::Join;
 
@@ -15,9 +17,8 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use draw::glsl::Mat4;
-use draw::passes::main::geometry_pass;
 use draw::passes::shadow;
-use draw::{passes, types, DrawableStorageRef};
+use draw::{passes, types};
 
 pub struct Output<R: gfx::Resources> {
     pub srv: handle::ShaderResourceView<R, [f32; 4]>,
@@ -25,7 +26,7 @@ pub struct Output<R: gfx::Resources> {
 
 gfx_defines! {
     pipeline pipe {
-        vbuf: gfx::VertexBuffer<geometry_pass::Vertex> = (),
+        vbuf: gfx::VertexBuffer<Vertex> = (),
         locals: gfx::ConstantBuffer<Locals> = "u_Locals",
         out_depth: gfx::DepthTarget<types::DepthFormat> = gfx::preset::depth::LESS_EQUAL_WRITE,
     }
@@ -127,15 +128,13 @@ where
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
         resources: &mut shred::Resources,
+        temporary_resources: TemporaryResources<R>,
     ) -> Result<(), RunError> {
         if !self.enabled {
             return Ok(());
         }
 
         encoder.clear_depth(&self.bundle.data.out_depth, 1.0);
-
-        let drawable = resources.fetch::<DrawableStorageRef<R>>();
-        let drawable = unsafe { &*drawable.get() };
 
         let shadow_source = resources
             .fetch::<Arc<Mutex<shadow::DirShadowSource>>>()
@@ -150,7 +149,7 @@ where
             model: Matrix4::identity().into(),
         };
 
-        for d in drawable.join() {
+        for d in temporary_resources.drawable.join() {
             let model = d.param().get_model_matrix();
             locals.model = model.into();
 

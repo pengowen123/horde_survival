@@ -8,6 +8,7 @@ use shred::Resources;
 use builder::GraphBuilder;
 use error::{BuildError, RunError};
 use framebuffer::Framebuffers;
+use resources::TemporaryResources;
 
 /// A function used to setup a pass and its resources
 pub type SetupFn<R, C, F, CF, DF> =
@@ -60,11 +61,12 @@ pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>, 
     fn name(&self) -> &str;
     /// Executes the pass, adding graphics commands to the `Encoder`
     ///
-    /// The pass has access to the `RenderGraph`'s resources.
+    /// The pass has access to the `RenderGraph`'s resources, in addition to a `TemporaryResources`
     fn execute_pass(
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
         resources: &mut Resources,
+        temporary_resources: TemporaryResources<R>,
     ) -> Result<(), RunError>;
     /// Reloads the shaders for the pass
     fn reload_shaders(

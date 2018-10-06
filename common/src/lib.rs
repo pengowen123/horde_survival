@@ -14,6 +14,7 @@ pub extern crate ncollide3d;
 pub extern crate nphysics3d;
 
 // Graphics
+#[macro_use]
 pub extern crate gfx;
 pub extern crate gfx_core;
 pub extern crate gfx_device_gl;

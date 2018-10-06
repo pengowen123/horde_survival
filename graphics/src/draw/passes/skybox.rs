@@ -8,6 +8,7 @@ use image_utils;
 use rendergraph::error::{BuildError, RunError};
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::pass::Pass;
+use rendergraph::resources::TemporaryResources;
 use shred::Resources;
 
 use std::collections::HashMap;
@@ -170,6 +171,7 @@ where
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
         resources: &mut Resources,
+        _: TemporaryResources<R>,
     ) -> Result<(), RunError> {
         let camera = resources.fetch::<Arc<Mutex<Camera>>>();
         let camera = camera.lock().unwrap();
