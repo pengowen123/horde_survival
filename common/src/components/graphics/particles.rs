@@ -3,13 +3,17 @@
 use cgmath;
 use specs;
 
+/// The maximum number of particles for a single particle source
+pub const MAX_PARTICLES: usize = 512;
+
 /// A function that generates a new particle from the particle source's position
 pub type SpawnParticleFn = Box<FnMut(&cgmath::Point3<f32>) -> Particle + Send + Sync>;
 
 /// An individual particle
 #[derive(Clone, Debug)]
 pub struct Particle {
-    color: [f32; 4],
+    color: ([u8; 3], f32),
+    alpha_falloff: f32,
     position: cgmath::Point3<f32>,
     velocity: cgmath::Vector3<f32>,
     gravity: f32,
@@ -21,7 +25,8 @@ impl Particle {
     ///
     /// `lifetime` should be in seconds.
     pub fn new(
-        color: [f32; 4],
+        color: ([u8; 3], f32),
+        alpha_falloff: f32,
         position: cgmath::Point3<f32>,
         velocity: cgmath::Vector3<f32>,
         gravity: f32,
@@ -29,6 +34,7 @@ impl Particle {
     ) -> Self {
         Self {
             color,
+            alpha_falloff,
             position,
             velocity,
             gravity,
@@ -37,7 +43,7 @@ impl Particle {
     }
 
     /// Returns the color of this `Particle`
-    pub fn color(&self) -> [f32; 4] {
+    pub fn color(&self) -> ([u8; 3], f32) {
         self.color
     }
 
@@ -57,6 +63,7 @@ impl Particle {
             self.velocity.z += self.gravity * dt;
             self.position += self.velocity * dt;
             self.lifetime -= ::Float::from(dt);
+            self.color.1 = (self.color.1 - self.alpha_falloff * dt).max(0.0);
         }
     }
 }
@@ -70,21 +77,44 @@ pub struct ParticleSource {
     enabled: bool,
 }
 
+quick_error! {
+    #[derive(Debug)]
+    pub enum ParticleSourceError {
+        MaxParticles(requested: usize, max: usize) {
+            display("The requested maximum particle count was too high: {} (max {})",
+                    requested, max)
+        }
+    }
+}
+
 impl ParticleSource {
     /// Returns a new `ParticleSource`
     ///
+    /// Returns `Err` if `max_particles` is greater than `MAX_PARTICLES`.
+    ///
     /// `spawn_rate` determines how many new particles will be spawned per second
     /// `spawn_fn` is called to determine parameters of new particles
-    pub fn new<F>(max_particles: usize, spawn_rate: f32, spawn_fn: F) -> Self
+    pub fn new<F>(
+        max_particles: usize,
+        spawn_rate: f32,
+        spawn_fn: F,
+    ) -> Result<Self, ParticleSourceError>
     where
         F: Into<SpawnParticleFn>,
     {
-        Self {
-            particles: Vec::with_capacity(max_particles),
-            spawn_rate,
-            spawn_dt_accumulator: 0.0,
-            spawn_fn: spawn_fn.into(),
-            enabled: true,
+        if max_particles > MAX_PARTICLES {
+            Err(ParticleSourceError::MaxParticles(
+                max_particles,
+                MAX_PARTICLES,
+            ))
+        } else {
+            Ok(Self {
+                particles: Vec::with_capacity(max_particles),
+                spawn_rate,
+                spawn_dt_accumulator: 0.0,
+                spawn_fn: spawn_fn.into(),
+                enabled: true,
+            })
         }
     }
 

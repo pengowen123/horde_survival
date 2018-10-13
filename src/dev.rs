@@ -74,22 +74,23 @@ where
         //Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
         //);
         let particle_source = ParticleSource::new(
-            200,
-            50.0,
+            15,
+            5.0,
             Box::new(|pos: &Point3<f32>| {
                 Particle::new(
-                    [1.0, 0.0, 0.0, 0.8],
+                    ([255, 0, 0], 1.0),
+                    0.4,
                     *pos,
-                    Vector3::new(0.0, 0.0, 2.5),
-                    0.0,
-                    2.5,
+                    Vector3::new(2.0, 2.0, 5.0),
+                    -1.0,
+                    3.0,
                 )
             }) as SpawnParticleFn,
-        );
+        ).unwrap();
 
         world
             .create_entity()
-            .with(Position(Point3::new(0.0, 0.0, 15.0)))
+            .with(Position(Point3::new(5.0, 5.0, 5.0)))
             .with(particle_source)
             .build();
     }

@@ -161,6 +161,7 @@ pub struct GraphicsConfig {
     pub postprocessing: bool,
     pub shadows: bool,
     pub shadow_map_size: ShadowMapSize,
+    pub particles: bool,
 }
 
 impl Into<config::GraphicsConfig> for GraphicsConfig {
@@ -169,6 +170,7 @@ impl Into<config::GraphicsConfig> for GraphicsConfig {
             postprocessing: self.postprocessing,
             shadows: self.shadows,
             shadow_map_size: self.shadow_map_size.into(),
+            particles: self.particles,
         }
     }
 }
@@ -179,6 +181,7 @@ impl From<config::GraphicsConfig> for GraphicsConfig {
             postprocessing: config.postprocessing,
             shadows: config.shadows,
             shadow_map_size: config.shadow_map_size.into(),
+            particles: config.particles,
         }
     }
 }
@@ -561,6 +564,27 @@ impl Menus {
             &mut self.new_config.graphics.postprocessing,
             ids.postprocessing_button,
             ids.postprocessing_canvas,
+            // Extra margin to line up with the shadow map size selector
+            100.0,
+            ui,
+        ) {
+            self.set_force_redraw(true);
+        }
+
+        // Particles option
+        option_canvas(
+            &mut graphics_option_index,
+            ids.particles_canvas,
+            ids.options_graphics_canvas,
+            ui,
+        );
+
+        option_label("Particles", ids.particles_label, ids.particles_canvas, ui);
+
+        if toggle_button(
+            &mut self.new_config.graphics.particles,
+            ids.particles_button,
+            ids.particles_canvas,
             // Extra margin to line up with the shadow map size selector
             100.0,
             ui,

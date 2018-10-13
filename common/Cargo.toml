@@ -22,6 +22,7 @@ serde = "1.0.70"
 nphysics3d = "0.9.1"
 nalgebra = "0.16.0"
 ncollide3d = "0.17.1"
+quick-error = "1.2.2"
 
 [dependencies.conrod]
 branch = "horde"

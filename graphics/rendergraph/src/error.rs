@@ -222,6 +222,10 @@ pub enum RunError {
     BufferUpdate(gfx::UpdateError<usize>),
     /// A GL context error
     ContextError(glutin::ContextError),
+    /// A mapping error
+    Mapping(gfx::mapping::Error),
+    /// A memory copy error
+    Copy(gfx::CopyError<usize, usize>),
     /// A string variant for convenience
     String(String),
     /// A custom error
@@ -234,6 +238,8 @@ impl fmt::Display for RunError {
         match self {
             BufferUpdate(e) => writeln!(fmt, "Error updating buffer: {}", e),
             ContextError(e) => writeln!(fmt, "Error manipulating GL context: {}", e),
+            Mapping(e) => writeln!(fmt, "Error creating mapping: {}", e),
+            Copy(e) => writeln!(fmt, "Error copying memory: {}", e),
             String(e) => writeln!(fmt, "Error: {}", e),
             Custom(e) => writeln!(fmt, "Custom `RunError`: {}", e),
         }
@@ -252,9 +258,21 @@ impl From<gfx::UpdateError<usize>> for RunError {
     }
 }
 
+impl From<gfx::CopyError<usize, usize>> for RunError {
+    fn from(e: gfx::CopyError<usize, usize>) -> Self {
+        RunError::Copy(e)
+    }
+}
+
 impl From<glutin::ContextError> for RunError {
     fn from(e: glutin::ContextError) -> Self {
         RunError::ContextError(e)
+    }
+}
+
+impl From<gfx::mapping::Error> for RunError {
+    fn from(e: gfx::mapping::Error) -> Self {
+        RunError::Mapping(e)
     }
 }
 

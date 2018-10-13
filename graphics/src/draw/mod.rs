@@ -23,7 +23,7 @@ pub use self::types::{ColorFormat, DepthFormat};
 
 use assets;
 use common::glutin::{self, GlContext};
-use common::graphics::Drawable;
+use common::graphics::{Drawable, ParticleSource};
 use common::{self, config, conrod, shred, specs};
 use gfx::{self, handle};
 use rendergraph::error::Error;
@@ -37,7 +37,7 @@ use std::sync::{Arc, Mutex};
 
 use self::lighting_data::LightingData;
 use self::passes::main::{geometry_pass, lighting};
-use self::passes::{postprocessing, resource_pass, shadow, skybox};
+use self::passes::{particles, postprocessing, resource_pass, shadow, skybox};
 use camera::Camera;
 
 /// A function that creates new window target views
@@ -115,6 +115,9 @@ where
             let resource_module = module::Module::new()
                 .add_pass(resource_pass::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
 
+            let particles_module = module::Module::new()
+                .add_pass(particles::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>);
+
             let shadow_module = module::Module::new().add_pass(
                 shadow::directional::setup_pass::<R, C, F> as pass::SetupFn<_, _, _, _, _>,
             );
@@ -134,6 +137,7 @@ where
                 (shadow_module, "shadow"),
                 (main_module, "main"),
                 (skybox_module, "skybox"),
+                (particles_module, "particles"),
                 (postprocessing_module, "postprocessing"),
             ];
 
@@ -181,6 +185,7 @@ where
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, Drawable<R>>,
+    particle_source: specs::ReadStorage<'a, ParticleSource>,
     event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
     ui_state: specs::ReadExpect<'a, common::UiState>,
     ui_draw_list: specs::ReadExpect<'a, ui::UiDrawList>,
@@ -249,7 +254,8 @@ where
 
         // Only run the main graphics pipeline if a menu is not open
         if data.ui_state.is_in_game() {
-            let temporary_resources = TemporaryResources::new(&data.drawable);
+            let temporary_resources =
+                TemporaryResources::new(&data.drawable, &data.particle_source);
 
             self.graph
                 .execute_passes(temporary_resources)

@@ -57,6 +57,7 @@ pub struct GraphicsConfig {
     pub postprocessing: bool,
     pub shadows: bool,
     pub shadow_map_size: texture::Size,
+    pub particles: bool,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -137,6 +138,7 @@ impl Default for GraphicsConfig {
             postprocessing: false,
             shadows: false,
             shadow_map_size: 1024,
+            particles: false,
         }
     }
 }

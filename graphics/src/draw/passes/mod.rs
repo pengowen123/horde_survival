@@ -1,6 +1,7 @@
 //! Render passes
 
 pub mod main;
+pub mod particles;
 pub mod postprocessing;
 pub mod resource_pass;
 pub mod shadow;
