@@ -216,7 +216,7 @@ where
 
             let dir = convert::to_na_quaternion(dir.0);
 
-            let isometry = Isometry::from_parts(Translation3::from_vector(pos_vec), dir);
+            let isometry = Isometry::from_parts(Translation3::from(pos_vec), dir);
             let handle = phys_world.add_rigid_body(isometry, Inertia::zero(), pos);
 
             let scaled_mesh = mesh
