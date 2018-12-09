@@ -3,7 +3,7 @@
 
 use assets::Assets;
 use common::cgmath::*;
-use common::gfx;
+use common::gfx::{self, handle, format};
 use common::graphics::{Material, Particle, ParticleSource, ShaderParam, SpawnParticleFn};
 use common::na::{self, Translation3};
 use common::ncollide3d::shape::ShapeHandle;
@@ -22,6 +22,7 @@ use math::functions::dir_vec_to_quaternion;
 use physics::scale::Scale as ScaleTrait;
 use player::{self, COLLIDER_MARGIN};
 use slog;
+use image_utils;
 
 use std::sync::Arc;
 
@@ -78,7 +79,7 @@ where
             5.0,
             Box::new(|pos: &Point3<f32>| {
                 Particle::new(
-                    ([255, 0, 0], 1.0),
+                    1.0,
                     0.4,
                     *pos,
                     Vector3::new(2.0, 2.0, 5.0),
@@ -86,6 +87,12 @@ where
                     3.0,
                 )
             }) as SpawnParticleFn,
+            load_texture(
+                factory,
+                &world.read_resource::<Arc<Assets>>(),
+                "test_particle.png",
+                image_utils::PNG,
+            ),
         ).unwrap();
 
         world
@@ -338,4 +345,16 @@ fn create_spot_light<'a, R, F>(
             map(e)
         }),
     );
+}
+
+fn load_texture<R: gfx::Resources, F: gfx::Factory<R>>(
+    factory: &mut F,
+    assets: &Assets,
+    path: &str,
+    format: image_utils::ImageFormat,
+) -> handle::ShaderResourceView<R, [f32; 4]> {
+    let texture_path = assets.get_model_path(path);
+    println!("texture path: {:?}", texture_path);
+    let data = assets::read_bytes(texture_path).unwrap();
+    image_utils::load_texture::<_, _, format::Srgba8>(factory, &data, format).unwrap()
 }

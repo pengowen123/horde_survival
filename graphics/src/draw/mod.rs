@@ -26,6 +26,7 @@ use common::glutin::{self, GlContext};
 use common::graphics::{Drawable, ParticleSource};
 use common::{self, config, conrod, shred, specs};
 use gfx::{self, handle};
+
 use rendergraph::error::Error;
 use rendergraph::resources::TemporaryResources;
 use rendergraph::{builder, module, pass, RenderGraph};
@@ -185,7 +186,7 @@ where
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, Drawable<R>>,
-    particle_source: specs::ReadStorage<'a, ParticleSource>,
+    particle_source: specs::ReadStorage<'a, ParticleSource<R>>,
     event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
     ui_state: specs::ReadExpect<'a, common::UiState>,
     ui_draw_list: specs::ReadExpect<'a, ui::UiDrawList>,

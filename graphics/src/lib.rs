@@ -44,7 +44,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     world.add_resource(Arc::new(Mutex::new(camera::Camera::new_default(1.0, 45.0))));
 
     // This must be initialized before init_test_entities is called
-    let dispatcher = particles::initialize(world, dispatcher);
+    let dispatcher = particles::initialize::<gfx_device_gl::Resources>(world, dispatcher);
 
     // Initialize subsystems
     let (dispatcher, dispatcher_graphics, window, events) =

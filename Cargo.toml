@@ -15,7 +15,9 @@ serde = "1.0.70"
 quick-error = "1.2.2"
 directories = "1.0.1"
 ron = "0.3.0"
-assets = { path = "assets" }
+
+[dependencies.assets]
+path = "assets"
 
 [dependencies.common]
 path = "common"

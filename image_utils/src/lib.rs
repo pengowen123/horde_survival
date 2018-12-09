@@ -15,7 +15,7 @@ use gfx::{format, texture};
 use std::io::Cursor;
 
 pub use format::{Rgba8, Srgba8};
-pub use image::{ImageError, JPEG, PNG};
+pub use image::{ImageFormat, ImageError, JPEG, PNG};
 
 /// Loads a texture from the provided data
 pub fn load_texture<F, R, CF>(

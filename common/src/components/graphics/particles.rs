@@ -2,6 +2,7 @@
 
 use cgmath;
 use specs;
+use gfx::{self, handle};
 
 /// The maximum number of particles for a single particle source
 pub const MAX_PARTICLES: usize = 512;
@@ -12,7 +13,7 @@ pub type SpawnParticleFn = Box<FnMut(&cgmath::Point3<f32>) -> Particle + Send + 
 /// An individual particle
 #[derive(Clone, Debug)]
 pub struct Particle {
-    color: ([u8; 3], f32),
+    alpha: f32,
     alpha_falloff: f32,
     position: cgmath::Point3<f32>,
     velocity: cgmath::Vector3<f32>,
@@ -25,7 +26,7 @@ impl Particle {
     ///
     /// `lifetime` should be in seconds.
     pub fn new(
-        color: ([u8; 3], f32),
+        alpha: f32,
         alpha_falloff: f32,
         position: cgmath::Point3<f32>,
         velocity: cgmath::Vector3<f32>,
@@ -33,7 +34,7 @@ impl Particle {
         lifetime: ::Float,
     ) -> Self {
         Self {
-            color,
+            alpha,
             alpha_falloff,
             position,
             velocity,
@@ -42,9 +43,9 @@ impl Particle {
         }
     }
 
-    /// Returns the color of this `Particle`
-    pub fn color(&self) -> ([u8; 3], f32) {
-        self.color
+    /// Returns the alpha of this `Particle`
+    pub fn alpha(&self) -> f32 {
+        self.alpha
     }
 
     /// Returns the position of this `Particle`
@@ -63,17 +64,18 @@ impl Particle {
             self.velocity.z += self.gravity * dt;
             self.position += self.velocity * dt;
             self.lifetime -= ::Float::from(dt);
-            self.color.1 = (self.color.1 - self.alpha_falloff * dt).max(0.0);
+            self.alpha = (self.alpha - self.alpha_falloff * dt).max(0.0);
         }
     }
 }
 
 /// A component that causes an entity to produce particles
-pub struct ParticleSource {
+pub struct ParticleSource<R: gfx::Resources> {
     particles: Vec<Particle>,
     spawn_rate: f32,
     spawn_dt_accumulator: f32,
     spawn_fn: SpawnParticleFn,
+    texture: handle::ShaderResourceView<R, [f32; 4]>,
     enabled: bool,
 }
 
@@ -87,7 +89,7 @@ quick_error! {
     }
 }
 
-impl ParticleSource {
+impl<R: gfx::Resources> ParticleSource<R> {
     /// Returns a new `ParticleSource`
     ///
     /// Returns `Err` if `max_particles` is greater than `MAX_PARTICLES`.
@@ -98,6 +100,7 @@ impl ParticleSource {
         max_particles: usize,
         spawn_rate: f32,
         spawn_fn: F,
+        texture: handle::ShaderResourceView<R, [f32; 4]>,
     ) -> Result<Self, ParticleSourceError>
     where
         F: Into<SpawnParticleFn>,
@@ -113,6 +116,7 @@ impl ParticleSource {
                 spawn_rate,
                 spawn_dt_accumulator: 0.0,
                 spawn_fn: spawn_fn.into(),
+                texture,
                 enabled: true,
             })
         }
@@ -162,9 +166,14 @@ impl ParticleSource {
     pub fn particles(&self) -> &[Particle] {
         &self.particles
     }
+
+    // Returns the texture of this `ParticleSource`
+    pub fn texture(&self) -> &handle::ShaderResourceView<R, [f32; 4]> {
+        &self.texture
+    }
 }
 
-impl specs::Component for ParticleSource {
+impl<R: gfx::Resources> specs::Component for ParticleSource<R> {
     type Storage = specs::DenseVecStorage<Self>;
 }
 

@@ -8,7 +8,7 @@ use common::graphics::MAX_PARTICLES;
 use common::specs::Join;
 use gfx::state::{self, Blend, BlendValue, Equation, Factor};
 use gfx::traits::FactoryExt;
-use gfx::{self, buffer, format, handle, memory};
+use gfx::{self, buffer, format, handle, memory, texture};
 use rendergraph::error::{BuildError, RunError};
 use rendergraph::framebuffer::Framebuffers;
 use rendergraph::pass::Pass;
@@ -19,7 +19,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use camera::Camera;
-use draw::glsl::{Mat4, Vec3};
+use draw::glsl::{Mat4, Vec2, Vec3, Vec4};
 use draw::passes::resource_pass;
 use draw::{passes, types};
 
@@ -33,11 +33,11 @@ fn get_blend_function() -> Blend {
 gfx_defines! {
     vertex Vertex {
         pos: Vec3 = "a_Pos",
+        uv: Vec2 = "a_Uv",
     }
 
     vertex Instance {
         translate: Vec3 = "a_Translate",
-        color: u32 = "a_Color",
         alpha: f32 = "a_Alpha",
     }
 
@@ -53,6 +53,7 @@ gfx_defines! {
         vbuf: gfx::VertexBuffer<Vertex> = (),
         instance: gfx::InstanceBuffer<Instance> = (),
         locals: gfx::ConstantBuffer<Locals> = "u_Locals",
+        texture: gfx::TextureSampler<Vec4> = "u_Texture",
         out_color: gfx::BlendTarget<format::Rgba8> = (
             "Target0",
             state::ColorMask::all(),
@@ -63,14 +64,9 @@ gfx_defines! {
 }
 
 impl Vertex {
-    pub fn new(pos: [f32; 3]) -> Self {
-        Self { pos }
+    pub fn new(pos: [f32; 3], uv: [f32; 2]) -> Self {
+        Self { pos, uv }
     }
-}
-
-/// Packs the provided 3 `u8`s (in RGB format) into a `u32`, with the format `0x00RRGGBB`
-fn pack_color(rgba: [u8; 3]) -> u32 {
-    ((rgba[0] as u32) << 16) | ((rgba[1] as u32) << 8) | rgba[2] as u32
 }
 
 pub struct ParticlePass<R: gfx::Resources> {
@@ -93,10 +89,10 @@ impl<R: gfx::Resources> ParticlePass<R> {
 
         // Create a screen quad to render to
         let vertices = [
-            Vertex::new([-0.5, -0.5, 0.0]),
-            Vertex::new([-0.5, 0.5, 0.0]),
-            Vertex::new([0.5, 0.5, 0.0]),
-            Vertex::new([0.5, -0.5, 0.0]),
+            Vertex::new([-0.5, -0.5, 0.0], [0.0, 1.0]),
+            Vertex::new([-0.5, 0.5, 0.0], [0.0, 0.0]),
+            Vertex::new([0.5, 0.5, 0.0], [1.0, 0.0]),
+            Vertex::new([0.5, -0.5, 0.0], [1.0, 1.0]),
         ];
 
         let indices = [0u16, 1, 2, 0, 2, 3];
@@ -110,10 +106,23 @@ impl<R: gfx::Resources> ParticlePass<R> {
             memory::Bind::TRANSFER_DST,
         )?;
 
+        // Create dummy data
+        let texels = [[0x0; 4]];
+        let (_, texture_view) = factory.create_texture_immutable::<gfx::format::Rgba8>(
+            texture::Kind::D2(1, 1, texture::AaMode::Single),
+            texture::Mipmap::Allocated,
+            &[&texels],
+        )?;
+
+        // Create texture sampler info
+        let sampler_info =
+            texture::SamplerInfo::new(texture::FilterMethod::Bilinear, texture::WrapMode::Tile);
+
         let data = pipe::Data {
             vbuf,
             instance,
             locals: factory.create_constant_buffer(1),
+            texture: (texture_view, factory.create_sampler(sampler_info)),
             out_color: rtv.clone(),
             depth: dsv,
         };
@@ -205,8 +214,7 @@ where
                         if p.lifetime() > 0.0 {
                             Some(Instance {
                                 translate: p.position().into(),
-                                color: pack_color(p.color().0),
-                                alpha: p.color().1,
+                                alpha: p.alpha(),
                             })
                         } else {
                             None
@@ -216,6 +224,8 @@ where
                 encoder.update_buffer(&self.bundle.data.instance, &particles, 0)?;
 
                 self.bundle.slice.instances = Some((particles.len() as u32, 0));
+
+                self.bundle.data.texture.0 = particle_source.texture().clone();
 
                 self.bundle.encode(encoder);
             }
@@ -267,15 +277,5 @@ where
         self.enabled = config.particles;
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::pack_color;
-
-    #[test]
-    fn test_pack_color() {
-        assert_eq!(0x00BBCCDD, pack_color([0x00, 0xBB, 0xCC, 0xDD]));
     }
 }

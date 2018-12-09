@@ -5,11 +5,14 @@ use common::graphics::ParticleSource;
 use common::specs::{self, Join};
 use window::window_event;
 
-pub struct System {
+use std::marker::PhantomData;
+
+pub struct System<R: gfx::Resources> {
     reader_id: window_event::ReaderId,
+    _marker: PhantomData<R>,
 }
 
-impl System {
+impl<R: gfx::Resources> System<R> {
     fn new(resources: &mut shred::Resources) -> Self {
         let reader_id = {
             let mut event_channel = resources.fetch_mut::<window_event::EventChannel>();
@@ -18,21 +21,22 @@ impl System {
 
         Self {
             reader_id,
+            _marker: Default::default(),
         }
     }
 }
 
 #[derive(SystemData)]
-pub struct SystemData<'a> {
+pub struct SystemData<'a, R: gfx::Resources> {
     delta: specs::ReadExpect<'a, common::Delta>,
-    particle_source: specs::WriteStorage<'a, ParticleSource>,
+    particle_source: specs::WriteStorage<'a, ParticleSource<R>>,
     position: specs::ReadStorage<'a, common::Position>,
     event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
     config: specs::ReadExpect<'a, config::Config>,
 }
 
-impl<'a> specs::System<'a> for System {
-    type SystemData = SystemData<'a>;
+impl<'a, R: gfx::Resources> specs::System<'a> for System<R> {
+    type SystemData = SystemData<'a, R>;
 
     fn run(&mut self, mut data: Self::SystemData) {
         let mut updated_particles_option = None;
@@ -60,11 +64,11 @@ impl<'a> specs::System<'a> for System {
 }
 
 /// Initializes particle-related components and systems
-pub fn initialize<'a, 'b>(
+pub fn initialize<'a, 'b, R: gfx::Resources + Send>(
     world: &mut specs::World,
     dispatcher: specs::DispatcherBuilder<'a, 'b>,
 ) -> specs::DispatcherBuilder<'a, 'b> {
-    world.register::<ParticleSource>();
+    world.register::<ParticleSource<R>>();
 
-    dispatcher.with(System::new(&mut world.res), "particles", &[])
+    dispatcher.with(System::<R>::new(&mut world.res), "particles", &[])
 }

@@ -12,7 +12,7 @@ pub struct TemporaryResources<'a, R: gfx::Resources> {
     /// The component storage for `Drawable`
     pub drawable: &'a specs::ReadStorage<'a, Drawable<R>>,
     /// The component storage for `ParticleSource`
-    pub particle_source: &'a specs::ReadStorage<'a, ParticleSource>,
+    pub particle_source: &'a specs::ReadStorage<'a, ParticleSource<R>>,
 }
 
 impl<'a, R: gfx::Resources> Copy for TemporaryResources<'a, R> {}
@@ -21,7 +21,7 @@ impl<'a, R: gfx::Resources> TemporaryResources<'a, R> {
     /// Returns a new `TemporaryResources` using the provided component storage references
     pub fn new(
         drawable: &'a specs::ReadStorage<'a, Drawable<R>>,
-        particle_source: &'a specs::ReadStorage<'a, ParticleSource>,
+        particle_source: &'a specs::ReadStorage<'a, ParticleSource<R>>,
     ) -> Self {
         Self {
             drawable,

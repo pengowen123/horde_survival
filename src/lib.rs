@@ -8,6 +8,7 @@ extern crate assets;
 extern crate common;
 extern crate control;
 extern crate graphics;
+extern crate image_utils;
 extern crate math;
 extern crate physics;
 extern crate slog_async;
