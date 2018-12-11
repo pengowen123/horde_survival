@@ -854,8 +854,8 @@ impl Menus {
         if update_config {
             // If the window dimensions or fullscreen options were changed, show the auto-revert
             // window settings pop-up
-            if self.new_config.window.fullscreen != self.current_config.window.fullscreen
-                || self.new_config.window.dimensions != self.current_config.window.dimensions
+            if (self.new_config.window.fullscreen != self.current_config.window.fullscreen)
+                || (self.new_config.window.dimensions != self.current_config.window.dimensions)
             {
                 self.auto_revert_state = Some(AutoRevertState::new(
                     self.current_config.window.dimensions.clone(),

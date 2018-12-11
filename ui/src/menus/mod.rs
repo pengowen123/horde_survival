@@ -22,6 +22,7 @@ widget_ids! {
         start_game_button,
         main_menu_options_button,
         // Pause menu
+        pause_menu_root_canvas,
         pause_canvas,
         resume_game_button,
         exit_to_main_menu_button,

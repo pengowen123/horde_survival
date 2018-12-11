@@ -213,6 +213,7 @@ impl<'a> specs::System<'a> for System {
                     &mut data.ui_state,
                     &data.window,
                     &mut data.event_channel,
+                    &mut data.config,
                 ),
                 UiState::OptionsMenu => self.menus.set_widgets_options_menu(
                     &mut ui,

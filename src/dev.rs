@@ -354,7 +354,6 @@ fn load_texture<R: gfx::Resources, F: gfx::Factory<R>>(
     format: image_utils::ImageFormat,
 ) -> handle::ShaderResourceView<R, [f32; 4]> {
     let texture_path = assets.get_model_path(path);
-    println!("texture path: {:?}", texture_path);
     let data = assets::read_bytes(texture_path).unwrap();
     image_utils::load_texture::<_, _, format::Srgba8>(factory, &data, format).unwrap()
 }
