@@ -20,6 +20,7 @@ pub extern crate gfx_core;
 pub extern crate gfx_device_gl;
 pub extern crate gfx_window_glutin;
 pub extern crate glutin;
+pub extern crate skeletal_animation;
 
 // UI
 pub extern crate conrod;

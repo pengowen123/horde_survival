@@ -5,19 +5,35 @@
 use cgmath::{self, One};
 use gfx::{self, handle};
 use specs;
+use skeletal_animation::controller;
+use skeletal_animation::dual_quaternion::DualQuaternion;
 
 mod particles;
 
 pub use self::particles::*;
 
+/// The maximum number of joints per object
+pub const MAX_JOINTS: u16 = 64;
+
 /// A view into a texture
 pub type TextureView<R> = handle::ShaderResourceView<R, [f32; 4]>;
+
+/// An animation controller
+pub type AnimationController = controller::AnimationController<DualQuaternion<f32>>;
 
 gfx_defines! {
     vertex Vertex {
         pos: [f32; 3] = "a_Pos",
         normal: [f32; 3] = "a_Normal",
         uv: [f32; 2] = "a_Uv",
+    }
+
+    vertex VertexSkeletal {
+        pos: [f32; 3] = "a_Pos",
+        normal: [f32; 3] = "a_Normal",
+        uv: [f32; 2] = "a_Uv",
+        joints: [i32; 4] = "a_Joints",
+        joint_weights: [f32; 4] = "a_JointWeights",
     }
 
     constant Material {
@@ -31,16 +47,32 @@ impl Vertex {
     }
 }
 
+impl VertexSkeletal {
+    pub fn new(
+        pos: [f32; 3],
+        uv: [f32; 2],
+        normal: [f32; 3],
+        joints: [i32; 4],
+        joint_weights: [f32; 4],
+    ) -> Self {
+        Self {
+            pos,
+            normal,
+            uv,
+            joints,
+            joint_weights,
+        }
+    }
+}
+
 impl Material {
     pub fn new(shininess: f32) -> Self {
         Self { shininess }
     }
 }
 
-/// A component that stores the information needed to draw an entity
 #[derive(Clone)]
-pub struct Drawable<R: gfx::Resources> {
-    vertex_buffer: handle::Buffer<R, Vertex>,
+struct DrawableInner<R: gfx::Resources> {
     diffuse: TextureView<R>,
     specular: TextureView<R>,
     slice: gfx::Slice<R>,
@@ -48,17 +80,14 @@ pub struct Drawable<R: gfx::Resources> {
     param: ShaderParam,
 }
 
-impl<R: gfx::Resources> Drawable<R> {
-    /// Returns a new `Drawable`, with the provided texture, vertex buffer, and slice
+impl<R: gfx::Resources> DrawableInner<R> {
     pub fn new(
-        vertex_buffer: handle::Buffer<R, Vertex>,
         slice: gfx::Slice<R>,
         diffuse: TextureView<R>,
         specular: TextureView<R>,
         material: Material,
     ) -> Self {
-        Drawable {
-            vertex_buffer,
+        DrawableInner {
             slice,
             diffuse,
             specular,
@@ -67,39 +96,143 @@ impl<R: gfx::Resources> Drawable<R> {
         }
     }
 
-    /// Returns a reference to the component's diffuse map
-    pub fn diffuse(&self) -> &TextureView<R> {
+    fn diffuse(&self) -> &TextureView<R> {
         &self.diffuse
     }
 
-    /// Returns a reference to the component's specular map
-    pub fn specular(&self) -> &TextureView<R> {
+    fn specular(&self) -> &TextureView<R> {
         &self.specular
     }
 
-    /// Returns a reference to the component's material
-    pub fn material(&self) -> &Material {
+    fn material(&self) -> &Material {
         &self.material
     }
 
-    /// Returns a reference to the component's vertex buffer
+    fn slice(&self) -> &gfx::Slice<R> {
+        &self.slice
+    }
+
+    fn param(&self) -> &ShaderParam {
+        &self.param
+    }
+
+    fn set_shader_param(&mut self, param: ShaderParam) {
+        self.param = param;
+    }
+}
+
+/// A component that stores the information needed to draw an entity
+#[derive(Clone)]
+pub struct Drawable<R: gfx::Resources> {
+    vertex_buffer: handle::Buffer<R, Vertex>,
+    inner: DrawableInner<R>,
+}
+
+impl<R: gfx::Resources> Drawable<R> {
+    pub fn new(
+        vertex_buffer: handle::Buffer<R, Vertex>,
+        slice: gfx::Slice<R>,
+        diffuse: TextureView<R>,
+        specular: TextureView<R>,
+        material: Material,
+    ) -> Self {
+        Self {
+            vertex_buffer,
+            inner: DrawableInner::new(slice, diffuse, specular, material),
+        }
+    }
+
+    /// Returns a reference to the vertex buffer
     pub fn vertex_buffer(&self) -> &handle::Buffer<R, Vertex> {
         &self.vertex_buffer
     }
 
-    /// Returns a reference to the component's vertex buffer slice
-    pub fn slice(&self) -> &gfx::Slice<R> {
-        &self.slice
+    /// Returns a reference to the diffuse map
+    pub fn diffuse(&self) -> &TextureView<R> {
+        self.inner.diffuse()
     }
 
-    /// Returns a reference to the component's shader parameters
+    /// Returns a reference to the specular map
+    pub fn specular(&self) -> &TextureView<R> {
+        self.inner.specular()
+    }
+
+    /// Returns a reference to the material
+    pub fn material(&self) -> &Material {
+        self.inner.material()
+    }
+
+    /// Returns a reference to the vertex buffer slice
+    pub fn slice(&self) -> &gfx::Slice<R> {
+        self.inner.slice()
+    }
+
+    /// Returns a reference to the shader parameters
     pub fn param(&self) -> &ShaderParam {
-        &self.param
+        self.inner.param()
     }
 
     /// Sets the shader parameters to the provided value
     pub fn set_shader_param(&mut self, param: ShaderParam) {
-        self.param = param;
+        self.inner.set_shader_param(param)
+    }
+}
+
+pub struct DrawableSkeletal<R: gfx::Resources> {
+    vertex_buffer: handle::Buffer<R, VertexSkeletal>,
+    animation_controller: AnimationController,
+    inner: DrawableInner<R>,
+}
+
+impl<R: gfx::Resources> DrawableSkeletal<R> {
+    pub fn new(
+        animation_controller: AnimationController,
+        vertex_buffer: handle::Buffer<R, VertexSkeletal>,
+        slice: gfx::Slice<R>,
+        diffuse: TextureView<R>,
+        specular: TextureView<R>,
+        material: Material,
+    ) -> Self {
+        Self {
+            vertex_buffer,
+            animation_controller,
+            inner: DrawableInner::new(slice, diffuse, specular, material),
+        }
+    }
+
+    /// Returns a reference to the vertex buffer
+    pub fn vertex_buffer(&self) -> &handle::Buffer<R, VertexSkeletal> {
+        &self.vertex_buffer
+    }
+
+    /// Returns a reference to the diffuse map
+    pub fn diffuse(&self) -> &TextureView<R> {
+        self.inner.diffuse()
+    }
+
+    /// Returns a reference to the specular map
+    pub fn specular(&self) -> &TextureView<R> {
+        self.inner.specular()
+    }
+
+    /// Returns a reference to the material
+    pub fn material(&self) -> &Material {
+        self.inner.material()
+    }
+
+    /// Returns a reference to the vertex buffer slice
+    pub fn slice(&self) -> &gfx::Slice<R> {
+        self.inner.slice()
+    }
+
+    /// Returns a reference to the shader parameters
+    pub fn param(&self) -> &ShaderParam {
+        self.inner.param()
+    }
+
+    /// Sets the shader parameters to the provided value
+    pub fn set_shader_param(&mut self, param: ShaderParam) {
+        self.inner.set_shader_param(param)
     }
 }
 
@@ -159,5 +292,9 @@ impl specs::Component for ShaderParam {
 }
 
 impl<R: gfx::Resources> specs::Component for Drawable<R> {
+    type Storage = specs::DenseVecStorage<Self>;
+}
+
+impl<R: gfx::Resources> specs::Component for DrawableSkeletal<R> {
     type Storage = specs::DenseVecStorage<Self>;
 }

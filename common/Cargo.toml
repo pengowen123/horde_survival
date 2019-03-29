@@ -28,3 +28,7 @@ quick-error = "1.2.2"
 branch = "horde"
 features = ["winit", "gfx_rs"]
 git = "https://github.com/pengowen123/conrod"
+
+[dependencies.skeletal_animation]
+branch = "horde"
+git = "https://github.com/pengowen123/skeletal_animation"

@@ -86,7 +86,7 @@ impl Scale for shape::Compound<::Float> {
                 .iter()
                 .map(|&(transform, ref shape)| {
                     let new_transform = na::Isometry3::from_parts(
-                        na::Translation3::from_vector(transform.translation.vector),
+                        na::Translation3::from(transform.translation.vector),
                         transform.rotation,
                     );
                     Some((new_transform, try_all_shapes(&**shape, scale)?))
