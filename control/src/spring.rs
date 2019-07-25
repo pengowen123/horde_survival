@@ -1,7 +1,8 @@
 //! A custom force generator that acts as a spring used to make the player's physics body float
 
 use common::na;
-use common::nphysics3d::math::Force;
+
+use controller::ForceGeneratorResult;
 
 // TODO: Fine tune these
 pub const SPRING_LENGTH_DELTA_DISABLE_PERCENTAGE: ::Float = 0.4;
@@ -83,11 +84,11 @@ impl Spring {
 }
 
 impl Spring {
-    pub fn apply(&mut self) -> Option<Force<::Float>> {
+    pub fn apply(&mut self) -> ForceGeneratorResult {
         let current_length = if let Some(l) = self.current_length {
             l
         } else {
-            return None;
+            return ForceGeneratorResult::None;
         };
 
         let delta_length = self.length - current_length;
@@ -105,16 +106,16 @@ impl Spring {
         }
 
         if !self.is_enabled() {
-            return None;
+            return ForceGeneratorResult::None;
         }
 
         let total_force = {
-            let force = Force::linear(na::Vector3::z() * delta_length * self.stiffness);
-            let dampener = Force::linear(na::Vector3::z() * -self.current_velocity * self.friction);
+            let force = na::Vector3::z() * delta_length * self.stiffness;
+            let dampener = na::Vector3::z() * -self.current_velocity * self.friction;
 
             force + dampener
         };
 
-        Some(total_force)
+        ForceGeneratorResult::Some(total_force)
     }
 }

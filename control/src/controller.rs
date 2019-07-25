@@ -1,25 +1,32 @@
 //! A force generator composed from the spring and the movement force generators
 
 use common::nphysics3d::force_generator::ForceGenerator;
-use common::nphysics3d::math::Force;
-use common::nphysics3d::object::{BodyHandle, BodySet};
+use common::nphysics3d::math::ForceType;
+use common::nphysics3d::object::{BodyPartHandle, BodySet};
 use common::nphysics3d::solver::IntegrationParameters;
 use common::{cgmath, na};
 
 use movement;
 use spring;
 
+/// The result of calling the `apply` function of a force generator
+pub enum ForceGeneratorResult {
+    None,
+    BodyRemoved,
+    Some(na::Vector3<::Float>),
+}
+
 pub struct ControllerForceGenerator {
     pub spring: spring::Spring,
     pub movement: movement::MovementForceGenerator,
-    body: BodyHandle,
+    body: BodyPartHandle,
 }
 
 impl ControllerForceGenerator {
     pub fn new(
         spring: spring::Spring,
         movement: movement::MovementForceGenerator,
-        body: BodyHandle,
+        body: BodyPartHandle,
     ) -> Self {
         Self {
             spring,
@@ -41,27 +48,44 @@ impl ForceGenerator<::Float> for ControllerForceGenerator {
         _params: &IntegrationParameters<::Float>,
         bodies: &mut BodySet<::Float>,
     ) -> bool {
-        if !bodies.contains(self.body) {
+        if !bodies.contains(self.body.0) {
             return false;
         }
 
-        let mut total_force = Force::zero();
+        let mut total_force = na::zero();
         let mut applied = false;
 
-        if let Some(force) = self.spring.apply() {
-            total_force += force;
-            applied = true;
+        match self.spring.apply() {
+            ForceGeneratorResult::None => {},
+            ForceGeneratorResult::Some(force) => {
+                total_force += force;
+                applied = true;
+            },
+            ForceGeneratorResult::BodyRemoved => return false,
         }
 
-        if let Some(force) = self.movement.apply() {
-            total_force += force;
-            applied = true;
+        match self.movement.apply() {
+            ForceGeneratorResult::None => {},
+            ForceGeneratorResult::Some(force) => {
+                total_force += force;
+                applied = true;
+            },
+            ForceGeneratorResult::BodyRemoved => return false,
         }
 
         if applied {
-            bodies.body_part_mut(self.body).apply_force(&total_force);
+            if let Some(ref mut body) = bodies.body_mut(self.body.0) {
+                // TODO: Maybe customize some of these parameters to improve the player controller
+                body.apply_force_at_local_point(
+                    self.body.1,
+                    &total_force,
+                    &na::Point3::origin(),
+                    ForceType::Force,
+                    false,
+                );
+            }
         }
 
-        applied
+        true
     }
 }

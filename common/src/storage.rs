@@ -1,4 +1,4 @@
-//! A custom storage type that wraps another storage with `Arc` and`
+//! A custom storage type that wraps another storage with `Arc`
 
 use specs::storage::{UnprotectedStorage, TryDefault};
 use specs::world::Index;

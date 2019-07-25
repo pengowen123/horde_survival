@@ -2,7 +2,7 @@
 
 use alga::general::Real;
 use cgmath;
-use na;
+use na::{self, RealField};
 
 use std::ops::Index;
 
@@ -28,7 +28,7 @@ where
 /// `nalgebra::QuaternionBase`
 pub fn to_cgmath_quaternion<T>(quat: na::UnitQuaternion<T>) -> cgmath::Quaternion<T>
 where
-    T: cgmath::BaseFloat + Real,
+    T: cgmath::BaseFloat + Real + RealField,
 {
     let scalar = quat.scalar();
     let cgmath_vec = cgmath::Vector3::new(quat[0], quat[1], quat[2]);
@@ -38,7 +38,7 @@ where
 /// Returns a `nalgebra::UnitQuaternion` from the provided `cgmath::Quaternion`
 pub fn to_na_quaternion<T>(quat: cgmath::Quaternion<T>) -> na::UnitQuaternion<T>
 where
-    T: Real,
+    T: Real + RealField,
 {
     na::UnitQuaternion::from_quaternion(na::Quaternion::new(quat.s, quat.v.x, quat.v.y, quat.v.z))
 }

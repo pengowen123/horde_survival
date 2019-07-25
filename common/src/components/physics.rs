@@ -1,4 +1,4 @@
-use nphysics3d::object::{BodyHandle, ColliderHandle};
+use nphysics3d::object::{BodyHandle, ColliderDesc};
 /// Physics components
 use specs;
 
@@ -9,17 +9,17 @@ pub struct Physics {
     /// A list of handles to the child bodies of the root body of this entity
     child_handles: Vec<BodyHandle>,
     /// The handle of the root collider of this entity
-    root_collider: Option<ColliderHandle>,
+    root_collider: Option<ColliderDesc<::Float>>,
     /// A list of handles to the child colliders of the root collider of this entity
-    collider_handles: Vec<ColliderHandle>,
+    collider_handles: Vec<ColliderDesc<::Float>>,
 }
 
 impl Physics {
     pub fn new(
         root_handle: BodyHandle,
         child_handles: Vec<BodyHandle>,
-        root_collider: Option<ColliderHandle>,
-        collider_handles: Vec<ColliderHandle>,
+        root_collider: Option<ColliderDesc<::Float>>,
+        collider_handles: Vec<ColliderDesc<::Float>>,
     ) -> Self {
         Physics {
             root_handle,
@@ -40,12 +40,12 @@ impl Physics {
     }
 
     /// Returns the handle to this entity's root collider
-    pub fn get_root_collider(&self) -> Option<ColliderHandle> {
-        self.root_collider
+    pub fn get_root_collider(&self) -> Option<&ColliderDesc<::Float>> {
+        self.root_collider.as_ref()
     }
 
     /// Returns a reference to the handles to this entity's child colliders
-    pub fn get_child_colliders(&self) -> &[ColliderHandle] {
+    pub fn get_child_colliders(&self) -> &[ColliderDesc<::Float>] {
         &self.collider_handles
     }
 }

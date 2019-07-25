@@ -27,8 +27,8 @@ pub extern crate conrod;
 
 // Misc
 pub extern crate time;
-#[macro_use]
 pub extern crate structopt;
+pub extern crate takeable_option;
 extern crate serde;
 extern crate slog;
 #[macro_use]

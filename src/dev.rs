@@ -8,12 +8,13 @@ use common::graphics::{Material, Particle, ParticleSource, ShaderParam, SpawnPar
 use common::na::{self, Translation3};
 use common::ncollide3d::shape::ShapeHandle;
 use common::nphysics3d::math::{Inertia, Isometry};
-use common::nphysics3d::object::{self, BodyHandle, BodyMut, BodyStatus, ColliderHandle};
+use common::nphysics3d::object::{BodyHandle, BodyStatus, ColliderDesc, RigidBodyDesc};
 use common::nphysics3d::world::World;
+use common::nphysics3d::material;
 use common::physics::*;
 use common::specs::{self, Builder};
 use common::*;
-use control::FloorColliderHandle;
+use control::FloorHandle;
 use graphics::draw::components::*;
 use graphics::draw::LightSpaceMatrix;
 use graphics::obj_loading;
@@ -31,49 +32,52 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    let (_, floor_collider) = create_test_entity(
+    let (floor_body, floor_collider) = create_test_entity(
         world,
         factory,
         "player_controller_playground",
-        [0.0; 3],
+        [0.0, 0.0, 0.0],
         Direction::default(),
         5.0,
         Material::new(32.0),
-        Some(object::Material::new(0.0, 0.0)),
+        Some(material::BasicMaterial::new(0.0, 0.0)),
         Box::new(|e| e),
-    )[0];
+    ).into_iter().nth(0).unwrap();
 
     // Set the floor collider handle to the test map's first collision object
     world
-        .write_resource::<FloorColliderHandle>()
-        .set_handle(floor_collider);
+        .write_resource::<FloorHandle>()
+        .set_floor(floor_body, floor_collider);
 
     player::add_player_entity(world);
 
     // Create test entities
     {
-        //let mut cube = |pos, size, dir| {
-        //let _ = create_test_entity(
-        //world,
-        //factory,
-        //"box",
-        //pos,
-        //dir,
-        //size,
-        //Material::new(32.0),
-        //Some(object::Material::new(0.0, 0.0)),
-        //Box::new(|e| e),
-        //);
-        //};
+        {
+            let mut cube = |pos, size, dir| {
+                let _ = create_test_entity(
+                    world,
+                    factory,
+                    "box",
+                    pos,
+                    dir,
+                    size,
+                    Material::new(32.0),
+                    Some(material::BasicMaterial::new(0.0, 0.0)),
+                    Box::new(|e| e),
+                );
+            };
 
-        //cube([0.0, 0.0, 15.0], 1.0, Direction::default());
-        //cube([2.0, 4.0, 1.0], 2.0, Direction::default());
-        //cube([3.0, -1.0, 3.0], 2.0, Direction::default());
-        //cube(
-        //[5.0, 5.0, 3.5],
-        //2.0,
-        //Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
-        //);
+            cube([0.0, 0.0, 15.0], 1.0, Direction::default());
+            //cube([2.0, 4.0, 1.0], 2.0, Direction::default());
+            //cube([3.0, -1.0, 3.0], 2.0, Direction::default());
+            //cube(
+            //[5.0, 5.0, 3.5],
+            //2.0,
+            //Direction(dir_vec_to_quaternion([1.0, 1.0, 1.0])),
+            //);
+        }
+
         let particle_source = ParticleSource::new(
             15,
             5.0,
@@ -185,9 +189,9 @@ fn create_test_entity<'a, R, F, P>(
     dir: Direction,
     scale: f32,
     material: Material,
-    properties: Option<object::Material<::Float>>,
+    properties: Option<material::BasicMaterial<::Float>>,
     map: MapEntity,
-) -> Vec<(BodyHandle, ColliderHandle)>
+) -> Vec<(BodyHandle, ColliderDesc<::Float>)>
 where
     R: gfx::Resources,
     F: gfx::Factory<R>,
@@ -210,11 +214,7 @@ where
     for (drawable, mesh) in objects {
         let physics = properties.clone().map(|props| {
             let mut phys_world = world.write_resource::<World<::Float>>();
-            let pos = if let Some(s) = space {
-                convert::to_na_point(s.0)
-            } else {
-                na::Point3::origin()
-            };
+
             let pos_vec = if let Some(s) = space {
                 convert::to_na_vector(s.0.to_vec())
             } else {
@@ -223,28 +223,30 @@ where
 
             let dir = convert::to_na_quaternion(dir.0);
 
-            let isometry = Isometry::from_parts(Translation3::from(pos_vec), dir);
-            let handle = phys_world.add_rigid_body(isometry, Inertia::zero(), pos);
-
             let scaled_mesh = mesh
                 .scale(scale.get().into())
                 .expect(&format!("Failed to scale mesh for entity: `{}`", name));
 
-            let collider = phys_world.add_collider(
-                COLLIDER_MARGIN,
-                ShapeHandle::new(scaled_mesh),
-                handle,
-                Isometry::identity(),
-                props,
-            );
+            let shape_handle = ShapeHandle::new(scaled_mesh);
+            let make_collider_desc = || ColliderDesc::new(shape_handle.clone())
+                .margin(COLLIDER_MARGIN)
+                .material(material::MaterialHandle::new(props));
 
-            if let BodyMut::RigidBody(rb) = phys_world.body_mut(handle) {
-                rb.set_status(BodyStatus::Static);
-            }
+            let collider_desc = make_collider_desc();
 
-            body_handles.push((handle, collider));
+            let isometry = Isometry::from_parts(Translation3::from(pos_vec), dir);
+            let rb = RigidBodyDesc::new()
+                .collider(&collider_desc)
+                .position(isometry)
+                .local_inertia(Inertia::zero())
+                .set_status(BodyStatus::Static)
+                .build(&mut phys_world);
 
-            Physics::new(handle, Vec::new(), Some(collider), Vec::new())
+            let handle = rb.handle();
+
+            body_handles.push((handle, collider_desc));
+
+            Physics::new(handle, Vec::new(), Some(make_collider_desc()), Vec::new())
         });
 
         let mut entity = world

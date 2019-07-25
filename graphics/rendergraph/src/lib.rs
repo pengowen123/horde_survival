@@ -16,10 +16,6 @@ pub mod pass;
 pub mod resources;
 
 use gfx::{format, handle};
-use glutin::GlContext;
-use shred::Resources;
-
-use std::sync::Arc;
 
 /// A type that stores all passes and can run them
 pub struct RenderGraph<R, C, D, F, CF, DF>
@@ -30,10 +26,9 @@ where
     F: gfx::Factory<R>,
 {
     passes: Vec<Box<pass::Pass<R, C, F, CF, DF>>>,
-    resources: Resources,
+    resources: shred::Resources,
     encoder: gfx::Encoder<R, C>,
     device: D,
-    window: Arc<glutin::GlWindow>,
     main_color: handle::RenderTargetView<R, CF>,
     main_depth: handle::DepthStencilView<R, DF>,
 }
@@ -50,10 +45,9 @@ where
     /// Requires ownership of the device, and an encoder.
     pub fn new(
         passes: Vec<Box<pass::Pass<R, C, F, CF, DF>>>,
-        resources: Resources,
+        resources: shred::Resources,
         encoder: gfx::Encoder<R, C>,
         device: D,
-        window: Arc<glutin::GlWindow>,
         main_color: handle::RenderTargetView<R, CF>,
         main_depth: handle::DepthStencilView<R, DF>,
     ) -> Self {
@@ -62,7 +56,6 @@ where
             resources,
             encoder,
             device,
-            window,
             main_color,
             main_depth,
         }
@@ -89,9 +82,12 @@ where
     }
 
     /// Runs end-of-frame code (flush commands to device, swap window buffers, cleanup resources)
-    pub fn finish_frame(&mut self) -> Result<(), error::RunError> {
+    pub fn finish_frame(
+        &mut self,
+        context_wrapper: &glutin::WindowedContext<glutin::PossiblyCurrent>,
+    ) -> Result<(), error::RunError> {
         self.encoder.flush(&mut self.device);
-        self.window.swap_buffers()?;
+        context_wrapper.swap_buffers()?;
         self.device.cleanup();
 
         Ok(())
@@ -156,10 +152,6 @@ where
         Ok(())
     }
 
-    /// Returns a reference to the window used by the `RenderGraph`
-    pub fn window(&self) -> &glutin::GlWindow {
-        &*self.window
-    }
     /// Returns a mutable reference to the `gfx::Encoder` used by the `RenderGraph`
     pub fn encoder(&mut self) -> &mut gfx::Encoder<R, C> {
         &mut self.encoder

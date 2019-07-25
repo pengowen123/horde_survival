@@ -1,6 +1,6 @@
 //! Initialization of the rendering system
 
-use common::glutin::{self, EventsLoop, GlContext};
+use common::glutin::{self, EventsLoop};
 use common::graphics::Drawable;
 use common::{self, config};
 use gfx;
@@ -15,6 +15,7 @@ use std::sync::{Arc, Mutex};
 use draw::{self, components, lighting_data, param, passes};
 
 use gfx_device_gl;
+
 /// Initializes rendering-related components and systems
 pub fn initialize<'a, 'b, 'c, 'd>(
     world: &mut specs::World,
@@ -50,24 +51,25 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     };
 
     // Initialize gfx structs
-    let (window, device, mut factory, main_color, main_depth) =
-        gfx_window_glutin::init::<draw::ColorFormat, draw::DepthFormat>(
-            window_builder,
-            context_builder,
-            &events,
-        );
-
-    {
+    let (window, device, mut factory, main_color, main_depth) = {
         let log = world.read_resource::<slog::Logger>();
-        unsafe {
-            window.make_current().unwrap_or_else(|e| {
-                error!(log, "Failed to set make GL context the current one: {}", e;);
+
+        let (window, device, factory, main_color, main_depth) =
+            gfx_window_glutin::init::<draw::ColorFormat, draw::DepthFormat>(
+                window_builder,
+                context_builder,
+                &events,
+            ).unwrap_or_else(|e| {
+                error!(log, "Failed to initialize window or context: {}", e;);
                 panic!(common::CRASH_MSG);
             });
-        }
-    }
 
-    let window = Arc::new(window);
+        (window, device, factory, main_color, main_depth)
+    };
+
+    let window = unsafe {
+        window::Window::new(window.treat_as_not_current())
+    };
     let encoder = factory.create_command_buffer().into();
 
     // Register components
@@ -92,11 +94,13 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     init_test_entities(world, &mut factory);
 
     // Initialize systems
-    let create_new_window_views = |window: &glutin::GlWindow| gfx_window_glutin::new_views(window);
+    let create_new_window_views = |window: &glutin::WindowedContext<glutin::PossiblyCurrent>| {
+        gfx_window_glutin::new_views(window)
+    };
     let create_new_window_views = Box::new(create_new_window_views);
     let draw = draw::System::new(
         factory,
-        window.clone(),
+        window.get_window(),
         device,
         main_color,
         main_depth,

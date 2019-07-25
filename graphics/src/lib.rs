@@ -37,7 +37,6 @@ pub fn initialize<'a, 'b, 'c, 'd>(
 ) -> (
     DispatcherBuilder<'a, 'b>,
     DispatcherBuilder<'c, 'd>,
-    window::Window,
     glutin::EventsLoop,
 ) {
     // The camera resource must exist before calling draw::initialize
@@ -54,7 +53,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     {
         let window_size = {
             let log = world.read_resource::<slog::Logger>();
-            window.get_inner_size().unwrap_or_else(|| {
+            window.get_window().get_inner_size().unwrap_or_else(|| {
                 error!(log, "Failed to get window size (window probably doesn't exist anymore)";);
                 panic!(common::CRASH_MSG);
             })
@@ -64,7 +63,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
         let aspect_ratio = (window_size.width / window_size.height) as f32;
         *camera.lock().unwrap() = camera::Camera::new_default(aspect_ratio, config.camera.fov);
     }
-    world.add_resource(window.clone());
+    world.add_resource(window);
 
     // Add systems
     let dispatcher = dispatcher
@@ -72,5 +71,5 @@ pub fn initialize<'a, 'b, 'c, 'd>(
         //       frame behind. This should be fine because the window shouldn't be resized often.
         .with(camera::System, "camera", &[]);
 
-    (dispatcher, dispatcher_graphics, window, events)
+    (dispatcher, dispatcher_graphics, events)
 }

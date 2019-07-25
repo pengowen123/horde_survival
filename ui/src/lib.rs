@@ -128,11 +128,13 @@ impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
     fn run(&mut self, mut data: Self::SystemData) {
+        let window = data.window.get_window();
+
         // Handle window resize events
         for event in data.event_channel.read(&mut self.reader_id) {
             if let window_event::Event::WindowResized(new_size) = *event {
                 let (new_width, new_height): (u32, u32) =
-                    new_size.to_physical(data.window.get_hidpi_factor()).into();
+                    new_size.to_physical(window.get_hidpi_factor()).into();
 
                 self.ui.win_w = new_width as conrod::Scalar;
                 self.ui.win_h = new_height as conrod::Scalar;
@@ -166,14 +168,14 @@ impl<'a> specs::System<'a> for System {
                     }
                 }
             }
-            if let Some(event) = conrod::backend::winit::convert_event(event, data.window.window())
+            if let Some(event) = conrod::backend::winit::convert_event(event, window)
             {
                 self.ui.handle_event(event);
             }
         }
 
         // Update the cursor appearance
-        self.set_cursor_if_changed(&data.window);
+        self.set_cursor_if_changed(window);
 
         // Whether to rebuild the UI widgets
         let rebuild_widgets =
@@ -200,18 +202,18 @@ impl<'a> specs::System<'a> for System {
                 UiState::MainMenu => self.menus.set_widgets_main_menu(
                     &mut ui,
                     &mut data.ui_state,
-                    &data.window,
+                    window,
                     &mut data.event_channel,
                     &mut data.config,
                 ),
                 UiState::InGame => {
                     self.menus
-                        .set_widgets_in_game(&mut ui, &mut data.ui_state, &data.window)
+                        .set_widgets_in_game(&mut ui, &mut data.ui_state, window)
                 }
                 UiState::PauseMenu => self.menus.set_widgets_pause_menu(
                     &mut ui,
                     &mut data.ui_state,
-                    &data.window,
+                    window,
                     &mut data.event_channel,
                     &mut data.config,
                 ),

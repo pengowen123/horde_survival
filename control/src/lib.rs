@@ -19,10 +19,10 @@ use common::cgmath::InnerSpace;
 use common::cgmath::{self, Quaternion};
 use common::ncollide3d::query::{self, RayCast};
 use common::nphysics3d::force_generator::ForceGeneratorHandle;
-use common::nphysics3d::object::{Body, BodyHandle, BodyMut, ColliderHandle};
+use common::nphysics3d::object::{Body, RigidBody, BodyHandle, BodyPartHandle, ColliderDesc};
 use common::nphysics3d::world::World;
 use common::specs::{self, DispatcherBuilder, Join};
-use common::{na, physics, shred, Float};
+use common::{shred, na, physics, Float};
 use math::convert;
 
 /// Controlled properties of an entity
@@ -45,7 +45,7 @@ pub enum VelocityModifier {
 impl Control {
     /// Returns a new `Control`
     pub fn new(
-        body_handle: BodyHandle,
+        body_handle: BodyPartHandle,
         movement: movement::MovementForceGenerator,
         spring: spring::Spring,
         friction: ::Float,
@@ -89,15 +89,21 @@ impl specs::Component for Control {
     type Storage = specs::VecStorage<Self>;
 }
 
-pub struct FloorColliderHandle(Option<ColliderHandle>);
+// Stores handles for the floor entity
+pub struct FloorHandle(Option<BodyHandle>, Option<ColliderDesc<::Float>>);
 
-impl FloorColliderHandle {
-    pub fn set_handle(&mut self, handle: ColliderHandle) {
+impl FloorHandle {
+    pub fn set_floor(&mut self, handle: BodyHandle, collider: ColliderDesc<::Float>) {
         self.0 = Some(handle);
+        self.1 = Some(collider);
     }
 
-    pub fn get_handle(&self) -> Option<ColliderHandle> {
+    pub fn get_handle(&self) -> Option<BodyHandle> {
         self.0
+    }
+
+    pub fn get_collider(&self) -> Option<&ColliderDesc<::Float>> {
+        self.1.as_ref()
     }
 }
 
@@ -108,7 +114,7 @@ pub struct Data<'a> {
     control: specs::WriteStorage<'a, Control>,
     physics: specs::WriteStorage<'a, physics::Physics>,
     world: specs::WriteExpect<'a, World<::Float>>,
-    floor_handle: specs::ReadExpect<'a, FloorColliderHandle>,
+    floor_handle: specs::ReadExpect<'a, FloorHandle>,
 }
 
 impl<'a> specs::System<'a> for System {
@@ -125,11 +131,10 @@ impl<'a> specs::System<'a> for System {
                 VelocityModifier::WalkForward(direction) => direction.normalize(),
             });
 
-            match data.world.body_mut(p.get_root_handle()) {
+            if let Some(body_mut) = data.world.body_mut(p.get_root_handle()) {
                 // The `control` system only works for rigid bodies
                 // TODO: Maybe use a multibody for controlled entities to allow for joints
-                //       This is blocked on nphysics#127
-                BodyMut::RigidBody(body) => {
+                if let Some(body) = body_mut.downcast_mut::<RigidBody<::Float>>() {
                     body.set_angular_velocity(na::zero());
 
                     // Only apply friction is the entity is not trying to walk
@@ -158,7 +163,6 @@ impl<'a> specs::System<'a> for System {
                         body.activate();
                     }
                 }
-                _ => continue,
             }
 
             c.velocity = None;
@@ -166,24 +170,37 @@ impl<'a> specs::System<'a> for System {
             let mut current_spring_length = None;
             let mut ground_normal = None;
 
-            if let Some(handle) = p.get_root_collider() {
-                if let Some(entity_collider) = data.world.collider(handle) {
+            if let Some(entity_body) = data.world.body(p.get_root_handle()) {
+                if let Some(floor_collider) = data.floor_handle.get_collider() {
                     if let Some(floor_handle) = data.floor_handle.get_handle() {
-                        if let Some(floor_collider) = data.world.collider(floor_handle) {
-                            let entity_pos = na::Point3::origin()
-                                + entity_collider.position().translation.vector;
+                        if let Some(floor_body) = data.world.body(floor_handle) {
+                            let entity_pos =
+                                na::Point3::origin() +
+                                entity_body
+                                    .part(0)
+                                    .expect("Found body with no parts")
+                                    .position()
+                                    .translation
+                                    .vector;
 
                             let ray = query::Ray::new(entity_pos, -na::Vector3::z());
 
-                            let intersection = floor_collider.shape().toi_and_normal_with_ray(
-                                floor_collider.position(),
-                                &ray,
-                                false,
-                            );
+                            let intersection =
+                                floor_collider.get_shape().toi_and_normal_with_ray(
+                                    &floor_body
+                                        .part(0)
+                                        .expect("Floor body has no parts")
+                                        .position(),
+                                    &ray,
+                                    false,
+                                );
 
                             if let Some(intersection) = intersection {
                                 current_spring_length = Some(intersection.toi);
                                 ground_normal = Some(intersection.normal);
+                            }
+                            else {
+                                println!("no collision");
                             }
                         }
                     }
@@ -191,8 +208,12 @@ impl<'a> specs::System<'a> for System {
             }
 
             let current_entity_velocity = {
-                if let Body::RigidBody(rb) = data.world.body(p.get_root_handle()) {
-                    rb.velocity().linear
+                if let Some(body) = data.world.body(p.get_root_handle()) {
+                    if let Some(rb) = body.downcast_ref::<RigidBody<::Float>>() {
+                        rb.velocity().linear
+                    } else {
+                        na::zero()
+                    }
                 } else {
                     na::zero()
                 }
@@ -208,7 +229,6 @@ impl<'a> specs::System<'a> for System {
                 if let Some(length) = current_spring_length {
                     controller.spring.set_current_length(length);
                 } else {
-                    println!("No collision");
                     controller.spring.reset_current_length();
                 }
 
@@ -250,31 +270,33 @@ impl<'a> specs::System<'a> for System {
                 )
             };
 
-            if let BodyMut::RigidBody(rb) = data.world.body_mut(p.get_root_handle()) {
-                if is_ground_too_steep {
-                    let mut vel = *rb.velocity();
-
-                    vel.linear[0] = 0.0;
-                    vel.linear[1] = 0.0;
-
-                    // If the entity is jumping, don't reset its vertical velocity because it would
-                    // cause strange behavior when an entity jumps against a wall that is too steep
-                    // to stand on
-                    if spring_enabled {
-                        vel.linear[2] = 0.0;
-                    }
-
-                    rb.set_velocity(vel);
-                }
-
-                if let Some(new_vel) = set_vertical_velocity {
-                    // Entities cannot jump if the ground beneath them is too steep to stand on
-                    if !is_ground_too_steep {
+            if let Some(body) = data.world.body_mut(p.get_root_handle()) {
+                if let Some(rb) = body.downcast_mut::<RigidBody<::Float>>() {
+                    if is_ground_too_steep {
                         let mut vel = *rb.velocity();
 
-                        vel.linear[2] = new_vel;
+                        vel.linear[0] = 0.0;
+                        vel.linear[1] = 0.0;
+
+                        // If the entity is jumping, don't reset its vertical velocity because it
+                        // would cause strange behavior when an entity jumps against a wall that is
+                        // too steep to stand on
+                        if spring_enabled {
+                            vel.linear[2] = 0.0;
+                        }
 
                         rb.set_velocity(vel);
+                    }
+
+                    if let Some(new_vel) = set_vertical_velocity {
+                        // Entities cannot jump if the ground beneath them is too steep to stand on
+                        if !is_ground_too_steep {
+                            let mut vel = *rb.velocity();
+
+                            vel.linear[2] = new_vel;
+
+                            rb.set_velocity(vel);
+                        }
                     }
                 }
             }
@@ -291,7 +313,7 @@ pub fn initialize<'a, 'b>(
     world.register::<Control>();
 
     // Add resources
-    world.add_resource(FloorColliderHandle(None));
+    world.add_resource(FloorHandle(None, None));
 
     // Add systems
     dispatcher.with(System, "control", &[])

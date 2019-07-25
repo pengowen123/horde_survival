@@ -130,15 +130,11 @@ impl Scale for shape::Plane<::Float> {
 
 impl Scale for shape::Polyline<::Float> {
     fn scale(&self, scale: ::Float) -> Option<Self> {
-        // Vertices are copied because they must be modified
-        let old_vertices = self.vertices().iter().cloned();
-        let new_vertices: Vec<_> = old_vertices
-            .map(|v| {
-                let new = v * scale;
-                new
-            }).collect();
+        let mut new = self.clone();
 
-        Some(Self::new(new_vertices))
+        new.scale_by(&na::Vector3::new(scale, scale, scale));
+
+        Some(new)
     }
 }
 
@@ -160,16 +156,27 @@ impl Scale for shape::Triangle<::Float> {
 
 impl Scale for shape::TriMesh<::Float> {
     fn scale(&self, scale: ::Float) -> Option<Self> {
-        // Vertices are copied because they must be modified
-        let old_vertices = self.vertices().iter().cloned();
-        let new_vertices: Vec<_> = old_vertices
-            .map(|v| {
-                let new = v * scale;
-                new
-            }).collect();
-        // Indices are shared between original and scaled mesh
-        let indices: Vec<_> = self.indices().clone();
+        // NOTE: This removes the use of indices from the previous mesh for now until ncollide#299
+        //       is fixed
+        let new_points = self.points()
+            .iter()
+            .map(|point| point * scale)
+            .collect::<Vec<_>>();
 
-        Some(Self::new(new_vertices, indices, None))
+        let mut new_indices = Vec::new();
+        let mut i = 0;
+
+        while i < new_points.len() - 1 {
+            new_indices.push(na::Point3::new(i, i + 1, i + 2));
+            i += 3;
+        }
+
+        let uvs = self.uvs().map(ToOwned::to_owned);
+
+        Some(Self::new(
+            new_points,
+            new_indices,
+            uvs,
+        ))
     }
 }

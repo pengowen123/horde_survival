@@ -2,7 +2,8 @@
 
 use common::cgmath::{self, InnerSpace, Zero};
 use common::na;
-use common::nphysics3d::math::Force;
+
+use controller::ForceGeneratorResult;
 
 const GROUND_STEEPNESS_FORCE: ::Float = 5000.0;
 
@@ -50,7 +51,7 @@ impl MovementForceGenerator {
     /// If the ground beneath the entity that this force generator is applying to is too steep to
     /// stand on, returns `Some` with the force that should be applied to cause the entity to slide
     /// down the hill
-    pub fn get_ground_steepness_force(&self) -> Option<Force<::Float>> {
+    pub fn get_ground_steepness_force(&self) -> Option<na::Vector3<::Float>> {
         let ground_angle = self.ground_normal.angle(cgmath::Vector3::unit_z());
 
         if ground_angle > cgmath::Rad(3.141 / 4.0) {
@@ -58,9 +59,7 @@ impl MovementForceGenerator {
             let force_dir =
                 na::Vector3::new(self.ground_normal.x, self.ground_normal.y, 0.0).normalize();
 
-            Some(Force::linear(
-                force_dir * ground_angle.0 * GROUND_STEEPNESS_FORCE,
-            ))
+            Some(force_dir * ground_angle.0 * GROUND_STEEPNESS_FORCE)
         } else {
             None
         }
@@ -83,25 +82,28 @@ impl MovementForceGenerator {
 }
 
 impl MovementForceGenerator {
-    pub fn apply(&mut self) -> Option<Force<::Float>> {
+    pub fn apply(&mut self) -> ForceGeneratorResult {
         let ground_steepness_force = self.get_ground_steepness_force();
 
         let walk_force = self.walk_dir.map(|dir| {
             let dir = na::Vector3::new(dir.x, dir.y, 0.0);
 
-            Force::linear(dir * self.acceleration)
+            dir * self.acceleration
         });
 
         let mut force = None;
 
         if let Some(ground_steepness_force) = ground_steepness_force {
-            return Some(ground_steepness_force);
+            return ForceGeneratorResult::Some(ground_steepness_force);
         }
 
         if let Some(walk_force) = walk_force {
             force = force.map(|f| f + walk_force).or_else(|| Some(walk_force));
         }
 
-        force
+        match force {
+            None => ForceGeneratorResult::None,
+            Some(f) => ForceGeneratorResult::Some(f),
+        }
     }
 }

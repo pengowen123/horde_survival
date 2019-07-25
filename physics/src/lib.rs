@@ -14,18 +14,15 @@ pub mod scale;
 
 pub use init::initialize;
 
-use common::nphysics3d::world::World;
-use common::physics;
 #[allow(unused_imports)]
-use common::shred;
-use common::specs::{self, Join};
-use common::{na, ncollide3d, nphysics3d, Delta, Float};
+use common::shred::{self, SystemData, ResourceId, Resources};
+use common::{specs, physics, na, ncollide3d, nphysics3d, Delta, Float};
 
 pub struct System;
 
 #[derive(SystemData)]
 pub struct Data<'a> {
-    world: specs::WriteExpect<'a, World<::Float>>,
+    world: specs::WriteExpect<'a, nphysics3d::world::World<::Float>>,
     physics: specs::ReadStorage<'a, physics::Physics>,
     delta: specs::ReadExpect<'a, Delta>,
 }

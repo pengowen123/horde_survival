@@ -15,7 +15,7 @@ impl Menus {
         &mut self,
         ui: &mut conrod::UiCell,
         ui_state: &mut UiState,
-        window: &glutin::GlWindow,
+        window: &glutin::Window,
         event_channel: &mut window_event::EventChannel,
         config: &mut config::Config,
     ) {

@@ -70,9 +70,11 @@ impl<'a> specs::System<'a> for System {
     type SystemData = Data<'a>;
 
     fn run(&mut self, mut data: Self::SystemData) {
-        *data.window_info = WindowInfo::new(&data.window);
+        let window = data.window.get_window();
 
-        data.window.set_title(&format!(
+        *data.window_info = WindowInfo::new(window);
+
+        window.set_title(&format!(
             "Horde Survival - {:.4} ms",
             data.delta.to_float() * 1000.0,
         ));

@@ -64,21 +64,26 @@ pub fn run(
     let dispatcher = control::initialize(&mut world, dispatcher);
     let dispatcher = physics::initialize(&mut world, dispatcher);
     ui::add_resources(&mut world);
-    let (dispatcher, dispatcher_graphics, window, mut events) = graphics::initialize(
+    let (dispatcher, dispatcher_graphics, mut events) = graphics::initialize(
         &mut world,
         dispatcher,
         dispatcher_graphics,
         Box::new(dev::add_test_entities),
     );
-    let (ui_event_sender, ui_event_receiver) = mpsc::channel();
-    let dispatcher_graphics = ui::initialize(
-        &mut world,
-        dispatcher_graphics,
+    let physical_window_size = {
+        let window = world.read_resource::<window::Window>();
+        let window = window.get_window();
         window
             .get_inner_size()
             .unwrap()
             .to_physical(window.get_hidpi_factor())
-            .into(),
+            .into()
+    };
+    let (ui_event_sender, ui_event_receiver) = mpsc::channel();
+    let dispatcher_graphics = ui::initialize(
+        &mut world,
+        dispatcher_graphics,
+        physical_window_size,
         ui_event_receiver,
     );
 
@@ -95,6 +100,8 @@ pub fn run(
 
         {
             let config = world.read_resource::<config::Config>();
+            let window = world.read_resource::<window::Window>();
+            let window = window.get_window();
             let mut channel = world.write_resource::<window_event::EventChannel>();
 
             let mut latest_mouse_move = None;

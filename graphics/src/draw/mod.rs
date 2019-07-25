@@ -22,7 +22,7 @@ pub use self::passes::shadow::{DirShadowSource, LightSpaceMatrix};
 pub use self::types::{ColorFormat, DepthFormat};
 
 use assets;
-use common::glutin::{self, GlContext};
+use common::glutin;
 use common::graphics::{Drawable, ParticleSource};
 use common::{self, config, conrod, shred, specs};
 use gfx::{self, handle};
@@ -44,7 +44,7 @@ use camera::Camera;
 /// A function that creates new window target views
 pub type CreateNewWindowViews<R> = Box<
     Fn(
-        &glutin::GlWindow
+        &glutin::WindowedContext<glutin::PossiblyCurrent>,
     ) -> (
         handle::RenderTargetView<R, types::ColorFormat>,
         handle::DepthStencilView<R, types::DepthFormat>,
@@ -79,7 +79,7 @@ where
     // TODO: Make this return result so the application can handle the error
     pub fn new<'a>(
         mut factory: F,
-        window: window::Window,
+        window: &glutin::Window,
         device: D,
         out_color: handle::RenderTargetView<R, types::ColorFormat>,
         out_depth: handle::DepthStencilView<R, types::DepthFormat>,
@@ -106,7 +106,7 @@ where
             let mut builder =
                 builder::GraphBuilder::new(&mut factory, &assets, out_color.clone(), out_depth);
 
-            builder.add_resource(window::info::WindowInfo::new(window.window()));
+            builder.add_resource(window::info::WindowInfo::new(window));
             builder.add_resource(camera);
             builder.add_resource(lighting_data);
             builder.add_resource(dir_shadow_source);
@@ -149,7 +149,7 @@ where
                 });
             }
 
-            builder.build(device, encoder, window)
+            builder.build(device, encoder)
         };
 
         // Build the UI renderer
@@ -191,7 +191,7 @@ pub struct Data<'a, R: gfx::Resources> {
     ui_state: specs::ReadExpect<'a, common::UiState>,
     ui_draw_list: specs::ReadExpect<'a, ui::UiDrawList>,
     ui_image_map: specs::ReadExpect<'a, ui::ImageMap<R>>,
-    window: specs::ReadExpect<'a, window::Window>,
+    window: specs::WriteExpect<'a, window::Window>,
     window_info: specs::ReadExpect<'a, info::WindowInfo>,
     log: specs::ReadExpect<'a, slog::Logger>,
     config: specs::ReadExpect<'a, config::Config>,
@@ -207,24 +207,33 @@ where
 {
     type SystemData = Data<'a, R>;
 
-    fn run(&mut self, data: Self::SystemData) {
+    fn run(&mut self, mut data: Self::SystemData) {
+        let log = data.log;
+        let context_wrapper = unsafe {
+            data.window.get_current_context_wrapper().unwrap_or_else(|e| {
+                error!(log, "Failed to make GL context the current one: {}", e;);
+                panic!(common::CRASH_MSG);
+            })
+        };
+        let window = context_wrapper.window();
+
         // Check for relevant window events
         for e in data.event_channel.read(&mut self.reader_id) {
             match *e {
                 window_event::Event::ReloadShaders => {
-                    self.reload_shaders(&data.assets, &data.log)
+                    self.reload_shaders(&data.assets, &log)
                         .unwrap_or_else(|e| {
-                            error!(data.log, "Error reloading shaders: {}", e;);
+                            error!(log, "Error reloading shaders: {}", e;);
                         });
                 }
                 window_event::Event::WindowResized(new_size) => {
-                    let new_physical_size = new_size.to_physical(data.window.get_hidpi_factor());
+                    let new_physical_size = new_size.to_physical(window.get_hidpi_factor());
 
-                    // Resize the GL context
-                    data.window.resize(new_physical_size);
+                    // Resize the window and GL context
+                    context_wrapper.resize(new_physical_size);
 
                     let (resized_main_color, resized_main_depth) =
-                        (self.create_new_window_views)(self.graph.window());
+                        (self.create_new_window_views)(&context_wrapper);
 
                     // Handle window resize for render passes
                     self.graph
@@ -233,18 +242,18 @@ where
                             resized_main_depth,
                             &mut self.factory,
                         ).unwrap_or_else(|e| {
-                            error!(data.log, "Error handling window resize: {}", e;);
+                            error!(log, "Error handling window resize: {}", e;);
                         });
 
                     // Handle window resize for UI renderer
                     self.ui_renderer.on_resize(resized_main_color);
                 }
                 window_event::Event::ConfigChanged(window_event::ChangedConfig::Graphics) => {
-                    info!(data.log, "Applying graphics configuration changes";);
+                    info!(log, "Applying graphics configuration changes";);
                     self.graph
                         .apply_config(&data.config.graphics, &mut self.factory, &data.assets)
                         .unwrap_or_else(|e| {
-                            error!(data.log, "Error apply graphics configuration: {}", e;);
+                            error!(log, "Error apply graphics configuration: {}", e;);
                         });
                 }
                 _ => {}
@@ -261,7 +270,7 @@ where
             self.graph
                 .execute_passes(temporary_resources)
                 .unwrap_or_else(|e| {
-                    error!(data.log, "Error executing passes: {}", e;);
+                    error!(log, "Error executing passes: {}", e;);
                     panic!(common::CRASH_MSG);
                 });
         }
@@ -277,15 +286,19 @@ where
                 image_map,
             );
         } else {
-            warn!(data.log, "UI draw list not found";);
+            warn!(log, "UI draw list not found";);
         }
 
         self.ui_renderer
             .draw(&mut self.factory, self.graph.encoder(), image_map);
 
-        self.graph.finish_frame().unwrap_or_else(|e| {
-            error!(data.log, "Error finishing frame: {}", e);
+        self.graph.finish_frame(&context_wrapper).unwrap_or_else(|e| {
+            error!(log, "Error finishing frame: {}", e);
             panic!(common::CRASH_MSG);
         });
+
+        unsafe {
+            context_wrapper.treat_as_not_current();
+        }
     }
 }

@@ -4,7 +4,7 @@ pub mod direction;
 pub mod position;
 
 use common::na;
-use nphysics3d::object::{Body, BodyHandle, Multibody, MultibodyLinkRef};
+use nphysics3d::object::{BodyHandle, RigidBody, Multibody, Ground, BodyPart};
 use nphysics3d::world::World;
 use specs::DispatcherBuilder;
 
@@ -19,17 +19,16 @@ pub fn initialize<'a, 'b>(dispatcher: DispatcherBuilder<'a, 'b>) -> DispatcherBu
 ///
 /// For multibodies, the isometry of the first link is returned.
 pub fn get_isometry(world: &World<::Float>, handle: BodyHandle) -> na::Isometry3<::Float> {
-    match world.body(handle) {
-        Body::RigidBody(b) => b.position(),
-        Body::Ground(b) => b.position(),
-        Body::Multibody(b) => get_first_multibody_link(b).position(),
+    if let Some(body) = world.body(handle) {
+        if let Some(rb) = body.downcast_ref::<RigidBody<::Float>>() {
+            return rb.position().clone();
+        } else if let Some(ground) = body.downcast_ref::<Ground<::Float>>() {
+            return ground.position();
+        } else if let Some(multibody) = body.downcast_ref::<Multibody<::Float>>() {
+            return multibody.root().position();
+        }
     }
-}
 
-/// Returns the first link in the provided multibody
-pub fn get_first_multibody_link(multibody: &Multibody<::Float>) -> MultibodyLinkRef<::Float> {
-    multibody
-        .links()
-        .next()
-        .expect("`get_first_multibody_link` called with empty multibody")
+    // All possible body types are handled above
+    unreachable!();
 }

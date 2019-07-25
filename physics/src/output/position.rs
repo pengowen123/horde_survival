@@ -1,7 +1,7 @@
 //! A component and system to tie the position of an entity to the position of its physics body
 
 use common::{self, physics};
-use nphysics3d::world::World;
+use nphysics3d;
 use specs::{self, Join};
 
 use math::convert;
@@ -15,7 +15,7 @@ pub struct Data<'a> {
     tie: specs::ReadStorage<'a, physics::PhysicsTiedPosition>,
     physics: specs::ReadStorage<'a, physics::Physics>,
     space: specs::WriteStorage<'a, common::Position>,
-    world: specs::WriteExpect<'a, World<::Float>>,
+    world: specs::WriteExpect<'a, nphysics3d::world::World<::Float>>,
 }
 
 impl<'a> specs::System<'a> for System {

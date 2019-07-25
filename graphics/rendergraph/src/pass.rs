@@ -3,7 +3,7 @@
 use assets;
 use common::config;
 use gfx;
-use shred::Resources;
+use shred;
 
 use builder::GraphBuilder;
 use error::{BuildError, RunError};
@@ -65,7 +65,7 @@ pub trait Pass<R: gfx::Resources, C: gfx::CommandBuffer<R>, F: gfx::Factory<R>, 
     fn execute_pass(
         &mut self,
         encoder: &mut gfx::Encoder<R, C>,
-        resources: &mut Resources,
+        resources: &mut shred::Resources,
         temporary_resources: TemporaryResources<R>,
     ) -> Result<(), RunError>;
     /// Reloads the shaders for the pass

@@ -1,6 +1,6 @@
 //! A component and system to tie the direction of an entity to the direction of its physics body
 
-use nphysics3d::world::World;
+use nphysics3d;
 use specs::{self, Join};
 
 use common::{self, physics};
@@ -15,7 +15,7 @@ pub struct Data<'a> {
     tie: specs::ReadStorage<'a, physics::PhysicsTiedDirection>,
     physics: specs::ReadStorage<'a, physics::Physics>,
     direction: specs::WriteStorage<'a, common::Direction>,
-    world: specs::WriteExpect<'a, World<::Float>>,
+    world: specs::WriteExpect<'a, nphysics3d::world::World<::Float>>,
 }
 
 impl<'a> specs::System<'a> for System {

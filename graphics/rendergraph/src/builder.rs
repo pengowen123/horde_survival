@@ -2,12 +2,10 @@
 
 use assets;
 use gfx::{self, handle};
-use glutin;
-use shred::{self, Resources};
+use shred;
 
 use std::any::Any;
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::{error, fmt};
 
 use super::pass::Pass;
@@ -75,7 +73,7 @@ where
     pub assets: &'a assets::Assets,
     passes: Vec<Box<Pass<R, C, F, CF, DF>>>,
     pass_outputs: HashMap<String, Box<Any>>,
-    resources: Resources,
+    resources: shred::Resources,
     main_color: handle::RenderTargetView<R, CF>,
     main_depth: handle::DepthStencilView<R, DF>,
 }
@@ -99,7 +97,7 @@ where
             passes: Vec::new(),
             pass_outputs: HashMap::new(),
             factory,
-            resources: Resources::new(),
+            resources: shred::Resources::new(),
             main_color,
             main_depth,
             assets,
@@ -138,12 +136,12 @@ where
     }
 
     /// Returns a reference to the `GraphBuilder`'s resources
-    pub fn get_resources(&self) -> &Resources {
+    pub fn get_resources(&self) -> &shred::Resources {
         &self.resources
     }
 
     /// Returns a mutable reference to the `GraphBuilder`'s resources
-    pub fn get_mut_resources(&mut self) -> &mut Resources {
+    pub fn get_mut_resources(&mut self) -> &mut shred::Resources {
         &mut self.resources
     }
 
@@ -181,7 +179,6 @@ where
         self,
         device: D,
         encoder: gfx::Encoder<R, C>,
-        window: Arc<glutin::GlWindow>,
     ) -> RenderGraph<R, C, D, F, CF, DF>
     where
         D: gfx::Device<Resources = R, CommandBuffer = C>,
@@ -191,7 +188,6 @@ where
             self.resources,
             encoder,
             device,
-            window,
             self.main_color,
             self.main_depth,
         )

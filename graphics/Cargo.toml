@@ -5,7 +5,7 @@ version = "0.1.0"
 
 [dependencies]
 genmesh = "0.5.0"
-gfx = "0.17"
+gfx = "0.18"
 quick-error = "1.2"
 shred-derive = "0.5.0"
 slog = "2.2.3"

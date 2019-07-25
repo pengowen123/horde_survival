@@ -1,9 +1,9 @@
 //! Setup for the player entity
 
 use common::ncollide3d::shape::{self, ShapeHandle};
-use common::nphysics3d::math::Isometry;
 use common::nphysics3d::object;
 use common::nphysics3d::volumetric::Volumetric;
+use common::nphysics3d::material;
 use common::physics::{Physics, PhysicsTiedPosition};
 use common::specs::{self, Builder};
 use common::{cgmath, na, nphysics3d};
@@ -42,29 +42,31 @@ pub fn add_player_entity(world: &mut specs::World) {
     let (physics, control) = {
         let mut phys_world = world.write_resource::<nphysics3d::world::World<::Float>>();
 
+        let material = material::BasicMaterial::new(0.0, 0.0);
         let geom = ShapeHandle::new(shape::Ball::new(PLAYER_COLLIDER_RADIUS));
-
         let center_of_mass = geom.center_of_mass();
+
         // The density is normalized by the player collider size to keep forces consistent
         // regardless of it
-        let density = 100.0 / (PLAYER_COLLIDER_RADIUS * PLAYER_COLLIDER_RADIUS);
+        let density = 100.0 / (PLAYER_COLLIDER_RADIUS.powi(3));
         let inertia = geom.inertia(density);
 
-        let handle = phys_world.add_rigid_body(
-            Isometry::new(na::Vector3::new(-5.0, -5.0, 20.0), na::zero()),
-            inertia,
-            center_of_mass,
-        );
+        let collider_desc = object::ColliderDesc::new(geom)
+            .margin(COLLIDER_MARGIN)
+            .material(material::MaterialHandle::new(material));
 
-        let collider = phys_world.add_collider(
-            COLLIDER_MARGIN,
-            geom,
-            handle,
-            Isometry::identity(),
-            object::Material::new(0.0, 0.0),
-        );
+        let (rb_handle, rb_part_handle) = {
+            let rb = object::RigidBodyDesc::new()
+                .translation(na::Vector3::new(-5.0, -5.0, 20.0))
+                .local_inertia(inertia)
+                .local_center_of_mass(center_of_mass)
+                .collider(&collider_desc)
+                .build(&mut phys_world);
 
-        let physics = Physics::new(handle, vec![], Some(collider), vec![]);
+            (rb.handle(), rb.part_handle())
+        };
+
+        let physics = Physics::new(rb_handle, vec![], Some(collider_desc), vec![]);
         let control = {
             let movement = MovementForceGenerator::new(
                 PLAYER_ACCELERATION,
@@ -78,7 +80,7 @@ pub fn add_player_entity(world: &mut specs::World) {
                 PLAYER_SPRING_FRICTION,
             );
 
-            Control::new(handle, movement, spring, PLAYER_FRICTION, &mut phys_world)
+            Control::new(rb_part_handle, movement, spring, PLAYER_FRICTION, &mut phys_world)
         };
 
         (physics, control)
