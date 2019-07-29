@@ -5,7 +5,7 @@
 use cgmath::{self, One};
 use gfx::{self, handle};
 use specs;
-use skeletal_animation::controller;
+use skeletal_animation::{controller, Skeleton, Transform};
 use skeletal_animation::dual_quaternion::DualQuaternion;
 
 mod particles;
@@ -18,8 +18,11 @@ pub const MAX_JOINTS: u16 = 64;
 /// A view into a texture
 pub type TextureView<R> = handle::ShaderResourceView<R, [f32; 4]>;
 
+/// The skinning transform type used by `DrawableSkeletal`
+pub type SkinningTransform = DualQuaternion<f32>;
+
 /// An animation controller
-pub type AnimationController = controller::AnimationController<DualQuaternion<f32>>;
+pub type AnimationController = controller::AnimationController<SkinningTransform>;
 
 gfx_defines! {
     vertex Vertex {
@@ -32,7 +35,7 @@ gfx_defines! {
         pos: [f32; 3] = "a_Pos",
         normal: [f32; 3] = "a_Normal",
         uv: [f32; 2] = "a_Uv",
-        joints: [i32; 4] = "a_Joints",
+        joints: [i32; 4] = "a_JointIndices",
         joint_weights: [f32; 4] = "a_JointWeights",
     }
 
@@ -180,13 +183,16 @@ impl<R: gfx::Resources> Drawable<R> {
 
 pub struct DrawableSkeletal<R: gfx::Resources> {
     vertex_buffer: handle::Buffer<R, VertexSkeletal>,
+    skeleton: Skeleton,
     animation_controller: AnimationController,
+    skinning_transforms: Vec<SkinningTransform>,
     inner: DrawableInner<R>,
 }
 
 impl<R: gfx::Resources> DrawableSkeletal<R> {
     pub fn new(
         animation_controller: AnimationController,
+        skeleton: Skeleton,
         vertex_buffer: handle::Buffer<R, VertexSkeletal>,
         slice: gfx::Slice<R>,
         diffuse: TextureView<R>,
@@ -196,6 +202,8 @@ impl<R: gfx::Resources> DrawableSkeletal<R> {
         Self {
             vertex_buffer,
             animation_controller,
+            skeleton,
+            skinning_transforms: Vec::new(),
             inner: DrawableInner::new(slice, diffuse, specular, material),
         }
     }
@@ -233,6 +241,33 @@ impl<R: gfx::Resources> DrawableSkeletal<R> {
     /// Sets the shader parameters to the provided value
     pub fn set_shader_param(&mut self, param: ShaderParam) {
         self.inner.set_shader_param(param)
+    }
+
+    /// Returns a reference to the skeleton
+    pub fn skeleton(&self) -> &Skeleton {
+        &self.skeleton
+    }
+
+    /// Returns a reference to the animation controller
+    pub fn animation_controller(&self) -> &AnimationController {
+        &self.animation_controller
+    }
+
+    /// Updates the state of the animation controller and calculates new skinning transforms
+    pub fn update_animation_controller(&mut self, exit_dt: f64) {
+        let mut global_poses = [SkinningTransform::identity(); MAX_JOINTS as usize];
+
+        self.animation_controller
+            .get_output_pose(exit_dt, &mut global_poses[0..self.skeleton.joints.len()]);
+
+        self.skinning_transforms = self.skeleton.joints.iter().enumerate().map(|(i, joint)| {
+            global_poses[i].concat(DualQuaternion::from_matrix(joint.inverse_bind_pose))
+        }).collect();
+    }
+
+    /// Returns the current skinning transforms
+    pub fn skinning_transforms(&self) -> &[SkinningTransform] {
+        &self.skinning_transforms
     }
 }
 

@@ -19,6 +19,7 @@ extern crate slog;
 extern crate assets;
 
 mod camera;
+mod animation;
 pub mod draw;
 pub mod obj_loading;
 pub mod particles;

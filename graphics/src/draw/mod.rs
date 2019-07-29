@@ -22,9 +22,8 @@ pub use self::passes::shadow::{DirShadowSource, LightSpaceMatrix};
 pub use self::types::{ColorFormat, DepthFormat};
 
 use assets;
-use common::glutin;
-use common::graphics::{Drawable, ParticleSource};
-use common::{self, config, conrod, shred, specs};
+use common::graphics::{Drawable, DrawableSkeletal, ParticleSource};
+use common::{self, glutin, config, conrod, shred, specs};
 use gfx::{self, handle};
 
 use rendergraph::error::Error;
@@ -186,6 +185,7 @@ where
 #[derive(SystemData)]
 pub struct Data<'a, R: gfx::Resources> {
     drawable: specs::ReadStorage<'a, Drawable<R>>,
+    drawable_skeletal: specs::ReadStorage<'a, DrawableSkeletal<R>>,
     particle_source: specs::ReadStorage<'a, ParticleSource<R>>,
     event_channel: specs::ReadExpect<'a, window_event::EventChannel>,
     ui_state: specs::ReadExpect<'a, common::UiState>,
@@ -264,15 +264,16 @@ where
 
         // Only run the main graphics pipeline if a menu is not open
         if data.ui_state.is_in_game() {
-            let temporary_resources =
-                TemporaryResources::new(&data.drawable, &data.particle_source);
+            let temporary_resources = TemporaryResources::new(
+                &data.drawable,
+                &data.drawable_skeletal,
+                &data.particle_source,
+            );
 
-            self.graph
-                .execute_passes(temporary_resources)
-                .unwrap_or_else(|e| {
-                    error!(log, "Error executing passes: {}", e;);
-                    panic!(common::CRASH_MSG);
-                });
+            self.graph.execute_passes(temporary_resources).unwrap_or_else(|e| {
+                error!(log, "Error executing passes: {}", e;);
+                panic!(common::CRASH_MSG);
+            });
         }
 
         let (win_w, win_h): (f64, f64) = data.window_info.physical_dimensions().into();

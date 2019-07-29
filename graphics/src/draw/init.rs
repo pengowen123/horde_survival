@@ -1,7 +1,7 @@
 //! Initialization of the rendering system
 
 use common::glutin::{self, EventsLoop};
-use common::graphics::Drawable;
+use common::graphics::{Drawable, DrawableSkeletal};
 use common::{self, config};
 use gfx;
 use gfx_window_glutin;
@@ -13,6 +13,7 @@ use window;
 use std::sync::{Arc, Mutex};
 
 use draw::{self, components, lighting_data, param, passes};
+use animation;
 
 use gfx_device_gl;
 
@@ -94,6 +95,7 @@ pub fn initialize<'a, 'b, 'c, 'd>(
     init_test_entities(world, &mut factory);
 
     // Initialize systems
+    let animation_system = animation::System::new(&factory);
     let create_new_window_views = |window: &glutin::WindowedContext<glutin::PossiblyCurrent>| {
         gfx_window_glutin::new_views(window)
     };
@@ -119,7 +121,9 @@ pub fn initialize<'a, 'b, 'c, 'd>(
                 "shader-param-rotation",
                 "shader-param-scale",
             ],
-        ).with(passes::shadow::ShadowSourceSystem, "shadow-source", &[]);
+        )
+        .with(passes::shadow::ShadowSourceSystem, "shadow-source", &[])
+        .with(animation_system, "animation", &[]);
 
     let dispatcher_graphics = dispatcher_graphics.with_thread_local(draw);
 
@@ -133,5 +137,6 @@ where
     F: gfx::Factory<R>,
 {
     world.register::<Drawable<R>>();
+    world.register::<DrawableSkeletal<R>>();
     world.add_resource(ui::ImageMap::<R>::new())
 }

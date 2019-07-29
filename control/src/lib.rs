@@ -220,7 +220,7 @@ impl<'a> specs::System<'a> for System {
             };
 
             let (is_ground_too_steep, set_vertical_velocity, spring_enabled) = {
-                let mut controller = data
+                let controller = data
                     .world
                     .force_generator_mut(c.force_generator)
                     .downcast_mut::<controller::ControllerForceGenerator>()
